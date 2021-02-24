@@ -1,0 +1,118 @@
+---
+title: shared object
+layout: dep
+date: 2016-08-02
+---
+
+
+
+UNIX .so
+
+Windows .dll
+
+
+ 
+
+# Shared Objectを作ってみる
+
+
+## ライブラリ側のヘッダとソースを用意
+
+hello.h
+~~~
+#ifndef __HELLO_H__
+#define __HELLO_H__
+
+void say();
+
+#endif
+~~~
+
+libhello.c
+~~~
+#include <stdio.h>
+#include "hello.h"
+
+void say() {
+    printf("Hello, World!\n");
+}
+~~~
+
+
+## ライブラリをmakeする
+
+~~~
+gcc -fPIC -c libhello.c -o libhello.lo
+gcc -shared -Wl,-soname,libhello.so libhello.lo -o libhello.so
+~~~
+
+
+* `-fPIC` : position-independent code(PIC)を作成する。
+* `-c` : コンパイルおよびアセンブルまででリンクはしない。
+* `-shared` : 共有オブジェクトの生成。
+* `-Wl,option` : optionをリンカに渡す。ここでは"-soname libhello.so"が渡される。
+
+
+man gccによると-fPICと-fpicは違うよう
+
+sonameというのはライブラリが持つ名前で、実行時にはこの名前で動的リンクが行われるらしい。
+なので全然関係ないファイル名とかでもlibhello.soというsonameを持っていればそいつのリンクされる。
+詳しいことはThe Linux GCC HOWTO「6.4 自分のライブラリを作る」あたりを見ればいいと思う。
+
+
+## ldconfigでシステムに認識させる
+
+先のsonameの説明の通り、ファイル名ではなくsonameでリンクが決定されるような仕組みになっているので、その辺のことをシステムに認識させてやる必要がある。
+
+~~~
+ldconfig -n .
+~~~
+
+本来であれば/usr/libとかに置く。
+テストファイルは置きたくないので、-nでカレントディレクトリを対象に処理させる。
+
+
+
+
+# Shared Objectを使ってみる
+
+## 使う側のソースを用意
+
+~~~
+#include "hello.h"
+
+int main(int argc, char** argv) {
+    say();
+    return 0;
+}
+~~~
+
+
+
+## プログラムをmakeする
+
+~~~
+gcc -c -o hello.o hello.c
+gcc -o hello -L. -lhello hello.o
+~~~
+
+* `-llibrary` : リンクするライブラリ名を指定する。libを除いた名前を指定するのかな。
+* `-Ldir` : -lで検索が行われるディレクトリにdirを追加する。
+
+
+man gccによると
+リンカは、標準のライブラリ用ディレクトリのリスト中から、実際のファイル名が ‘liblibrary.a’ であるファイルを検索します。リンカはこのファイルを、ファイル名で直接指定した場合と同様に使用します。
+
+
+
+## 実行してみる
+
+~~~
+LD_LIBRARY_PATH=. ./hello
+~~~
+
+ライブラリ本来の置き場所に.soを置いてないので、LD_LIBRARY_PATH環境変数にlibhello.soが存在するカレントディレクトリを指定して実行。
+
+~~~
+Hello, World!
+~~~

@@ -1,0 +1,632 @@
+---
+title: Vim / Tmux
+layout: journal
+date: 2017-01-01
+---
+
+
+
+
+In vim, there is a concept of 'mode'
+
+there open ways if we get out of 'Insert mode'
+
+
+# Problems
+
+## how to get fileName
+
+
+see [Get the name of Current file](https://vim.fandom.com/wiki/Get_the_name_of_the_current_file)
+
+~~~
+:echo @% 	               def/my.txt
+:echo expand('%:t') 	   my.txt
+:echo expand('%:p') 	   /abc/def/my.txt
+:echo expand('%:p:h') 	   /abc/def
+:echo expand('%:p:h:t')    def
+:echo expand('%:r') 	   def/my
+:echo expand('%:e') 	   txt
+~~~
+
+
+
+## autoReplace `$1` into `()` problem defined in extended.vimrc
+
+type
+
+~~~
+:verbose map $1
+:verbose nmap $1
+~~~
+
+If this is indeed the case, the first place to look for definitions is in your .vimrc:
+
+~~~
+:e $MYVIMRC
+~~~
+
+then search for $1 and/or map in the .vimrc
+
+Alternatively, you might have some plugin that does that.
+
+Edited with the helpful comment of Marth (using verbose to find out where the mapping was defined).
+
+
+# Replace Hard Space into Space
+
+Hard space is '\u00A0' in html so type;
+~~~
+:%s/\%u00a0/\~/g
+~~~
+
+# Help
+
+~~~
+:help yourQuestioningKeyWord
+:h
+~~~
+
+
+
+
+Jump to the Link
+~~~
+Ctrl - ]
+~~~
+
+Back to the previous page
+~~~
+Ctrl - T
+~~~
+
+# insert in multiple lines
+
+insert `text` in multiple lines (e.g. 3 lines)
+
+~~~
+Move the cursor to the head in the first line where we insert `text`.
+Enter visual block mode (Ctrl-v).
+Press j three times (or 3j).
+Press I (capital i).
+Type `text`
+Press Esc.
+~~~
+
+# NERDTree
+
+~~~
+:NERDTreeToggle
+~~~
+
+
+You can toggle with `Ctrl + e` with `~/.vimrc`
+
+~~~
+nnoremap <silent><C-e> :NERDTreeToggle<CR>
+~~~
+
+# Variable Scope for Vim Script
+
+variables in Vim Script has scopes which its prefix determines.
+
+
+    prefix  | scope
+    --------|---------
+    g:      | global
+    b:      | current buffer
+    w:      | current window
+    t:      | current tab
+    s:      | current script file
+    l:      | current function ( == local )
+    v:      | system-embedded variable ( you cannot define v:yourvariable )
+
+
+`count` variable means `v:count`
+
+
+
+if you omit the prefix,
+
+    - `l:` if you are in functions
+    - `g:` otherwise
+
+
+# vimrc
+
+## what is <leader> ?
+
+by default `<leader>' is set "\" (backslash)
+if you change it,
+
+
+~~~
+let mapleader = ","
+let g:mapleader = ","
+~~~
+
+
+## what is <cr> ?
+
+    notation| meaning           | alternative
+    --------|-------------------|---
+    <CR>    | carriage return   | Ctrl-M
+    <Return>| same as <CR>      |
+    <Enter> | same as <CR>      |
+
+
+# Tab / Window
+
+
+## Window
+
+close the window
+~~~
+<C-w>c
+<C-w><C-c>
+:close
+~~~
+
+close other than current window
+~~~
+<C-w>o
+<C-w><C-o>
+:only
+:on
+~~~
+
+move to the next window
+~~~
+<C-w>w
+<C-w><C-w>
+~~~
+
+move to the Left/Right
+~~~
+<C-w>l / <C-w>r
+<C-w><C-l> / <C-w><C-r>
+~~~
+
+
+horizonral split
+~~~
+<C-w>s
+<C-w><C-s>
+:sp
+:split
+~~~
+
+
+vertical split
+~~~
+<C-w>v
+<C-w><C-w>
+:vs
+:vsplit
+~~~
+
+
+## tab
+
+~~~
+map <leader>tn :tabnew
+map <leader>to :tabonly
+map <leader>tc :tabclose
+map <leader>tm :tabmore
+map <leader>t<leader> :tabnext
+~~~
+
+
+
+# Multiple Commands
+
+
+~~~
+%s/htm/html/c | %s/JPEG/jpg/c | %s/GIF/gif/c
+~~~
+
+
+
+# scroll
+
+  command | action
+ ---------|------------
+ Ctrl + e | 1 line down
+ Ctrl + y | 1 line up
+ Ctrl + d | half page down
+ Ctrl + u | half page up
+
+
+
+
+# indent
+
+  command | action
+ ---------|---------------
+  `>`    →| indent the line
+  `100>` ↓| indent 100 lines underwards
+  `>G`    | Indent until end of file
+  `>}`    | Indent until next paragraph
+  `>iB`   | Indent contents of current { } block
+   -      | -
+  `gg=G`  | fix indents from top(`gg`) to buttom(`G`)
+
+
+
+
+# cursor location
+
+## get cursor location
+
+    command             |   action
+  ----------------------|--------------------
+  `:echo line(".")`     |  get line coordinate
+  `:echo col(".")`      |  get column coordinate
+   -                    |  -
+  `:call cursor(5, 10)` |  move to (5,10)
+
+
+
+## カーソル位置を移動、処理実行、元の位置に戻す
+
+~~~
+:let pos = getpos(".")
+:call cursor(40, 0)
+:call setpos('.', pos)
+~~~
+
+<br>
+
+# Normal Mode
+
+## `^` `$` `0`
+
+
+- `$` 正規表現: 行末を表す
+- `^` 正規表現: 行頭を表す
+
+
+| command | action |
+| :---: | :---: |
+| `$`  | 行末 に移動 |
+| `^`  | 空白を除く先頭に移動 |
+| `0`  | 行頭 に移動 |
+|      |           |
+| `y$` | yank to $|
+| `c^` | change from ^ |
+| `d0` | delete from 0 |
+
+
+<br>
+
+
+## `w` `e` `b` / `W` `E` `B`
+
+| command | action |
+| :---: | :---: |
+| w       | next word |
+| e       | end of the word |
+| b       | back word |
+| 3w      | 3 next word |
+| W       | next WORD(include . :) |
+
+
+# Clipboard
+
+@ visual mode
+
+~~~
+Ctrl + Insert   -> COPY
+Ctrl + Delete   -> CUT
+Shift + Delete  -> CUT
+Shift + Insert  -> PASTE
+~~~
+
+<br>
+<br>
+
+# Replace Strings
+
+
+~~~
+:s/aa/bb/		@line
+:%s/aa/bb/		@file
+~~~
+
+
+g in end means "all the way"
+
+~~~
+:s/apple/orange/g
+:%s/apple/orange/g
+~~~
+
+c in end means " check "
+
+
+~~~
+:s/aa/bb/gc
+:s/aa/bb/c
+~~~
+
+
+
+
+
+
+
+
+
+<br>
+<br>
+
+
+# Open Tab & Window
+
+
+
+
+@ command
+
+~~~
+vim -o a.c b.c　横分割
+vim -O a.c b.c　縦分割
+vim -p a.c b.c  タブ分割
+~~~
+
+
+## newtab,newwindow
+
+~~~
+:tabnew file
+:vnew
+:hnew
+~~~
+
+
+##  intertab / interwindow movement
+
+
+
+~~~
+:tabnext
+:tabnext3
+:tablast
+
+Ctrl+w h 	←
+Ctrl+w j 	↓
+Ctrl+w k 	↑
+Ctrl+w l 	→
+Ctrl+w r 	window replacement
+~~~
+
+
+
+# list
+
+~~~
+:ls 	display Buffer list
+
+:b # 			move to the # of buffer
+:bd # 			delete the # of buffer!
+:bn 			move buffer next
+:bp 			mobe buffer previous
+~~~
+
+
+
+# call unix command
+
+use d `:!` + unix command
+
+
+~~~
+:!ls
+a.c
+b.c
+c.c
+~~~
+
+but no read .bashrc
+
+~~~
+:!l
+error
+~~~
+
+
+# vimrc e.g.
+
+a vimrc
+~~~
+" rnitame/dotfiles/vim/vimrc
+" dein.vim
+
+if &compatible
+    set nocompatible
+endif
+
+set runtimepath+=~/.vim/dein/repos/github.com/Shougo/dein.vim
+
+call dein#begin(expand('~/.vim/dein'))
+
+call dein#add('Shougo/dein.vim')
+call dein#add('Shougo/vimproc.vim', {'build': 'make'})
+call dein#add('Shougo/neocomplete.vim')
+call dein#add('Shougo/neomru.vim')
+call dein#add('Shougo/unite.vim')
+call dein#add('Shougo/vimfiler.vim')
+call dein#add('Shougo/neosnippet.vim')
+call dein#add('Shougo/neosnippet-snippets')
+call dein#add('NLKNguyen/papercolor-theme')
+call dein#add('rhysd/github-complete.vim')
+call dein#add('reedes/vim-colors-pencil')
+call dein#add('itchyny/lightline.vim')
+call dein#add('airblade/vim-gitgutter')
+call dein#add('junegunn/vim-emoji')
+
+call dein#end()
+call dein#save_state()
+
+if dein#check_install()
+    call dein#install()
+endif
+
+set encoding=utf-8
+set ambiwidth=double
+
+syntax enable
+filetype plugin on
+filetype indent on
+autocmd FileType javascript setlocal sw=2 sts=2 ts=2 et
+autocmd FileType js setlocal sw=2 sts=2 ts=2 et
+autocmd FileType php setlocal sw=4 sts=4 ts=4 et
+autocmd FileType java setlocal sw=4 sts=4 ts=4 et
+autocmd FileType go setlocal sw=8 sts=8 ts=8
+autocmd FileType css setlocal sw=2 sts=2 ts=2 et
+autocmd FileType scss setlocal sw=2 sts=2 ts=2 et
+
+set background=light
+colorscheme pencil
+let g:lightline = {
+    \ 'colorscheme': 'PaperColor',
+    \ 'active': {
+    \   'left': [ [ 'mode', 'paste' ],
+    \             [ 'readonly', 'filename', 'modified' ] ]
+    \ },
+    \ 'component': {
+    \   'readonly': '%{&filetype=="help"?"":&readonly?"⭤":""}',
+    \   'modified': '%{&filetype=="help"?"":&modified?"+":&modifiable?"":"-"}'
+    \ },
+    \ 'component_visible_condition': {
+    \   'readonly': '(&filetype!="help"&& &readonly)',
+    \   'modified': '(&filetype!="help"&&(&modified||!&modifiable))'
+    \ }
+    \ }
+
+" vim-emoji completion
+set completefunc=emoji#complete
+" VimFiler でファイルのCRUDを可能にする（セーフモードいじる）
+let g:vimfiler_safe_mode_by_default = 0
+" Vim標準のファイラ置き換え
+let g:vimfiler_as_default_explorer = 1
+" Vim 開いたら VimFiler 開く(拡張子判定か何か入れたい)
+autocmd VimEnter * VimFilerExplorer
+" github-complete
+let g:github_complete_emoji_japanese_workaround = 1
+" Vim で markdown のプレビュー
+au BufRead,BufNewFile *.md set filetype=markdown
+" neocomplete
+" Disable AutoComplPop.
+let g:acp_enableAtStartup = 0
+" Use neocomplete.
+let g:neocomplete#enable_at_startup = 1
+" Use smartcase.
+let g:neocomplete#enable_smart_case = 1
+" Set minimum syntax keyword length.
+let g:neocomplete#sources#syntax#min_keyword_length = 3
+
+" Define keyword.
+if !exists('g:neocomplete#keyword_patterns')
+    let g:neocomplete#keyword_patterns = {}
+endif
+let g:neocomplete#keyword_patterns['default'] = '\h\w*'
+" vim-gitgutter
+" 記号が反映されるまでの時間
+set updatetime=250
+" 記号の色変更
+highlight GitGutterAdd ctermfg=blue
+highlight GitGutterChange ctermfg=brown
+highlight GitGutterDelete ctermfg=red
+
+" Plugin key-mappings.
+inoremap <expr><C-g>     neocomplete#undo_completion()
+inoremap <expr><C-l>     neocomplete#complete_common_string()
+
+" Recommended key-mappings.
+" <TAB>: completion.
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" <C-h>, <BS>: close popup and delete backword char.
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
+
+
+" 画面表示の設定
+set number         " 行番号を表示する
+set title          " タブにファイル名を表示する
+set cursorline     " カーソル行の背景色を変える
+"set cursorcolumn   " カーソル位置のカラムの背景色を変える
+set laststatus=2   " ステータス行を常に表示
+set statusline=%<%f\ %m%r%h%w       "相対パスのファイル名\ 修正フラグ 読み込み専用フラグ ヘルプバッファ プレビューフラグ
+set statusline+=%{'['.(&fenc!=''?&fenc:&enc).']['.&fileformat.']'}      "ファイルエンコーディングとファイルフォーマット
+set statusline+=%=(%l,%c)[%P]     "これ以降右寄せ 行番号 列番号 カーソルの場所(%表示)
+set cmdheight=2    " メッセージ表示欄を2行確保
+set showmatch      " 対応する括弧を強調表示
+set helpheight=999 " ヘルプを画面いっぱいに開く
+set list           " 不可視文字を表示
+set showcmd        " コマンドを画面最下部に表示
+
+" 不可視文字の表示記号指定
+set listchars=tab:▸\ ,eol:↲,extends:❯,precedes:❮
+
+" カーソル移動関連の設定
+
+set backspace=indent,eol,start " Backspaceキーの影響範囲に制限を設けない
+set whichwrap=b,s,h,l,<,>,[,]  " 行頭行末の左右移動で行をまたぐ
+set scrolloff=8                " 上下8行の視界を確保
+set sidescrolloff=16           " 左右スクロール時の視界を確保
+set sidescroll=1               " 左右スクロールは一文字づつ行う
+
+" ファイル処理関連の設定
+
+set confirm    " 保存されていないファイルがあるときは終了前に保存確認
+set hidden     " 保存されていないファイルがあるときでも別のファイルを開くことが出来る
+set autoread   " 外部でファイルに変更がされた場合は読みなおす
+set nobackup   " ファイル保存時にバックアップファイルを作らない
+set noswapfile " ファイル編集中にスワップファイルを作らない
+
+" 検索/置換の設定
+
+set hlsearch   " 検索文字列をハイライトする
+set incsearch  " インクリメンタルサーチを行う
+set ignorecase " 大文字と小文字を区別しない
+set smartcase  " 大文字と小文字が混在した言葉で検索を行った場合に限り、大文字と小文字を区別する
+set wrapscan   " 最後尾まで検索を終えたら次の検索で先頭に移る
+set gdefault   " 置換の時 g オプションをデフォルトで有効にする
+
+" タブ/インデントの設定
+
+set expandtab     " タブ入力を複数の空白入力に置き換える
+set tabstop=4     " 画面上でタブ文字が占める幅
+set shiftwidth=4  " 自動インデントでずれる幅
+set softtabstop=4 " 連続した空白に対してタブキーやバックスペースキーでカーソルが動く幅
+set autoindent
+set smartindent
+
+" 動作環境との統合関連の設定
+
+" OSのクリップボードをレジスタ指定無しで Yank, Put 出来るようにする
+set clipboard=unnamed,unnamedplus
+" Windows でもパスの区切り文字を / にする
+set shellslash
+
+" コマンドラインの設定
+
+" コマンドラインモードでTABキーによるファイル名補完を有効にする
+set wildmenu wildmode=list:longest,full
+" コマンドラインの履歴を10000件保存する
+set history=10000
+
+" ビープの設定
+
+"ビープ音すべてを無効にする
+set visualbell t_vb=
+set noerrorbells
+
+" 自動的にコメント行を挿入しない
+augroup auto_comment_off
+    autocmd!
+    autocmd BufEnter * setlocal formatoptions-=r
+    autocmd BufEnter * setlocal formatoptions-=o
+augroup END
+~~~

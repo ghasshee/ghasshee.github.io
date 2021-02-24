@@ -1,0 +1,257 @@
+---
+title: NixOS
+layout: dep
+---
+
+
+
+
+# Installation
+
+
+1. Download "MINIMAL INSTALLATION CD 64 bit" NixOS image, Write it into USB, and boot it.
+
+    * From https://nixos.org/nixos/download.html
+
+<br>
+
+2. Connect Network via WIFI
+~~~sh
+INTERFACE=wlp4s0
+wpa_supplicant -B -i $INTERFACE -c <(wpa_passphrase 'SSID' 'key')
+systemctl restart wpa_supplicant
+~~~
+
+
+
+## gdisk (system-boot on GPT)
+
+3. Partitioning :
+
+~~~
+gdisk $DISK
+
+Number  Size        Code  Name
+  1     1000.0 KiB  EF02  BIOS boot partition   (boot)
+  2     500.0 MiB   EF00  EFI System Partition  (EFI)
+  3     <the rest>  8E00  Linux LVM
+~~~
+
+
+4. Make encrypted file system and open it.
+
+~~~
+cryptsetup luksFormat /dev/sda3
+cryptsetup luksOpen /dev/sda3 enc-pv
+~~~
+
+5. create Logical Volume (create LVM groups )
+
+~~~
+pvcreate /dev/mapper/enc-pv
+vgcreate vg /dev/mapper/enc-pv
+lvcreate -n swap vg -L 10G
+lvcreate -n root vg -l 100%FREE
+~~~
+
+6. Make file system
+
+~~~
+mkfs.vfat -n BOOT /dev/sda2
+mkfs.ext4 -L root /dev/vg/root
+mkswap -L swap /dev/vg/swap
+~~~
+
+7. Mount and swapon :
+
+~~~
+mount /dev/vg/root /mnt
+mkdir /mnt/boot
+mount /dev/sda2 /mnt/boot
+swapon /dev/vg/swap
+~~~
+
+
+
+
+
+## fdisk (MBR partitioning)
+
+3. Partitioning :
+
+    Let's say you do;
+
+    - make GRUB install and enable HIBERNATE
+    - encrypt your storage
+
+~~~sh
+lsblk                       ## find your device
+DISK="/dev/xxx"             ## set xxx as your device
+~~~
+
+
+- At NixOS, GRUB can be installed on MBR.
+- To build MBR partitioning, use `fdisk`
+
+
+~~~sh
+fdisk $DISK                                     ## fdisk do partitioning over MBR
+##      o =>                                    ## '=>' denotes 'Enter key'
+##      n => p => => => +512M => (Y =>)         ## create MBR dir
+##      n => p => => => =>                      ##
+##      w =>
+~~~
+
+4. encrypt the volume `${DISK}2` and open the volume with naming it `enc-pv`
+~~~sh
+cryptsetup luksFormat ${DISK}2  #type YES then set PASSWORD
+cryptsetup luksOpen ${DISK}2 enc-pv
+~~~
+
+
+5. LVM: The following command will create `root` and `swap` lvm on `vg`
+~~~sh
+pvcreate /dev/mapper/enc-pv
+vgcreate vg /dev/mapper/enc-pv
+lvcreate -n swap vg -L 16G
+lvcreate -n root vg -l 100%FREE
+~~~
+
+* ( In case you reboot, you may want to re-mount these volumes with; )
+~~~sh
+## vgchange -a y vg      ## In case This activate vg in case you reboot
+~~~
+
+
+6. Make File system over these partitions;
+~~~sh
+mkfs.ext4 -L boot ${DISK}1
+mkfs.ext4 -L root /dev/vg/root
+mkswap -L swap /dev/vg/swap
+~~~
+
+7. Mount and Swapon;
+~~~sh
+mount /dev/vg/root /mnt
+mkdir /mnt/boot
+mount ${DISK}1 /mnt/boot
+swapon /dev/vg/swap
+~~~
+
+
+
+## build or install nix files
+
+
+
+8. Generate an initial configuration;
+~~~sh
+nixos-generate-config --root /mnt
+~~~
+
+9. Edit Config File `/mnt/etc/nixos/configuration.nix`, or use my particular configuration with;
+~~~sh
+## curl https://raw.githubusercontent.com/ghassheee/nixos/master/configuration.nix > /mnt/etc/nixos/configuration.nix
+~~~
+
+
+10. Install NixOS;
+~~~sh
+nixos-install
+~~~
+
+11. reboot
+~~~sh
+reboot
+~~~
+
+12. Do not forget to set PASSWORD for users
+~~~sh
+passwd ghasshee             ## i.e. set password of your username for login
+~~~
+
+That's all!
+
+
+## Reference
+
+https://chris-martin.org/2015/installing-nixos
+
+<br>
+<br>
+<br>
+
+# Nix Commands to know
+
+## Search Packages which we can install
+
+~~~sh
+nix-env -qaP '.*pkgname.*'          ## `-P` shows where the pkg locates
+nix-env -qa  '.*pkgname.*'          ## '.*' denotes for arbitrary characters
+nix-env -i    pkgname               ## install (use )
+~~~
+
+
+## configure
+
+~~~
+vim /etc/nixos/configure.nix
+nixos-rebuild switch
+~~~
+
+## delete old genarations
+
+~~~
+sudo nix-env -p /nix/var/nix/profiles/system --delete-generations old
+nix-collect-garbage -d
+nixos-rebuild switch
+~~~
+
+## see the remaining generations
+
+~~~
+nix-env -p /nix/var/nix/profiles/system --list-generations
+~~~
+
+
+# What to see
+
+    * Nix Storage using Hash enables rich features;
+        * https://nixos.org/nix/manual/#ch-about-nix
+
+
+
+# Nix Pills
+
+# Nix On MacOS
+
+## macOS 10.15 cannot make `/nix` folder
+
+https://github.com/NixOS/nix/issues/3125
+
+Prepare macOS 10.15 (Catalina) for Nix:
+
+
+~~~
+echo 'nix' | sudo tee -a /etc/synthetic.conf
+Reboot
+~~~
+
+Create the Nix volume:
+
+~~~
+sudo diskutil apfs addVolume disk1 APFSX Nix -mountpoint /nix
+sudo diskutil enableOwnership /nix
+sudo chflags hidden /nix
+echo "LABEL=Nix /nix apfs rw" | sudo tee -a /etc/fstab
+Install Nix with sh <(curl https://nixos.org/nix/install) --daemon
+
+Reboot
+~~~
+
+
+locate the `org.nixos.nix-daemon.plist` and type
+
+~~~
+sudo cp -f /nix/.../Library/LaunchDaemons/org.nixos.nix-daemon.plist /Library/LaunchDaemons/org.nixos.nix-daemon.plist
+~~~

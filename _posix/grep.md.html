@@ -1,0 +1,83 @@
+---
+title: grep
+layout: dep
+---
+
+
+# grep
+
+## why GNU grep is fast
+
+1. grep AVOIDS LOOKING AT EVERY INPUT BYTE.
+2. grep EXECUTES VERY FEW INSTRUCTIONS FOR EACH BYTE
+
+
+$ Boyer-Moore $ algorithm
+
+1. looks for the final letter of the target string,
+2. uses a lookup table to tell it how far ahead it can skip in the input whenever it finds a non-matching character.
+
+
+GNU grep also unrolls the inner loop of Boyer-Moore,
+and sets up the Boyer-Moore delta table entries
+in such a way that it doesn't need to do the loop exit test at every unrolled step.
+The result of this is that, in the limit,
+GNU grep averages fewer than 3 x86 instructions executed for each input byte it actually looks at (and it skips many bytes entirely).
+
+See ["Fast String Searching"](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.13.9460&rep=rep1&type=pdf),
+by Andrew Hume and Daniel Sunday,
+in the November 1991
+
+you also need fast input.
+
+GNU grep uses raw Unix input system calls and avoids copying data after reading it.
+
+Moreover, GNU grep AVOIDS BREAKING THE INPUT INTO LINES.
+Looking for newlines would slow grep down by a factor of several times,
+because to find the newlines it would have to look at every byte!
+
+So instead of using line-oriented input, GNU grep reads raw data into
+a large buffer, searches the buffer using Boyer-Moore, and only when
+it finds a match does it go and look for the bounding newlines.
+(Certain command line options like -n disable this optimization.)
+
+
+
+GNU grep makes the *kernel* avoid handling every byte of the input,
+by using mmap() instead of read() for file input.
+
+using read() caused most Unix versions to do extra copying.
+Since GNU grep passed out of my hands, it appears that use of mmap became non-default, but you
+can still get it via --mmap.  And at least in cases where the data
+is already file system buffer caches, mmap is still faster:
+
+~~~
+  $ time sh -c 'find . -type f -print | xargs grep -l 123456789abcdef'
+  real	0m1.530s
+  user	0m0.230s
+  sys	0m1.357s
+  $ time sh -c 'find . -type f -print | xargs grep --mmap -l 123456789abcdef'
+  real	0m1.201s
+  user	0m0.330s
+  sys	0m0.929s
+~~~
+
+
+## Summary:
+
+- Use Boyer-Moore (and unroll its inner loop a few times).
+
+- Roll your own unbuffered input using raw system calls.  Avoid copying
+  the input bytes before searching them.  (Do, however, use buffered
+  *output*.  The normal grep scenario is that the amount of output is
+  small compared to the amount of input, so the overhead of output
+  buffer copying is small, while savings due to avoiding many small
+  unbuffered writes can be large.)
+
+- Don't look for newlines in the input until after you've found a match.
+
+- Try to set things up (page-aligned buffers, page-sized read chunks,
+  optionally use mmap) so the kernel can ALSO avoid copying the bytes.
+
+
+<br><br>

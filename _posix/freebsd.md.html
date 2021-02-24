@@ -1,0 +1,298 @@
+---
+title: Freebsd
+layout : dep
+date: 2015-08-02
+---
+
+
+
+# FreeBSD tips
+
+post-installation
+~~~
+## edit ttys
+> vim /etc/ttys
+
+## vid
+> vidcontrol -i mode
+> vidcontrol MODE_280
+
+## let's see inside of `/etc/rc`
+> ls /etc/rc
+
+## sysctl
+> sysctl hw                 // show hw(hardware variables) tree
+> sysctl -n hw.pagesize     // show only R-value
+> sysctl kern               // show kern(kernel variables) tree
+> sysctl -n kern.hostname   // show only R-value
+> sysctl vfs                // show virtual file system variables
+> sysctl security           // show security variables
+
+> rcorder /etc/rc.d/*       // sort rc order by dependency
+
+# adduser
+    username	ログインID
+    Full name	ユーザのフルネーム
+    Uid
+    Login group
+    Invite user into other groups?	suでスーパーユーザになって作業することがあるのでwheel operator
+    Login class
+    Shell	ログインシェル。sh, csh, tcsh,
+    Home directory
+    Home directory permissions
+    Use password-based authentication?
+    Use an empty password?
+    Use a random password?
+    Enter password	パスワードの入力。
+    Enter password again	確認のためもう一度入力。
+    Lock out the account after creation?
+
+
+# reboot
+
+## sendmail disable
+> vi /etc/rc.conf
+sendmail_enable="NO"
+sendmail_submit_enable="NO"
+sendmail_outbound_enable="NO"
+sendmail_msp_queue_enable="NO"
+
+
+# ftp server (ports)
+> vi /etc/make.conf
+MASTER_SITE_OVERRIDE=ftp://ftp.jp.freebsd.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}/
+
+~~~
+
+# 共有メモリ
+
+デフォルトの共有メモリはだいぶ少なめに設定されているので、
+最近の計算機なら増やしておいたほうがパフォーマンスがよくなるそうで。
+
+~~~
+> vi /etc/sysctl.conf
+kern.ipc.shmmax=1073741824
+kern.ipc.shmall=262144
+
+## 目安
+## kern.ipc.shmmaxにバイト単位での搭載メモリの半分
+## kern.ipc.shmallはkern.ipc.shmmaxの1/4096。
+## 搭載メモリ確認
+## > grep memory /var/run/dmesg.boot
+~~~
+
+
+
+~~~
+## Update FreeBSD OS
+> freebsd-update fetch
+> freebsd-update install
+
+## ports collectionの更新
+> portsnap fetch
+> portsnap extract
+
+## pkgのインストール
+> pkg bootstrap
+
+## portmasterのインストール
+> pkg install ports-mgmt/portmaster
+> reboot
+
+## psearch
+> pkg install ports-mgmt/psearch
+
+## 日本語フォント
+> pkg install ja-font-std
+
+## 日本語入力環境
+> pkg install ja-ibus-anthy
+
+## KDE4と日本語モジュール
+> pkg install x11/xorg
+> pkg install x11/kde4 japanese/kde4-l10n
+
+> reboot
+~~~
+
+
+
+Xのデバイス設定ファイル
+~~~
+# Xorg -configure
+画面が真っ暗になったら
+# shutdown -r nowで再起動。
+
+# cp ~/xorg.conf.new /etc/X11/xorg.conf
+# vi /etc/X11/xorg.conf
+Section "Module"に以下を追記。
+Load "freetype"
+Section "Files"に以下を追記。
+FontPath "/usr/local/lib/X11/fonts/bitstream-vera/"
+~~~
+
+Xに必要なdaemon
+~~~
+Xに必要なdaemonが自動で起動するように/etc/rc.confに追記。
+/etc/rc.conf
+dbus_enable="YES"
+hald_enable="YES"
+polkitd_enable="YES"
+日本語キーボード配列にする
+
+# cp /usr/local/share/hal/fdi/policy/10osvendor/10-x11-input.fdi /usr/local/etc/hal/fdi/policy/
+以下を追記。
+/usr/local/etc/hal/fdi/policy/10-x11-input.fdi
+<match key="info.capabilities" contains="input.keyboard">
+    <!-- ここから -->
+    <merge key="input.x11_options.XkbRules" type="string">xorg</merge>
+    <merge key="input.x11_options.XkbLayout" type="string">jp</merge>
+    <merge key="input.x11_options.XkbModel" type="string">jp106</merge>
+    <!-- ここまで -->
+</match>
+確認は
+# lshal --show /org/freedesktop/Hal/devices/atkbd_0
+ユーザ権限
+
+そのままだと一般ユーザでは電源を切れないので、
+/usr/local/etc/PolicyKit/PolicyKit.confを編集。
+セキュリティ的にアレだけど、
+サーバとして外部に公開するわけじゃないので気にしないことにした。
+/usr/local/etc/PolicyKit/PolicyKit.conf
+<match user="root">
+  <return result="yes"/>
+</match>
+となっている部分を
+/usr/local/etc/PolicyKit/PolicyKit.conf
+<match user="root|{追加するユーザID}">
+  <return result="yes"/>
+</match>
+
+# startx
+~~~
+
+
+
+<br><br><br>
+
+
+
+# デスクトップ環境の起動設定
+
+タブ区切りで以下を追記。
+~~~
+/etc/fstab
+proc    /proc   procfs  rw      0       0
+~~~
+
+
+~~~
+/etc/rc.conf
+local_startup="${local_startup} /usr/local/kde4/etc/rc.d"
+kdm4_enable="YES"
+~~~
+
+ユーザごとに ~/.xprofile
+~~~
+~/.xprofile
+#!/bin/sh
+export LANG=ja_JP.UTF-8
+export XIM=ibus
+export GTK_IM_MODULE=ibus
+export QT_IM_MODULE=xim
+export XMODIFIERS=@im=ibus
+export XIM_PROGRAM="ibus-daemon"
+export XIM_ARGS="-r --daemonize --xim"
+~~~
+
+
+一人ログインするだけで、
+システムで同時に開けるファイル数の制限に近い数に達するので、
+初期値から増やしておく。
+~~~
+/etc/sysctl.conf
+kern.maxfiles=65536
+~~~
+
+
+
+~~~
+## sshd
+
+> service sshd start
+
+## sshdの自動開始設定
+> vi /etc/rc.conf
+sshd_enable="YES"
+
+## sshd configuration
+
+> vi /etc/ssh/sshd_config
+Port xx             # Port を 22 から xx へ変更
+Protocol 2          # SSH2 プロトコルを使う
+PermitRootLogin no  # root でのログインを許可しない
+PubkeyAuthentication yes    # 公開鍵認証
+PasswordAuthentication no   # パスワード認証を使わない
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UseDNS no           # DNS逆引きしない
+~~~
+
+
+# procfs in FreeBSD
+
+
+
+Why is procfs deprecated in favor of procstat?
+
+
+
+Simply put, procfs on FreeBSD has been neglected.
+There isn't a lot of attention being given to it,
+and the only modifications in recent months/years have been
+generally minor compared to the rest of the tree.
+You can review some of the commits yourself:
+
+http://www.freebsd.org/cgi/cvsweb.cgi/src/sys/fs/procfs/
+
+Others like yourself have asked what the state of procfs is, going back
+as far as 2005.  Be sure to read the reply as well:
+
+http://unix.derkeiler.com/Mailing-Lists/FreeBSD/questions/2005-05/2607.html
+
+There was also a commit comment circa 2008 to the RELENG_7 branch that
+indicates procfs is "now-deprecated":
+
+http://freshbsd.org/2008/04/10/20/54/02
+
+...yet there have been commits as recent as 2009 to fix important
+utilities -- gcore(1) and gdb(1) -- to work without procps, which adds
+further evidence that procfs may have been hastily forgotten/dropped
+without a full review of what relied upon it:
+
+http://freshbsd.org/2009/12/19/19/30/27
+
+Alternate solutions or changes to procfs have been mentioned over the
+years, such as in 2008 by a user on freebsd-arch, who received no reply:
+
+http://lists.freebsd.org/pipermail/freebsd-arch/2008-March/007750.html
+
+Finally, there is an official maintainer of procfs
+(see procfs.c at the first link, then look for the Sep 23 2009 commit).
+You may want to privately ask that individual what the current state of affairs is.
+
+The /sysctl filesystem idea I've had I still feel is the best solution,
+but *should not* be based on the procfs code (they're two different
+beasts, despite having similar functionality).  It should be written
+from scratch.
+
+I was quite serious when I said I wish I could write such a thing,
+because the benefits of such are huge, especially when it comes to *any*
+form of counter/statistic-gathering or monitoring capability on FreeBSD.
+Honestly, it's a project that seems perfect for GSoC.
+
+--
+| Jeremy Chadwick                                   jdc at parodius.com |
+| Parodius Networking                       http://www.parodius.com/ |
+| UNIX Systems Administrator                  Mountain View, CA, USA |
+| Making life hard for others since 1977.               PGP 4BD6C0CB |

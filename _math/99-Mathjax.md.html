@@ -1,0 +1,480 @@
+---
+title: MathJax
+layout: journal
+date: 2015-04-15
+---
+
+<br><br><br>
+
+<center>[MATHJAX QUICK REFERENCE](/etc/quick-mathjax.html)</center>
+
+<br><br>
+
+# Quickview
+
+## Symbols
+
+\aleph	  	ℵ	   	\hbar	  	ℏ	   	\imath	  	ı
+\jmath	  	ȷ	   	\ell	  	ℓ	   	\infty	  	∞
+\Re	  	ℜ	   	\Im	  	ℑ	   	\partial	  	∂
+\nabla	  	∇	   	\wp	  	℘	   	\emptyset	  	∅
+\top	  	⊤	   	\bot	  	⊥	   	\angle	  	∠
+\triangle	  	△	   	\forall	  	∀	   	\exists	  	∃
+\neg	  	¬	   	\backslash	  	∖
+
+\Box	  	◻	   	\Diamond	  	◊
+\square	  	◻	   	\blacksquare	  	◼
+\lozenge	  	◊	   	\blacklozenge	  	⧫
+\bigstar	  	★	   	\triangledown	  	▿
+\blacktriangle	  	▴	   	\blacktriangledown	  	▾
+
+
+## Binary Operator
+
+\times	  	×	   	\div	  	÷	   	\pm	  	±
+\mp	  	    ∓	   	\setminus	∖	   	\cdot	  	⋅
+\ast	  	∗	   	\star	  	⋆	   	\bullet	  	∙
+\circ	  	∘	   	\bigcirc	◯	   	\oplus	  	⊕
+\ominus	  	⊖	   	\otimes	  	⊗	   	\oslash	  	⊘
+\odot	  	⊙	   	\wedge	  	∧	   	\vee	  	∨
+\cap	  	∩	   	\cup	  	∪	   	\uplus	  	⊎
+\sqcup	  	⊔	   	\amalg	  	⨿	   	\dagger	  	†
+\ddagger	‡	   	\rtimes	  	⋊	   	\ltimes	  	⋉
+
+
+## Relation
+
+ \doteq     ≐       \neq        ≠       \equiv      ≡
+ \simeq     ≃       \approx     ≈       \sim        ∼   \nsim   ≁
+ \fallingdotseq ≒   \risingdotseq   ≓   \doteqdot   ≑
+ \mid       ∣       \parallel   ∥       \nparallel  ∦
+ \succ      ≻       \prec       ≺       \succeq     ⪰   \preceq     ⪯
+ \geq       ≥       \leq        ≤       \supseteqq  ⫆   \subseteqq  ⫅
+ \supset    ⊃       \subset     ⊂       \supseteq   ⊇   \subseteq   ⊆
+ \in        ∈       \ni         ∋       \notin      ∉
+ \perp      ⊥       \not        ⧸       \because    ∵   \therefore  ∴
+ \geqq      ≧       \leqq       ≦       \gtrsim     ≳   \lesssim    ≲
+ \ggg       ⋙       \lll        ⋘      \gg          ≫   \ll     ≪
+
+
+## Operator
+
+\sum	  	∑	   	\prod	  	∏	   	\coprod	  	∐
+\bigcap	  	⋂	   	\bigcup	  	⋃	   	\biguplus	  	⨄
+\bigsqcup	⨆	   	\bigwedge	  	⋀	   	\bigvee	  	⋁
+\bigoplus	⨁	   	\bigotimes	  	⨂	   	\bigodot	  	⨀
+\int	  	∫	   	\oint	  	∮	   	\smallint	  	∫
+
+\iint	  	∬	   	\iiint	  	∭
+\iiiint	  	⨌	   	\idotsint	  	∫⋯∫
+
+## Logic
+
+- negation $ \lnot $ : ` \lnot `
+- conjunction $ \land $ : `\land`
+- disjunction $ \lor $ : ` \lor `
+- implication
+    - $ \to $ : ` \to `
+    - $ \Rightarrow p $ : ` `\Rightarrow `
+- models $ \models $ : ` \models `
+- equivalence
+    - $ \equiv $ : `\equiv`
+    - $ \Leftrightarrow $ : `\Leftrightarrow`
+
+## Arrow
+
+\rightarrow	  	→	  	\leftarrow	  	←
+\Rightarrow	  	⇒	  	\Leftarrow	  	⇐
+\leftrightarrow	  	↔	  	\Leftrightarrow	  	⇔
+\uparrow	  	↑	  	\downarrow	  	↓
+\Uparrow	  	⇑	  	\Downarrow	  	⇓
+\updownarrow	  	↕	  	\Updownarrow	  	⇕
+\longrightarrow	  	⟶	  	\longleftarrow	  	⟵
+\Longrightarrow	  	⟹	  	\Longleftarrow	  	⟸
+\longleftrightarrow	  	⟷	  	\Longleftrightarrow	  	⟺
+\mapsto	  	↦
+
+
+# derivaration tree
+
+$$
+{\displaystyle
+  \frac{hoge}
+  {moge}
+comment}
+$$
+
+~~~
+$$
+{\displaystyle
+  \frac{hoge}
+  {moge}
+comment}
+$$
+~~~
+
+$$
+{\displaystyle \frac{preposion1}
+  {\displaystyle \frac{preposion2}
+    {conclusion}
+     comment2}
+commnet1}
+$$
+
+~~~
+$$
+{\displaystyle \frac{preposion1}
+  {\displaystyle \frac{preposion2}
+    {conclusion}
+     comment2}
+commnet1}
+$$
+~~~
+
+
+# Matrix
+
+~~~
+$$
+A = \left(
+  \begin{array}{ccc}
+    a & b & c \\
+    d & e & f \\
+    g & h & i
+  \end{array}
+\right)
+$$
+~~~
+
+$$
+A = \left(
+  \begin{array}{ccc}
+    a & b & c \\\
+    d & e & f \\\
+    g & h & i
+  \end{array}
+\right)
+$$
+
+
+
+<br/>
+<hr/>
+<br/>
+
+# diagram
+
+~~~
+$$
+\begin{array}{ccccccccc}
+0 & \xrightarrow{i} & A & \xrightarrow{f} & B & \xrightarrow{q} & C & \xrightarrow{d} & 0\\
+
+\downarrow & \searrow & \downarrow & \nearrow & \downarrow & \searrow & \downarrow & \nearrow & \downarrow\\
+
+0 & \xrightarrow{j} & D & \xrightarrow{g} & E & \xrightarrow{r} & F & \xrightarrow{e} & 0
+\end{array}
+$$
+~~~
+
+
+$$
+\begin{array}{ccccccccc}
+0 & \xrightarrow{i} & A & \xrightarrow{f} & B & \xrightarrow{q} & C & \xrightarrow{d} & 0\\
+
+\downarrow & \searrow & \downarrow & \nearrow & \downarrow & \searrow & \downarrow & \nearrow & \downarrow\\
+
+0 & \xrightarrow{j} & D & \xrightarrow{g} & E & \xrightarrow{r} & F & \xrightarrow{e} & 0
+\end{array}
+$$
+
+
+~~~
+$$
+\newcommand{\ra}[1]{\!\!\!\!\!\!\!\!\!\!\!\!\xrightarrow{\quad#1\quad}\!\!\!\!\!\!\!\!}
+\newcommand{\da}[1]{\left\downarrow{\scriptstyle#1}\vphantom{\displaystyle\int_0^1}\right.}
+%
+\begin{array}{llllllllllll}
+0 & \ra{f_1} & A & \ra{f_2} & B & \ra{f_3} & C & \ra{f_4} & D & \ra{f_5} & 0 \\
+\da{g_1} & & \da{g_2} & & \da{g_3} & & \da{g_4} & & \da{g_5} & & \da{g_6} \\
+0 & \ra{h_1} & 0 & \ra{h_2} & E & \ra{h_3} & F & \ra{h_4} & 0 & \ra{h_5} & 0 \\
+\end{array}
+$$
+~~~
+
+
+$$
+\newcommand{\ra}[1]{\!\!\!\!\!\!\!\!\!\!\!\!\xrightarrow{\quad#1\quad}\!\!\!\!\!\!\!\!}
+\newcommand{\da}[1]{\left\downarrow{\scriptstyle#1}\vphantom{\displaystyle\int_0^1}\right.}
+%
+\begin{array}{llllllllllll}
+0 & \ra{f_1} & A & \ra{f_2} & B & \ra{f_3} & C & \ra{f_4} & D & \ra{f_5} & 0 \\
+\da{g_1} & & \da{g_2} & & \da{g_3} & & \da{g_4} & & \da{g_5} & & \da{g_6} \\
+0 & \ra{h_1} & 0 & \ra{h_2} & E & \ra{h_3} & F & \ra{h_4} & 0 & \ra{h_5} & 0 \\
+\end{array}
+$$
+
+# new command
+
+~~~
+$ \newcommand{\SES}[3]{ 0 \to #1 \to #2 \to #3 \to 0 } $
+$$ \SES{A}{B}{C} $$
+~~~
+
+$ \newcommand{\SES}[3]{ 0 \to #1 \to #2 \to #3 \to 0 } $
+$$ \SES{A}{B}{C} $$
+
+$ 1 + { {1} \over { 1 \over 2 } } $
+
+
+# trump
+
+~~~
+$ \spadesuit, \heartsuit, \diamondsuit, \clubsuit $
+~~~
+$ \spadesuit, \heartsuit, \diamondsuit, \clubsuit $
+
+
+
+# vector
+
+
+$$ \vec{a} = (a_1, a_2, \cdots, a_n) $$
+
+~~~
+\vec{a} = (a_1, a_2, \cdots, a_n)
+~~~
+
+$$ \overrightarrow{ab} $$
+
+~~~
+    \overrightarrow{ab}
+~~~
+￼
+
+
+$$
+A = \left(
+  \begin{array}{c}
+    a_1 \\
+    a_2 \\
+    \vdots \\
+    a_n
+  \end{array}
+\right)
+$$
+
+~~~
+A = \left(
+  \begin{array}{c}
+    a_1 \\
+    a_2 \\
+    \vdots \\
+    a_n
+  \end{array}
+\right)
+~~~
+￼
+
+- $ |x| $ : `|x|`
+- $ \|x\| $ : `\|x\|`
+
+
+- $ \perp $ : ` \perp `
+- $ \parallel $ : ` \parallel `
+
+
+- $ {} ^ t \! A $ : `{} ^ t \! A`
+- $ A ^ {\mathrm{T}} $ : `A ^ {\mathrm{T}}`
+
+
+- $ \cdot $ :` \cdot `
+- $ \times $ : ` \times `
+- $ \ddot{C} $ : `\ddot{C}`
+- $ \dot{B} $ : `\dot{B}`
+- $ \overline{A} $ : ` \overline{A} `
+
+￼
+# Greek letter
+
+\alpha	  	α	   	\beta	  	β	   	\gamma	  	γ
+\delta	  	δ	   	\epsilon	  	ϵ	   	\zeta	  	ζ
+\eta	  	η	   	\theta	  	θ	   	\iota	  	ι
+\kappa	  	κ	   	\lambda	  	λ	   	\mu	  	μ
+\nu	  	ν	   	\xi	  	ξ	   	o	  	o
+\pi	  	π	   	\rho	  	ρ	   	\sigma	  	σ
+\tau	  	τ	   	\upsilon	  	υ	   	\phi	  	ϕ
+\chi	  	χ	   	\psi	  	ψ	   	\omega	  	ω
+
+\Gamma	  	Γ	   	\Delta	  	Δ	   	\Theta	  	Θ
+\Lambda	  	Λ	   	\Xi	  	Ξ	   	\Pi	  	Π
+\Psi	  	Ψ	   	\Sigma	  	Σ	   	\Phi	  	Φ
+\Omega	  	Ω
+\varepsilon	  	ε	   	\vartheta	  	ϑ	   	\varpi	  	ϖ
+\varrho	  	ϱ	   	\varsigma	  	ς	   	\varphi	  	φ
+
+\varGamma	  	Γ	   	\varUpsilon	  	Υ	   	\varPhi	  	Φ
+\varPsi	  	Ψ	   	\varOmega	  	Ω
+
+{\boldsymbol \alpha}	  	α
+{\boldsymbol \beta}	  	β
+{\boldsymbol \gamma}	  	γ
+
+
+
+
+# Math Functions
+
+\cos	  	cos	   	\sin	  	sin	   	\tan	  	tan
+\cosh	  	cosh	   	\sinh	  	sinh	   	\tanh	  	tanh
+\arccos	  	arccos	   	\arcsin	  	arcsin	   	\arctan	  	arctan
+\exp	  	exp	   	\det	  	det	   	\log	  	log
+\ln	  	ln	   	\lim	  	lim	   	\arg	  	arg
+\max	  	max	   	\min	  	min	   	\sup	  	sup
+\inf	  	inf	   	\hom	  	hom	   	\ker	  	ker
+
+a \bmod p	  	a mod p	   	a \pmod{p}	  	a ( mod p )
+
+
+# braces
+
+
+\{	  	{	  	\}	  	}
+\langle	  	⟨	  	\rangle	  	⟩
+\lgroup	  	⟮	  	\rgroup	  	⟯
+
+
+\overbrace{expr} ⏞<br>
+\underbrace{expr} ⏟<br>
+\overline{expr}	⎯⎯⎯<br>
+\underline{expr} ⎯⎯⎯<br>
+
+e.g.
+~~~
+ \overbrace{1+2+ \cdots +n}^{n\text{個}}=\frac{(n+1)n}{2}
+~~~
+
+\[
+ \overbrace{1+2+ \cdots +n}^{n\text{個}}=\frac{(n+1)n}{2}
+\]
+
+~~~
+ \underbrace{1+1+ \cdots +1}_{N\text{個}}=N
+~~~
+
+\[
+ \underbrace{1+1+ \cdots +1}_{N\text{個}}=N
+\]
+
+
+
+
+
+\ldots	  	…	  	f(x1,…,xn) <br>
+\cdots	  	⋯	  	∑n=1Nn=1+2+⋯+N <br>
+\ddots	  	⋱     <br>
+\vdots	  	⋮
+
+
+# what is DVI
+
+TEX はマークアップ言語処理系であり、
+チューリング完全性を備えた関数型言語でもある。
+文章そのものと文章の構造を指定する命令が記述されたテキストファイルを読み込み、
+そこに書かれた命令に従って文章を組版し、組版結果を DVI 形式のファイルに書き出す。
+DVI 形式とは、装置に依存しない (device-independent) 中間形式のことである。
+
+
+
+
+
+
+
+# TeXでシェルピンスキー・ギャスケットを作る
+
+1999年 東大理系数学 第5問より
+次の問題は，1999年東大理系数学の第5問です。
+
+1. (1)k を自然数とする。m を m=2k とおくとき，0 < n < m を満たすすべての整数 n について，二項係数 mCn は偶数であることを示せ。
+2.
+3. (2)以下の条件を満たす自然数 m をすべて求めよ。 条件：0≦n≦m を満たすすべての整数 n について二項係数 mCn は奇数である。
+4. 
+シェルピンスキー・ギャスケット
+この問題の背景には，フラクタル図形として有名なシェルピンスキー・ギャスケットというものがあります。
+パスカルの三角形において，偶奇で色分けすると，シェルピンスキー・ギャスケット（の有限版）が現れます。本問はこの現象を題材とした問題となっています。
+そこで，TeXでパスカルの三角形 (mod 2) を描いてみました。二項係数が偶数のところは青，奇数のところは赤で表示されています。
+本問の(2)で問われている，全ての二項係数 mCn が奇数となるような行が，m=2k−1 (k∈ℕ) のときに登場することが見てとれますね。
+TeXでの出力結果
+32段（ 0C0 から 31C31 まで）
+ 
+64段（ 0C0 から 63C63 まで）
+ 
+128段（ 0C0 から 127C127 まで）
+ 
+# TeXソース
+
+ 生成PDFを図のサイズちょうどでクロップするために preview.sty を用いています。
+これは pLaTeX + dvipdfmx のワークフローでは動きません*1ので，pdfLaTeX で
+pdflatex Sierpinski.tex
+としてコンパイルしてください。
+ 
+~~~
+\documentclass{minimal}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{pgffor}
+\usepackage{etoolbox}
+\usepackage{varwidth}
+\usepackage[active,tightpage]{preview}
+
+\PreviewEnvironment{varwidth}
+\setlength{\PreviewBorder}{0pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\fboxsep}{2pt}
+
+\newbox\ZERO
+\newbox\ONE
+\def\outputletter#1
+  \ifvmode\leavevmode\fi
+  \ifcase#1\copy\ZERO\or\copy\ONE\fi
+
+
+\begin{document}
+
+\setbox\ZERO\hbox{\colorbox[RGB]{170,255,255}{\makebox[7pt][c]{\texttt{0}}}}
+\setbox\ONE\hbox{\colorbox{red}{\textcolor{white}{\makebox[7pt][c]{\texttt{1}}}}}
+
+\begin{varwidth}{\maxdimen}
+\begin{center}
+\setlength{\lineskiplimit}{-\maxdimen}
+\setlength{\lineskip}{0pt}
+\setlength{\baselineskip}{10pt}
+
+\outputletter{1}
+
+\outputletter{1}\outputletter{1}
+
+\csnumgdef{C0}{1}
+\csnumgdef{C1}{1}
+\foreach \n in {2,...,127}
+  \outputletter{1}%
+  \csnumgdef{t}{\n-1}%
+  \csnumgdef{p}{1}%
+  \foreach \i in {1,...,\t}
+    \csnumgdef{q}{\csname C\i\endcsname}%
+    \csnumgdef{C\i}{\p+\q}%
+    \ifnum\csname C\i\endcsname>1
+      \csnumgdef{C\i}{\csname C\i\endcsname - 2}%
+    \fi
+    \csnumgdef{p}{\q}%
+    \outputletter{\csname C\i\endcsname}%
+  }%
+  \csnumgdef{C\n}{1}%
+  \outputletter{1}\par
+}
+\end{center}
+\end{varwidth}
+\end{document}
+~~~
+
+図のクロップのために preview.sty を用いる部分は見栄えの調整であって，本質的ではありません。そこを外し，geometry.sty などで十分に大きい用紙サイズを確保すれば，pLaTeX + dvipdfmx のワークフローでも問題なく機能するはずです。

@@ -1,0 +1,67 @@
+---
+title: zip & unzip
+layout: dep
+date: 2016-09-09
+---
+
+
+
+
+
+
+# decompress
+
+<br>
+
+| format | command | dependency |
+|:--- | :---| :--- |
+| tar + gzip | `$ tar zxvf ~.tar.gz (.tgz)`  | GNU tar |
+| tar + bz2 | `$ tar zxvf ~.tar.bz` | |
+| tar + xz  | `$ tar Jxvf ~.tar.xz` | xz-utils |
+| tar + z | `$ tar zxvf ~tar.Z` | |
+| | | |
+| tar   | `$ tar xvf ~.tar` | |
+| gzip  | `$ gzip -dc ~.gz` | |
+| zip   | `$ unzip ~.zip` | |
+| bzip2 | `$ bzip2 -dc (bunzip2 -c) ~.bz2` | |
+| xz    | `$ xz -dv ~.xz` | xz-utils |
+| lzh   | `$ lha e ~.lzh ` | or `$ lha x ~.lzh` |
+| 7zip  | `$ 7z x ~.7z` | p7zip |
+| rar   | `$ unrar x ~.rar` | unrar |
+| z | `$ uncompress ~.z` | |
+| arj | `$ unarj ~.arj` | |
+| cab | `$ cabextract ~.cab` | cabextract |
+
+
+
+# compress
+
+<br>
+
+| formant | command | dependency |
+|:--- |:--- |:--- |
+| tar + gzip | `$ tar -zcvf backup.tar.gz file1 file2 ..` | |
+| tar + bz2 | `$ tar Icvf backup.tar.bz2 file1 file2 ..` | |
+| tar + xz  | `$ tar -Jcvf backup.tar.xz file` | xz-utils |
+| tar + z   | `$ tar Zcvf compress.tar.Z file1 file2` | |
+| | | |
+| tar   | `$ tar -cvf ~.tar file1 file2` | (single tar does not compress) |
+| gzip  | `$ gzip file` | |
+| zip   | `$ zip ~.zip file1 file2` | |
+| bzip2 | `$ bzip2 ~.bz2 file` | |
+| xz    | `$ xz -v ~.xz` | xz-utils |
+| lzh   | `$ lha a ~.lzh file1 file2` | |
+| 7zip  | `$ 7z a ~.7z file/` | p7zip |
+| rar   | `$ rar a ~.rar file` | rar |
+| z | `$ compress -vf file` | |
+| cab | `$ lcal -r file/ ~.cab` | lcab |
+
+
+
+## compression rate
+
+bzip2 > gzip > compress
+
+## compressing speed
+
+compress > gzip >(1/4) bzip2

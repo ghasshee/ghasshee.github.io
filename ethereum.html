@@ -1,0 +1,26 @@
+---
+layout: default
+title: Eth
+categories: /ethereum
+permalink: /ethereum/
+---
+
+<div class="home">
+
+    <br><br><h1 class=post-title> Ethereum wiki page </h1>
+    <h2> [Japanese] </h2><br>
+
+    Translations are almost all. <br><br><br>
+
+    <a href=http://ethereum.org/> Ethereum Org </a><br>
+    <a href=http://www.github.com/ethereum/wiki/wiki> Ethereum Wiki </a><br><br><br><br>
+
+    <ul class="post-list">
+        {% for post in site.ethereum %}
+        <li><a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <p class="access-counter"><img src="http://www.f-counter.net/j/24/1438150503/"></p>
+
+</div>

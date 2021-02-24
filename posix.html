@@ -1,0 +1,21 @@
+---
+layout: default
+title: Posix
+categories: /posix
+permalink: /posix/
+---
+
+<div class="home">
+
+    <br><h1 class="post-title"> Posix </h1><br><br>
+
+    <div class="grid post-list">
+        <br>
+        {% for post in site.posix %}
+        <div class="unit half">
+        <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>

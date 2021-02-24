@@ -1,0 +1,112 @@
+---
+title: Virtual File System
+layout: dep
+---
+
+Virtual File System:
+
+- it hide the differences among different file system.
+- an abstract interface which handles All Files.
+
+
+struct inode (linux/fs.h):
+
+- file : inode = 1 : 1
+
+~~~
+struct hlist_node   i_hash
+struct list_head    i_list
+struct list_head    i_sb_list           // sb : super_block
+
+
+struct address_space (linux/fs.h):
+
+- file : address_space = 1 : 1
+- managing address ?
+
+
+struct dentry (linux/dcache.h) :
+
+- dentry denotes 'directry entry'
+
+~~~
+d_parent
+d_name
+d_inode
+...
+
+~~~
+
+
+struct file (linux/fs.h) :
+
+- file means an 'opened file'
+
+~~~
+struct list_head    f_u.fu_list         // list from superblock
+struct rcu_head     f_u.fu_rcuhead      // list for RCU
+struct dentry *     f_dentry
+struct vfsmount     f_vfsmnt
+struct file_operations *    f_op
+atomic_t            f_count             // reference count
+unsigned int        f_flags
+mode_t              f_mode
+loff_t              f_pos               // file offset
+struct fown_struct  f_owner             // for processing signals
+unsigned int        f_uid
+unsigned int        f_gid
+struct file_ra_state    f_ra            // ra : read ahead 先読み制御用
+unsigned long       f_version
+void *              f_security          // for SELinux !!
+void                private_data        // for tty driver
+struct list_head    f_ep_links          // for epoll
+spinlock_t          f_ep_lock           // for epoll
+struct address_space *  f_mapping
+~~~
+
+struct super_block (linux/fs.h)
+
+- a fileSystem : super_block = 1 : 1
+- an abstract interface common for all file systems
+
+
+
+struct vfsmount (linux/mount.h) :
+
+- locates mounted file system
+
+
+
+# open file
+
+~~~
+struct task_struct
+    |
+    +-  files   --->    struct files_struct fdtab
+                            |
+                            +-  fd      --->    struct file * []
+                                                ( file descripter means each index )
+~~~
+
+
+# epoll
+
+from https://jvns.ca/blog/2017/06/03/async-io-on-linux--select--poll--and-epoll/
+
+Servers need to watch a lot of file descriptors
+
+Suppose you’re a webserver. Every time you accept a connection with the accept system call (here’s the man page), you get a new file descriptor representing that connection.
+
+If you’re a web server, you might have thousands of connections open at the same time. You need to know when people send you new data on those connections, so you can process and respond to them.
+
+You could have a loop that basically does:
+
+~~~
+for x in open_connections:
+    if has_new_input(x):
+        process_input(x)
+~~~
+
+The problem with this is that it can waste a lot of CPU time. Instead of spending all CPU time to ask “are there updates now? how about now? how about now? how about now?“, instead we’d rather just ask the Linux kernel “hey, here are 100 file descriptors. Tell me when one of them is updated!“.
+
+The 3 system calls that let you ask Linux to monitor lots of file descriptors are poll, epoll and select. Let’s start with poll and select because that’s where the chapter started.

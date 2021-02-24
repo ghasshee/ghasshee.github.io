@@ -1,0 +1,70 @@
+---
+title: Math Softwares
+layout: journal
+---
+
+
+# gnuplot
+
+## example
+
+~~~
+$ gnuplot
+> set terminal qt
+> set parametric
+> set urange [a:b]
+> set vrange [c:d]
+> set title ""
+> splot x(u,v), y(u,v), z(u,v)
+~~~
+
+
+
+2d-plot
+
+~~~
+> set parametric
+> set terminal png
+> set samples 1000000
+> set output "sinlogcosexp.png"
+> set trange [0:4.9]
+> plot sin(log(t))*cos(exp(t)), sin(exp(t))*cos(log(t))
+~~~
+
+![](/image/gnuplot/sinlogcosexp.png)
+
+this is
+
+
+# sage
+
+# gap
+
+
+
+## Gröbner basis
+
+caclculate Gröbner basis $G$
+
+~~~
+gap>
+gap> Q := Rationals;;
+gap> x := Indeterminate(Q, "x");;
+gap> y := Indeterminate(Q, "y");;
+gap> ideal := [x^3 - 3*x^2 - y + 1, -x^2 + y^2 - 1];;
+gap> lex := MonomialLexOrdering(x,y);;
+gap> G := ReducedGroebnerBasis(ideal, lex);;
+gap> Display(G);
+[ y^5+y^4-11*y^3-17*y^2+9*y+17, -y^4+x*y+11*y^2-x+3*y-13, x^2-y^2+1 ]
+~~~
+
+$G$
+
+- $ y^5 + y^4 - 11 y ^ 3 - 17 y ^ 2 + 9 y + 17 $
+- $ - y ^ 4 + xy + 11 y ^ 2 - x+ 3y - 13 $
+- $ x ^ 2 - y ^ 2 + 1 $
+
+is Gröbner basis of
+
+- $ x^3-3x^2-y+1 $
+- $ -x^2+y^2-1 $

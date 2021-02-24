@@ -1,0 +1,62 @@
+---
+title: iso $ \iff $ img
+layout: dep
+---
+
+# iso <-> usb
+
+## img
+
+
+- USB : Universal Serial Bus : 情報の通りみち
+- "USB boot" ; where USB := USB Flash Drive
+
+USB boot : BIOS は、USB STACK protocol を含む組み込みファームウェアを実行する。
+USB 接続が確立されると、制御メカニズムは抽象化され、HDD boot と同様のものとして扱われる。
+なので、MasterBootRecord を読みにいく。
+
+## iso
+
+- 抽象DISK : not the same layout with HDD
+
+CD boot : CDROM は、 ISO 9660 Standard　において定められています。
+
+## conclusion
+~~~
+CD 用の ISO image と USB 用の Hybrid ISO/IMG image は別物で相互変換には修正が必要。
+~~~
+
+## original source sentence　　
+
+First of all,
+USB means Universal Serial Bus.
+It is a standard for a control and data bus,
+just like PCIe, PCI, EISA and ISA are all buses.
+USB is not a device,
+like a CD or DVD drive.
+(Optical drives typically use SATA or IDE buses with the ATA protocol.)
+When you use or refer to USB,
+there is probably an attached device (aka USB gadget) that you are actually referring to.
+In this case you are probably referring to
+USB flash drives, which essentially __emulate a typical hard disk drive__ .
+If the PC's BIOS supports booting from a USB device,
+then that means that the BIOS has embedded firmware that includes a USB protocol stack,
+and can control a target device like a flash drive over the Universal Serial Bus.
+
+
+
+After the USB handshake protocol is established between the USB host (the PC that needs to boot) and the USB gadget (the flash drive), the control and data mechanism provided by USB can be abstracted away, and upper layers of the BIOS boot code can treat the flash drive just like a HDD. That is, the first sector of the "disk drive" has to be read in order to obtain its Master Boot Record (MBR).
+
+Optical discs do not conform to the PC hard disk layout (there is no MBR at sector zero). In fact there are several formats for optical disks, but the data layout in common use with PCs is the ISO 9660 format for CDs. The requirements for booting from CD/DVD are spelled out in the ISO 9660 standard.
+
+
+The data transfer rate and physical capacity difference between different boot devices essentially become irrelevant if the BIOS supports the device. The I/O characteristics of each supported boot device has to be accounted for, and are handled in the low-level device driver code of the BIOS. Note that most PCs can also boot from the Ethernet network interface card (NIC), and that interface is far more different than CD/DVD versus HDD. Yet the layered approach to software implementation delegates all that low-level I/O and protocol handling to lower layers, and the BIOS can proceed to load & execute the next stage of boot loader. Note that some device differences are parameterized. That is, the device's number of cylinders, heads, sectors/track and sector size are not hard coded in the device drivers, but rather are read from the device, e.g. the BPB in the MBR.
+
+... writing the dvd image (to the USB flash drive) doesn't seem to work.
+The difference between these two media layouts can be dissolved by combining the two into a merged image file that can be copied to either a CD/DVD or a HDD/flash drive. An ISO image (for burning to a CD or DVD to make a bootable disc) can be modified for straight copying to a HDD or USB flash drive to produce a Hybrid ISO/IMG image:
+
+The Hybrid ISO/IMG format is a modification of the standard ISO format to make the image compatible with the expectations of hard drive booting
+
+A standard ISO image typically includes the ISOLINUX boot loader which is loaded by the BIOS using the El Torito booting standard. The Hybrid image replaces the first 512 bytes of the ISO format (which is all binary zeros) with a PC hard drive Master Boot Record (MBR) containing: The stage 1 loader image from GRUB version 0.97, and a partition table with 1 partition that ends at the end of the hybrid image. The remainder of the ISO image is not modified.
+
+Additional sectors are added at the end of the ISO image.

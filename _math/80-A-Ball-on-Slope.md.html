@@ -1,0 +1,61 @@
+---
+title: A ball on slope
+layout: newsmag
+---
+
+
+球がスロープを「転がり落ちる」のと「滑り落ちる」のでは、挙動が異なります。
+
+「転がり落ちる」場合、「回転による慣性モーメント」を考慮します。
+
+# a ball on slope
+
+<br>
+
+- $ \theta $ : the angle between slope and horizon
+- $ H $ : initial Height
+- $ r $ : radius of a ball
+- $ M $ : Mass (質量)
+- $ I $ : inertia moment (慣性モーメント)
+- $ y $ : current height
+- $ s $ : current length progressed (進んだ距離)
+- $ v $ : verocity
+- $ a $ : acceralate
+- $ \omega $ : angular speed (角速度)
+
+<br>
+
+Conservation of energy;
+
+$$ MgH = \frac{1}{2} M v ^ {2} + \frac{1}{2} I \omega ^ {2} + Mgy $$
+
+Inertia moment of a ball is
+
+$$ I = \frac{2}{5} M r ^ {2} $$
+
+So,
+
+$$ MgH = \frac{1}{2} M v ^ {2} + \frac{1}{5} M r ^ {2} \omega ^ {2} + Mgy $$
+
+Because there are no slips, it follows;
+
+$$ v = r \omega $$
+
+So,
+
+$$ MgH = \frac{7}{10} M v ^ {2} + Mgy $$
+
+and differentiate this equation by time $t$
+
+$$ 0 = \frac{7}{5} M v a + M g \dot{y} $$
+
+$s$ is represented by $ \theta $ and height
+
+$$ s \sin{\theta} = H - y $$
+$$ \sin{\theta} = - \dot{y} $$
+
+Hence we get;
+
+$$ Mgv \sin{\theta} = \frac{5}{7} M v a $$
+
+$$ a = \frac{5}{7} g \sin{\theta} $$

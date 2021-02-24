@@ -1,0 +1,10 @@
+{% if page.comments %}
+<div id="disqus_thread"></div>
+<script>(() => {
+        var d=document, s=d.createElement('script');
+        s.src='https://ghasshee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);})();
+</script>
+{% endif %}
+<script id="dsq-count-scr" src="//ghasshee.disqus.com/count.js" async></script>

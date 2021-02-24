@@ -1,0 +1,1201 @@
+---
+title: awk
+layout: dep
+date: 2015-12-11
+---
+
+
+# 列の入れ替え
+
+~~~
+$cat IPs
+
+192.168.11.4
+192.168.11.2
+~~~
+
+~~~
+$ cat IPs | awk '$2="hoge"{print $2,$1}'
+
+hoge 192.168.11.4
+hoge 192.168.11.2
+~~~
+
+
+<br><br>
+
+# awk の擁護
+
+* GNU 版 `gawk` の意味は「のろま」「気の利かない人」
+* `awk` の構文は親しみやすく、`C`、`Python`、`bash` などの長所を含む
+* `awk` は、戦略的なコーディングをなし得る言語
+
+
+<br><br>
+
+
+# awk の第1歩
+
+
+```sh
+$ awk '{ print }' /etc/passwd
+```
+
+`print` コマンド が 「各行」 に対し、順次実行される
+
+
+
+
+
+<br><br><br><br><br>
+# コード・ブロック
+
+```js
+{ print }
+```
+
+C 言語と同様、awk は中括弧を使用してコードをブロックにまとめます。
+
+
+
+<br><br><br><br><br>
+# 変数
+
+`$0` : 行全体を格納
+
+```sh
+$ awk '{ print $0 }' /etc/passwd
+```
+
+`$0` を指定しない場合と全く同じ出力となる
+
+```sh
+$ awk '{ print "" }' /etc/passwd
+```
+
+行数だけブランク行が出力
+
+
+`$1` ... `$n`  : FSによって区切られたフィールド
+
+```sh
+$ awk '{ print $1 }' /etc/passwd
+```
+
+1つ目のフィールドのみ出力
+
+
+<br><br><br><br><br>
+# Field Separator を変更
+
+-F : Field Splitter を `" "` から `":"` に変更
+
+```sh
+$ awk -F":" '{ print $1 }' /etc/passwd
+```
+
+1つ目と3つ目のフィールドを出力
+
+
+```sh
+$ awk -F":" '{ print $1 $3 }' /etc/passwd
+```
+
+その間にスペースを入れる
+
+```sh
+$ awk -F":" '{ print $1 " " $3 }' /etc/passwd
+```
+
+```sh
+$ awk -F":" '{ print "username: " $1 "\t\tuid:" $3 }' /etc/passwd
+username: halt     uid:7
+username: operator uid:11
+username: root     uid:0
+username: shutdown uid:6
+username: sync     uid:5
+username: bin      uid:1
+....etc.
+```
+
+
+
+
+
+<br><br><br><br><br>
+# 外部スクリプトを読み込む
+
+```sh
+$ awk -f myscript.awk input.file
+```
+
+myscript.awk
+
+```
+BEGIN {
+        FS=":"
+}
+{ print $1 }
+```
+
+
+
+
+
+<br><br><br><br><br>
+# BEGIN ブロック  と   END ブロック
+
+
+`BEGIN ブロック`は、入力ファイルの処理の開始前に実行されるため、
+
+* FS変数の初期化
+* 見出しの出力
+* グローバル変数の初期化
+
+に非常に適しています。
+
+`END ブロック`は、入力ファイルのすべての行の処理が終了した後、実行され
+
+* 最終的な計算
+* 出力ストリームの最後に合計を出力
+
+するために使用されます。
+
+
+
+
+
+<br><br><br><br><br>
+# 正規表現とブロック
+
+```
+/foo/ { print }
+```
+
+文字列 foo が含まれている行だけを出力するスクリプト
+
+
+```
+/[0-9]+\.[0-9]*/ { print }
+```
+
+浮動小数点数が含まれている行だけを出力するスクリプト
+
+
+
+
+
+<br><br><br><br><br>
+# 式とブロック
+
+
+```js
+$1 == "fred" { print $3 }
+```
+
+`awk` では、`”==“`、`”<“`、`”>“`、`”<=“`、`”>=“`、および `“!=“`
+に加えて
+
+* 「含む」を意味する `“~”` と、
+* 「含まない」を意味する `“!~”` 演算子が使えます。
+
+これらの演算子は、左側に変数を、右側に正規表現を指定して使用します。
+
+<br><br><br><br><br>
+
+```js
+$5 ~ /root/ { print $3 }
+```
+
+or
+
+```js
+{
+  if ( $5 ~ /root/ ) {
+          print $3
+  }
+}
+```
+
+複雑なネスト化された条件の if 文であっても、構成は C 言語のそれと非常によく似ています。
+
+```js
+{
+  if ( $1 == "foo" ) {
+           if ( $2 == "foo" ) {
+                    print "uno"
+           } else {
+                    print "one"
+           }
+  } else if ($1 == "bar" ) {
+           print "two"
+  } else {
+           print "three"
+  }
+}
+```
+
+
+<br><br><br><br><br>
+
+```js
+! /matchme/ { print $1 $3 $4 }
+```
+
+or
+
+```js
+{
+  if ( $0 !~ /matchme/ ) {
+          print $1 $3 $4
+  }
+}
+```
+
+
+
+
+
+
+<br><br><br><br><br>
+# 論理演算子
+
+`awk` では、ブール演算子 `“||”` (論理和) と `“&&”` (論理積) も使うことができます。
+
+```js
+( $1 == "foo" ) && ( $2 == "bar" ) { print }
+```
+
+
+
+
+
+<br><br><br><br><br>
+# 数値変数
+
+`awk` では整数や浮動小数点数の計算を行うこともできます。
+
+
+```js
+BEGIN { x=0 }
+/^$/  { x=x+1 }
+END   { print "I found " x " blank lines. :)" }
+```
+
+
+
+
+
+
+<br><br><br><br><br>
+# ストリング指向の変数
+`awk` 変数 のすばらしさとして、その`「簡便さとストリング指向」`があげられます。
+
+* `「ストリング指向」`である : 内部ではすべての変数がストリングとして格納される
+* `「簡便」`である : 変数を使って算術演算を行える
+
+変数に有効な数値ストリングが保持されていれば、ストリングから数値への変換操作は自動的に行われます。
+
+
+```js
+x="1.01"
+# We just set x to contain the *string* "1.01"
+x=x+1
+# We just added one to a *string*
+print x
+# Incidentally, these are comments :)
+```
+
+awk の出力は以下のようになります。
+
+```js
+2.01
+```
+
+
+* `bash` や `Python` でこのようなことはできません。
+* `bash` にも`「ストリング指向」`の変数はありますが、`「簡便」`ではありません。
+* `bash` で算術演算をするには、式を見苦しい $( ) 構文で囲まなければなりません。
+* `Python` の場合は、演算をする前に、ストリングの 1.01 を浮動小数点数に明示的に変換しなければなりません。
+
+
+
+入力行の 1 番目のフィールドを 2 乗し、その値に 1 を加えるには、次のスクリプトを使用できます。
+
+```js
+{ print ($1^2)+1 }
+```
+
+
+
+
+
+<br><br><br><br><br>
+# いろいろな演算子
+
+`awk` のもう一つのすばらしい点は、通常の算術演算子がすべてそろっていることです。標準的な加算、減算、乗算、および除算に加え、先ほど紹介した指数演算子 `“^”`、剰余 (モジュロー) 演算子 `“%”`、そしてこのほかにも C 言語から取り入れた多くの便利な代入演算子を使用できます。
+代入演算子には、
+
+* 前置型および後置型の増分演算子と減分演算子 (`i++`, `--foo`)
+* 加算、減算、乗算および除算の代入演算子 (`a+=3`, `b*=2`, `c/=2.2`, `d-=6.2`)
+* 便利な剰余代入演算子や指数代入演算子 (`a^=2`, `b%=4`)
+
+
+
+
+
+
+<br><br><br><br><br>
+# Field Separator
+
+FS には、「正規表現」が使える
+
+
+1つまたは複数のタブで区切る
+(正規表現 `“+”` : 「直前の文字の 1 つ、または複数の繰り返し」)
+
+
+```js
+FS="\t+"
+```
+
+
+デフォルト
+
+```js
+FS="[[:space:]+]"
+```
+
+正規表現によるFS
+
+```js
+FS="foo[0-9][0-9][0-9]"
+```
+
+
+
+
+
+<br><br><br><br><br>
+## フィールド数 NF
+
+現在の行（レコード）におけるフィールドの数のこと
+
+e.g.
+
+```js
+NF == 3 { print "this particular record has three fields: " $0 }
+```
+
+or
+
+```js
+{
+  if ( NF > 2 ) {
+          print $1 " " $2 ":" $3
+  }
+}
+```
+
+
+
+
+
+<br><br><br><br><br>
+## レコード番号 NR
+
+(行番号)
+
+
+しかし今後の連載で、複数行にまたがるレコードを処理するようになると、
+NR と行番号が違ってくるので注意してください。
+
+
+```js
+(NR < 10 ) || (NR > 100) { print "We are on record number 1-9 or 101+" }
+```
+
+```js
+{
+  ## skip header
+  if ( NR > 10 ) {
+          print "ok, now for the real information!"
+  }
+}
+```
+
+
+
+
+
+
+<br><br><br><br><br>
+## 複数行のレコード
+
+例として、連邦証人保護プログラム (Federal Witness Protection Program) の参加者の住所リストを処理する作業の扱い方について説明しましょう。
+
+```
+Jimmy the Weasel
+100 Pleasant Drive
+San Francisco, CA 12345
+Big Tony
+200 Incognito Ave.
+Suburbia, WA 67890
+```
+
+理想的には、`awk` は、3 行をそれぞれ別々のレコードとして認識するのではなく、3 行からなる住所全体を 1つの独立したレコードとして認識する必要があります。`awk` が、住所の 1 行目を第 1 フィールド ($1) として、町名と番地を第 2 フィールド ($2) として、都市と州の名前および郵便番号を第 3 フィールド ($3) として認識すれば、コードはかなり簡単になります。次に、希望どおりのことを実行するコードを示します。
+
+```js
+BEGIN {
+	FS="\n"
+	RS=""
+}
+```
+
+このコードでは、
+FS を `"\n"` に設定しているので、`awk` は各フィールドがそれぞれ別々の行に表示されていることを認識します。
+また、RS を `""` に設定しているので、`awk` は各住所レコードがブランクで区切られていることも認識します。
+
+`awk`は、入力がどのようにフォーマットされているかを把握すると、
+すべての構文解析作業を自動的に実行してくれるので、残りのスクリプトは簡単です。
+では、この住所リストを構文解析し、各住所レコードを 1 行に出力し、各フィールドをコンマで区切る、スクリプト全体を見てみましょう。
+
+address.awk
+```js
+BEGIN {
+	FS="\n"
+	RS=""
+}
+{
+	print $1 ", " $2 ", " $3
+}
+```
+
+```js
+$ awk -f address.awk address.txt
+
+Jimmy the Weasel, 100 Pleasant Drive, San Francisco, CA 12345
+Big Tony, 200 Incognito Ave., Suburbia, WA 67890
+
+```
+
+<br><br><br><br><br>
+## OFS ( Output Field Separator ) と ORS ( Output Record Separator )
+
+
+* デフォルトでは、`OFS` は `" "` (単一のスペース) に設定
+
+
+address.awk
+
+```js
+BEGIN {
+	FS="\n"
+	RS=""
+	OFS=", "
+}
+{
+	print $1, $2, $3
+}
+```
+
+
+* `ORS` (デフォルトでは改行 (`"\n"`))
+
+空行をおきたい時は
+
+```js
+ORS="\n\n"
+```
+
+レコードを単一のスペース (および改行なし) で区切りたい場合は、
+```js
+ORS=" "
+```
+
+
+<br><br><br><br><br>
+
+## 複数行からタブ付き行への変換
+
+今までのスクリプトでは
+`awk` が次の住所を見つけると、4 行目は破棄され、出力されません。
+
+```
+Cousin Vinnie
+Vinnie's Auto Shop
+300 City Alley
+Sosueme, OR 76543
+```
+
+構文解析は`awk`が自動でやってくれるので、
+`FN ,Field Number` だけ出力してやるように改変します
+
+```js
+BEGIN {
+    FS="\n"
+    RS=""
+    ORS=""
+}
+
+{
+        x=1
+        while ( x < NF ) {
+                print $x "\t"
+                x++
+        }
+        print $NF "\n"
+}
+```
+
+出力
+
+```
+Jimmy the Weasel        100 Pleasant Drive      San Francisco, CA 12345
+Big Tony        200 Incognito Ave.      Suburbia, WA 67890
+Cousin Vinnie   Vinnie's Auto Shop      300 City Alley  Sosueme, OR 76543
+```
+
+
+<br><br><br><br><br>
+
+# ループ構成体
+`awk` の while ループ構成体が C 言語のループ構成体と同じものであることは、すでに紹介しました。awk には、標準の while ループのようにコード・ブロックの先頭ではなく、最後で条件を評価する "do...while" というループもあります。これは、他の言語で言えば "repeat...until" ループに相当します。次に例を示します。
+
+
+
+
+
+## do...while
+
+```js
+{
+	count=1
+	do {
+		print "I get printed at least once no matter what"
+	} while ( count != 1 )
+}
+```
+
+
+
+
+## for ループ
+
+```js
+for ( initial assignment; comparison; increment ) {
+	code block
+}
+```
+
+e.g.
+
+```js
+for ( x = 1; x <= 4; x++ ) {
+	print "iteration",x
+}
+```
+
+output :
+
+```js
+iteration 1
+iteration 2
+iteration 3
+iteration 4
+```
+
+<br><br><br><br><br>
+
+## break と continue
+
+```js
+while (1) {
+	print "forever and ever..."
+}
+```
+
+次に、10 回しか実行されないループを示します。
+
+
+
+## break
+
+```js
+x=1
+while(1) {
+	print "iteration",x
+	if ( x == 10 ) {
+		break
+	}
+	x++
+}
+```
+
+
+
+## continue
+
+```js
+x=1
+while (1) {
+	if ( x == 4 ) {
+		x++
+		continue
+	}
+	print "iteration",x
+	if ( x > 20 ) {
+		break
+	}
+	x++
+}
+```
+
+or
+
+```js
+for ( x=1; x<=21; x++ ) {
+	if ( x == 4 ) {
+		continue
+	}
+	print "iteration",x
+}
+```
+
+このコードは、"iteration 4" を除く、"iteration 1" から "iteration 21" までを出力します。
+<br><br><br><br><br>
+
+# 配列
+
+* awk では、配列指標は 0 ではなく 1 から始まるのが通例です。
+
+```js
+myarray[1]="jim"
+myarray[2]=456
+```
+
+```js
+for ( x in myarray ) {
+	print myarray[x]
+}
+```
+
+このコードには欠点が 1つあります。
+
+* awkが配列指標内をサイクルするとき、特定の順序に従わないという点です。
+
+つまり、前述のコードの出力が次のどちらになるかはまったく分かりません。
+
+```
+jim
+456
+```
+
+or
+
+```
+456
+jim
+```
+
+
+フォレスト・ガンプ風に分かりやすくたとえるならば、配列の内容上を反復することは、チョコレート・ボックスのようなもの、つまり、何が出てくるかまったく分からない、ということです。これは、次に説明する、`awk` 配列の`「ストリング指向性」`に関係があります。
+
+<br><br><br><br><br>
+
+## 配列指標のストリング指向性
+
+```js
+a="1"
+b="2"
+c=a+b+3
+```
+
+このようにawkはストリング指向なので、
+以下の3つは同じ出力となる
+
+```js
+myarr["1"]="Mr. Whipple"
+print myarr["1"]
+```
+
+```js
+myarr["1"]="Mr. Whipple"
+print myarr[1]
+```
+
+```js
+myarr["name"]="Mr. Whipple"
+print myarr["name"]
+```
+
+
+<br><br><br><br><br>
+
+## 配列ツール
+
+* 配列という話になると、`awk` は高い柔軟性を発揮します。
+* たとえば、`myarr[1]` と `myarr[1000]` を定義し、他の要素はすべて未定義で構わない。
+
+これは場合によっては混乱を招くので、配列の管理ツールがあります。
+
+* 配列 fooarray の要素1 を削除したい場合
+
+```js
+delete fooarray[1]
+```
+
+* 特定の配列要素が存在するかどうかを確認したい場合は、
+* 特殊な `"in"` というブール演算子を使用することができます。
+
+```js
+if ( 1 in fooarray ) {
+	print "Ayep!  It's there."
+} else {
+	print "Nope!  Can't find it."
+}
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
+# 出力のフォーマット
+
+`awk` の print ステートメントは、多くの場合、所期の目的を果しますが、不十分の場合もあります。
+そこで次の関数がcと同様に使えます。
+
+
+* `printf()`    //フォーマット・ストリングを stdout に出力する
+* `sprintf()`   //変数に代入できるフォーマット・ストリングを返します。
+
+`printf()` と `sprintf()` のことをよく知らない方は、
+初心者向けの C 言語の参考書に目を通せば、この 2つの重要な出力関数についてすぐ理解できます。
+Linux システムでは、`"man 3 printf"` と入力すると、printf() の man ページが表示されます。
+
+
+
+```js
+x=1
+b="foo"
+printf("%s got a %d on the last test\n","Jim",83)
+myout=("%s-%d",b,x)
+print
+myout
+```
+
+output :
+
+```js
+Jim got a 83 on the last test
+foo-1
+```
+
+
+<br><br><br><br><br>
+
+# ストリング関数
+
+* `awk` にはストリング関数が大量にあります。
+* これは大いに役に立ちます。`awk` を使う場合、実際にストリング関数が必要になります。なぜなら、`C`、`C++`、`Python` などのほかの言語のように、ストリングを文字の配列として扱うことができないからです。
+* たとえば、以下のコードを実行した場合、
+
+```js
+mystring="How are you doing today?"
+print mystring[3]
+```
+
+otuput :
+
+```
+awk: string.gawk:59: fatal: attempt to use scalar as array
+```
+
+そうです。`Python` のシーケンス型ほど便利ではありませんが、`awk` のストリング関数も仕事をうまくこなしてくれます。では、説明しましょう。
+まず、ストリングの長さを戻す基本的な `length()` 関数があります。次に、この使い方を示します。
+
+<br>
+
+## length()
+
+```js
+print length(mystring)
+```
+
+output :
+
+```
+24
+```
+
+<br>
+
+
+## index()
+
+サブストリングの位置を返します。
+サブストリングが見つからない場合は 0 を返します。
+
+
+```js
+print index(mystring,"you")
+```
+
+output :
+
+```
+9
+```
+
+
+<br>
+
+## tolower() と toupper()
+
+```js
+print tolower(mystring)
+print toupper(mystring)
+print mystring
+```
+
+output :
+
+```
+how are you doing today?
+HOW ARE YOU DOING TODAY?
+How are you doing today?
+```
+
+<br>
+
+## substr()
+
+```js
+mysub=substr(mystring,startpos,maxlen)
+```
+
+e.g.
+
+```js
+print substr(mystring,9,3)
+```
+
+output :
+
+```
+you
+```
+
+
+<br>
+
+## match()
+
+* `match(str , 正規表現)` : str 内の正規表現を検索
+* 戻り値 : 一致するものの先頭位置か、ない場合は 0
+
+match() は `RSTART` と `RLENGTH` の2変数を設定します。
+* `RSTART` : 戻り値を格納　(最初に一致するものの場所)
+* `RLENGTH` : 文字内におけるその長さ(一致がない場合は -1)。
+
+
+```js
+print match(mystring,/you/), RSTART, RLENGTH
+```
+
+output :
+
+```
+9 9 3
+```
+
+
+<br>
+
+## sub() と gsub()
+
+
+sub() / gsub() は文字列を置換します。
+
+```js
+sub(regexp,replstring,mystring)
+```
+
+sub() は mystring 内で regexp と一致する文字の最初のシーケンスを探し、そのシーケンスを replstring と置換し、
+
+gsub() はグローバル置換を実行し、ストリング内で一致するすべてのものを置き換えます。
+
+```js
+mystring="How are you doing today?"
+sub(/o/,"O",mystring)
+print mystring
+mystring="How are you doing today?"
+gsub(/o/,"O",mystring)
+print mystring
+```
+
+output:
+
+```
+HOw are you doing today?
+HOw are yOu dOing tOday?
+```
+
+<br>
+
+## split()
+split() の仕事はストリングを「分割」して、各部分を整数索引付けされた配列に入れることです。以下に、split() 呼び出しの例を示します。
+
+
+`split(string, nameOfStringArray, FS)`
+returns `NF`(number of fields)
+
+e.g.
+
+```js
+numelements=split("Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",mymonths,",")
+print mymonths[1],mymonths[numelements]
+```
+
+outputs :
+
+```
+Jan Dec
+```
+
+
+
+## 特殊なストリング・フォーム
+
+クイック・メモ -- length()、sub()、または gsub() を呼び出す場合には、最後の引数を省略できます。
+各行の長さをファイルに出力するには、以下の awk スクリプトを使用します。
+
+```js
+{
+	print length()
+}
+```
+
+
+<br><br><br><br><br>
+
+<br><br><br><br><br>
+
+
+# 財政管理の楽しみ
+
+
+以下に、わたしのすべての取引を "ASCII 小切手帳" にどのように記録することにしたかを示します。
+
+
+format
+
+```
+dd mm yy     output income writtenNo writtenYes explanatino amount
+```
+
+output e.g.
+
+```
+23 Aug 2000	 food	  -	      -	        Y	      Jimmy's Buffet	30.25
+```
+
+income e.g.
+
+```
+23 Aug 2000	 -	     inco	   -	      Y	      Boss Man		    2001.00
+```
+
+
+
+
+フィールド ("Y" または "N") は、取引を口座に記入したかどうかを記録するものです。
+
+
+
+
+<br><br><br><br><br>
+
+
+## コード
+次は、コードについての説明です。1 行目から見ていきましょう。BEGIN ブロックと関数定義です。
+
+balance、第 1 部
+
+```js
+#!/usr/bin/env awk -f
+BEGIN {
+	FS="\t+"
+	months="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
+}
+function monthdigit(mymonth) {
+	return (index(months,mymonth)+3)/4
+}
+```
+
+
+
+
+```js
+print monthdigit("Mar")
+```
+
+outputs :
+
+```js
+3
+```
+
+<br><br><br><br><br>
+
+
+## 会計用関数
+
+取引には、基本的に 3 種類あります。
+
+* 貸方 (doincome)
+* 借方 (doexpense)
+* 振替 (dotransfer)
+
+mybalance は、引数として渡すことになる 2 次元配列のプレースホルダーです。
+
+2 次元配列の構文は極めて簡単で、各次元をコンマで区切るだけす。
+
+配列の 1つ目の次元の範囲は `0?12` で、月 (または、年全体を表す場合は0) を指定します。
+2つ目の次元は、"food"、"inco" などの 4 文字のカテゴリーです。
+
+food カテゴリーの年全体の残高を求める場合は、`mybalance[0,"food"]` となります。
+6 月の収入を求める場合は、`mybalance[6,"inco"]` となります。
+
+
+balance、第 2 部
+
+```js
+function doincome(mybalance) {
+	mybalance[curmonth,$3] += amount
+	mybalance[0,$3]
++= amount
+}
+function doexpense(mybalance) {
+	mybalance[curmonth,$2] -= amount
+	mybalance[0,$2]
+-= amount
+}
+function dotransfer(mybalance) {
+	mybalance[0,$2] -= amount
+	mybalance[curmonth,$2]
+-= amount
+	mybalance[0,$3] += amount
+	mybalance[curmonth,$3] += amount
+}
+```
+
+
+各関数において、取引は 2つの場所
+
+* `mybalance[0,category]`
+* `mybalance[curmonth, category]`
+
+に、`年全体の残高`と`月ごとの残高`として二重に記録します。
+
+mybalance で参照された配列は「参照渡し」されることに注意してください。
+
+
+
+
+<br><br><br><br><br>
+
+## メイン・ブロック
+次に、入力データの各行を解析するコードを含むメイン・コード・ブロックを示します。
+
+
+balance、第 3 部
+
+```js
+{
+	curmonth=monthdigit(substr($1,4,3))
+	amount=$7
+
+	#record all the categories encountered
+	if ( $2 != "-" )
+		globcat[$2]="yes"      // globcat[] : global categories
+	if ( $3 != "-" )
+		globcat[$3]="yes"
+	#tally up the transaction properly
+	if ( $2 == "-" ) {
+		if ( $3 == "-") {
+			print "Error: inc and exp fields are both blank!"
+			exit 1
+		} else {
+			#this is income
+			doincome(balance)
+			if ( $5 == "Y" )
+				doincome(balance2)
+		}
+	} else if ( $3 == "-" ) {
+		#this is an expense
+		doexpense(balance)
+		if ( $5 == "Y" )
+			doexpense(balance2)
+	} else {
+		#this is a transfer
+		dotransfer(balance)
+		if ( $5 == "Y" )
+			dotransfer(balance2)
+	}
+}
+```
+
+
+`if ( $5 == "Y" ) doincome(balance2)`
+などにより、`balance2` に通帳記録しているもののみを記録します。
+
+
+
+
+<br><br><br><br><br>
+
+## レポートの生成
+
+メイン・ブロックが各入力レコードを繰り返し処理した後、カテゴリー別と月別に分類されたかなり総合的な借方と貸方のレコードができあがります。後は、レポートを生成する END ブロック (この場合には、あまり大きくありません) を定義するだけです。
+
+balance、第 4 部
+
+```js
+END {
+	bal=0
+	bal2=0
+	for (x in globcat) {
+		bal=bal+balance[0,x]
+		bal2=bal2+balance2[0,x]
+    	}
+    	printf("Your available funds: %10.2f\n", bal)
+    	printf("Your
+account balance: %10.2f\n", bal2)
+}
+```
+
+
+このレポートは、以下のようなサマリーを出力します。
+
+```
+Your available funds:    1174.22
+Your account balance:    2399.33
+```
+
+END ブロックでは、
+
+実際には、利用可能な資本の残高と、口座残高の残高の 2つの残高を計算しています。
+
+<br>
+
+プログラムを実行して、"mycheckbook.txt" というファイルに入力した会計情報を処理するには、
+
+1. 前述のコードすべてを "balance" というテキスト・ファイルに入れ、
+2. "chmod +x balance" を実行して、
+3. "./balance mycheckbook.txt" と入力します。
+
+balance スクリプトにより、すべての取引が加算され、2 行の残高サマリーが自動的に出力されます。
+
+
+<br><br><br><br><br>

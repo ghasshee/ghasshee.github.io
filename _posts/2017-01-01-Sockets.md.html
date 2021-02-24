@@ -1,0 +1,185 @@
+---
+title: Sockets
+layout: dep
+date: 2017-11-22
+---
+
+
+# Socket
+
+**********************************************************************************************
+*                                                                                            *
+*         +-----------+                                                                      *
+*         | IPAddress |                                                                      *
+*         +-+-------+-+                                                                      *
+*   1.       \     /    sockaddr_in (server)                                                 *
+*             '---'                                                                          *
+*   3. bind -->                                                                              *
+*                                                                                            *
+*            \     /                                                                         *
+*             '+++'                                                                          *
+*               |                                                                            *
+*               |                                                                            *
+*               |                                                                            *
+*               |                                                                            *
+*               |  2. socket                                                                 *
+*               |                                                                            *
+*               |                                                                            *
+*               |                                                                            *
+*               |                                                                            *
+*               +---------+                                                                  *
+*               |         |                                                                  *
+*   4. listen   |         |     dupplicate socket                                            *
+*             .-+-.     .-+-.                                                                *
+*            /     \   /     \                                                               *
+*                                                                                            *
+*         5. accept -->                                                                      *
+*                       .---.                                                                *
+*                      /     \    sockaddr_in (client)                                       *
+*                   +-+-------+-+                                                            *
+*                   | IPAddress |                                                            *
+*                   +-----------+                                                            *
+*                                                                                            *
+*                                                                                            *
+**********************************************************************************************
+
+
+
+1 . sockaddr_in
+
+`sockaddr_in` : socket containing a internet address defined in `< netinet/in.h >`
+~~~
+struct sockaddr_in {
+        short   sin_family;
+        u_short sin_port;
+        struct  in_addr sin_addr;
+        char    sin_zero[8];
+};
+~~~
+
+
+~~~
+struct sockaddr_in serv_addr, cli_addr;
+~~~
+
+
+~~~
+serv_addr.sin_family    = AF_INET;
+serv_addr.sin_port      = htons(portno);
+serv_addr.sin_addr.s_addr = INADDR_ANY;
+~~~
+
+`serv_addr` is the IP address of the server machine.
+There is a symbolic constant `INADDR_ANY` which gets this address.
+
+<br>
+
+2 . socket
+
+~~~
+sockfd = socket(AF_INET, SOCK_STREAM, 0);
+~~~
+
+- `SOCK_STREAM` : stream sockets (TCP)
+- `SOCK_DGRAM` : datagram sockets (UDP)
+
+If the socket call fails, it returns -1.
+~~~
+if (sockfd < 0)
+         error("ERROR opening socket");
+~~~
+
+
+
+
+<br>
+
+3 . bind
+
+`bind()` system call
+~~~
+if (bind(sockfd, (struct sockaddr *) &serv_addr,
+              sizeof(serv_addr)) < 0)
+                  error("ERROR on binding");
+~~~
+
+This can fail for a number of reasons,
+the most obvious being that this socket is already in use.
+
+<br>
+
+4 . listen
+
+~~~
+listen(sockfd,5);
+~~~
+
+5 is the size of the backlog queue, i.e. the number of connections.<br>
+5 is the maximum size permitted by most systems
+
+<br>
+
+5 . accept
+
+accept() system call
+~~~
+clilen = sizeof(cli_addr);
+     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+     if (newsockfd < 0)
+          error("ERROR on accept");
+~~~
+
+
+<br>
+
+## Full Source Code
+
+~~~
+/* A simple server in the internet domain using TCP
+   The port number is passed as an argument */
+#include  "stdio.h"
+#include  "sys/types.h"
+#include  "sys/socket.h"
+#include  "netinet/in.h"
+
+void error(char *msg)
+{
+    perror(msg);
+    exit(1);
+}
+
+int main(int argc, char *argv[])
+{
+     int sockfd, newsockfd, portno, clilen;
+     char buffer[256];
+     struct sockaddr_in serv_addr, cli_addr;
+     int n;
+     if (argc < 2) {
+         fprintf(stderr,"ERROR, no port provided\n");
+         exit(1);
+     }
+     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     if (sockfd < 0)
+        error("ERROR opening socket");
+     bzero((char *) &serv_addr, sizeof(serv_addr));
+     portno = atoi(argv[1]);
+     serv_addr.sin_family = AF_INET;
+     serv_addr.sin_addr.s_addr = INADDR_ANY;
+     serv_addr.sin_port = htons(portno);
+     if (bind(sockfd, (struct sockaddr *) &serv_addr,
+              sizeof(serv_addr)) < 0)
+              error("ERROR on binding");
+     listen(sockfd,5);
+     clilen = sizeof(cli_addr);
+     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+     if (newsockfd < 0)
+          error("ERROR on accept");
+     bzero(buffer,256);
+     n = read(newsockfd,buffer,255);
+     if (n < 0) error("ERROR reading from socket");
+     printf("Here is the message: %s\n",buffer);
+     n = write(newsockfd,"I got your message",18);
+     if (n < 0) error("ERROR writing to socket");
+     return 0;
+}
+~~~

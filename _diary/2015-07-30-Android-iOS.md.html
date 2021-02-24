@@ -1,0 +1,114 @@
+---
+title: Android / iOS 
+layout: dep
+---
+
+
+
+
+# iOS App
+
+## 『たった2ヶ月でiphoneアプリをリリースするためにやったこと』まとめノート
+
+- 「プログラミングに限らず、新しいチャレンジは年齢とともに慎重となる」
+- 「年齢を重ねるともの忘れがひどくなるというのは科学的に間違い」
+
+* 子供も物忘れをするが気にならない
+* 子供は物忘れしたことも忘れている
+* クリエイティブな能力は30歳以降、飛躍的に伸びる
+
+## 技術情報
+
+| index | description |
+|:-----:|:--- |
+| 苦c言語  | objective C への導入として  |
+| UIkit  | 『iphoneプログラミングUIkit詳解リファレンス』 |
+| - | - |
+| 困った時  | twitter@iphone_dev_jp に聞く |
+| デリシャス  | del.icio.us  (海外版はてブ) |
+| - | - |
+| ネットワーク連動アプリ | xml parser , iphone API HTTP  |
+| Core Data | apple が提供する database framework |
+| SQLite | database 管理システム。サーバとしてでなく、 |
+| - | アプリに組み込んで利用される軽量database |
+| - | - |
+| てん＊しー＊しー | http://ameblo.jp/xcc |
+| もとまか日記 | http://d.hatena.ne.jp/moto_meka/  ( beginner tutorial ) |
+| 最強の情報源 | iOS Reference Library 日本語版 |
+
+
+
+# android app
+
+## requisities
+
+* JDK(java development kit)
+* IDE(integrated development environment)
+* android SDK(system develoment kit)
+* ADT(android development tools)
+
+
+
+
+## development with Java
+
+service : background process
+activity : main process
+
+
+SimpleService.java (ServiceBasic Project)
+
+~~~java
+package to.msn.wings.servicebasic;
+import android.app.Service;
+import android.content.lntent;
+import android.os.Binder;
+import android.util.Log;
+
+public class SimpleService extends Service {
+  private final String TAG = SimpleService;
+  //service の 初回起動 時に実行
+  @Override
+  public void onCreate(){
+    super.onCreate();
+    Log.i(TAG, "onCreate");
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId){
+    Log.i(TAG, "onStartCommand");
+    return START_STICKY;
+  }
+
+  //service の bind 時に実行
+  @Override
+  public IBinder onBind(Intent intent){
+    return null;
+  }
+
+  @Override
+  public void onDestroy(){
+    super.onDestroy();
+    Log.i(TAG, "onDestroy");
+  }
+}
+
+~~~
+
+the lifecycle of service
+
+~~~
+start -> onCreate -> onStartCommand -> service の開始 -> onDestroy -> end
+~~~
+
+
+
+
+### onStartCommand の戻り値
+
+| 定数 | 内容 |
+| --- | --- |
+| START_NOT_STICKY  | システムを再起動しない |
+| START_STICKY | システムを再起動する |
+| START_REDELIVER_INTENT | 終了前と同じインデントを使用して再起動 |　
+| START_STICKY_COMPATIBILITY | 再起動は保障されない（START_STICKYとの互換用）|

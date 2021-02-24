@@ -1,0 +1,350 @@
+---
+title: Linear Algebra
+layout: journal
+---
+
+
+
+# V is Linear Space over K
+
+V is Linear Space over $ \mathbb{K} $
+
+$ \Leftrightarrow $ `(def)` V is Module on $ \mathbb{K} $
+
+$ \Leftrightarrow $ `(def)`
+
+
+
+- V is an additive group (+)
+- V is given as;
+    - $ \mathbb{K} \times V \rightarrow V $
+    - $ (k,v) \mapsto kv $
+        where
+      1. $ \quad 1v = v $
+      2. $ \quad (a+b)v = av+bv $
+      3. $ \quad a(bv) = (ab)v $
+      4. $ \quad a(v + v') = av + av' $
+
+
+$ \Leftrightarrow $
+Frankly,
+- "add" and "scholor times" is defined in the space
+- 「和」と「スカラー倍」が定義されている空間
+
+<br>
+<br>
+<br>
+<br>
+
+
+# Subspace W of "V over K"
+
+Subspace $ W $  of $ V / \mathbb{k} $
+
+$ \Leftrightarrow $ `(def)`
+
+$$
+\begin{cases}
+\forall a, \forall b \in W.\quad a+b \in W \\
+\forall k \in \mathbb{R}. \quad \quad ka \in W
+\end{cases}
+$$
+
+
+
+  **************************************
+  *                                    *
+  *            ^                       *
+  *            |     /     {y = 2x}    *
+  *            |    /                  *
+  *            |   /                   *
+  *            |  /                    *
+  *            | /                     *
+  *            |/                      *
+  * -----------+-------------->        *
+  *           /|                       *
+  *          / |                       *
+  *         /  |                       *
+  *        /   |                       *
+  *       /    |                       *
+  *                                    *
+  *                                    *
+  *                                    *
+  **************************************
+
+
+
+
+
+# Quotient Space by Subspace W of V
+
+define isomorphism on $ V $ as;
+
+$ v, v' \in V $
+
+$ v \simeq v' \iff $ `(def)` $ \quad v - v' \in W $
+
+
+    **********************************************************
+    *                                                        *
+    *                      ^                                 *
+    *                      |                                 *
+    *                      |                                 *
+    *            - - - - - + - - - - - -                     *
+    *                   ^  |  ^                              *
+    *                v'  \ | / v                             *
+    *                     \|/                                *
+    *           -----------+----------->                     *
+    *                      |                                 *
+    *                      |                                 *
+    *           -----------+------------ W = {y = c}         *
+    *                      |                                 *
+    *                      |                                 *
+    *                                                        *
+    *                                                        *
+    *                                                        *
+    **********************************************************
+
+
+<br>
+
+Quotient Space
+
+$ V / W := V / \sim := \{ [v] \mid v \in V \} $
+
+where
+
+$$
+\begin{cases}
+[v] + [v'] = [v + v'] \\
+k [v] = [kv]
+\end{cases}
+$$
+
+prove well difined !
+
+
+# Linear Map
+
+
+$ V $ , $ W $ : vector space over $ \mathbb{K} $
+
+## Linear Map
+
+$ f  : V \rightarrow W $ is Linear Map
+
+$ \iff $ `(def)`
+
+1. $ \quad \forall v , \forall v' \in V . \quad f(v + v') = f(v) + f(v') $
+2. $ \quad \forall k \in \mathbb{K}, \forall v \in V . \quad f(kv) = k f(v) $
+
+
+## Kernel
+
+kernel of $ \ f \quad $ ( $ f $ : $ V \rightarrow W $ : linear map)
+
+- $ Ker \ f := \{ v \in V \mid f(v) = 0 \} $
+
+        $ \quad \quad = f^{-1}(\{0\}) $
+
+
+
+## Image
+
+image of $ \ f \quad $ ( $ f $ : $ V \rightarrow W $ : linear map)
+
+- $ Im f := \{ w \in W \mid w \in f(v) \} $
+
+        $ \quad \quad = f(V) $
+
+
+
+
+## Isomorphism Theorem
+
+$ f : V \rightarrow W $ : linear map
+
+$ \bar{f} : V / Ker f \quad \simeq \quad Im f $
+
+$ \quad\quad  [v] \quad \mapsto \quad f(v) $
+
+
+
+- isomorphism : linear and bijective
+- 同型　: 線形写像かつ全単射
+
+
+e.g.
+
+  *************************************************
+  *             y                 y               *
+  *         ^/ / / /              ^   /           *
+  *         /\/ / /               |  /            *
+  *        / /\/ / /     f        | /             *
+  *         / /\/ / /   --->      |/              *
+  *        +-+-+++-+>x        ----o--->x          *
+  *         / / /\/ /            /|               *
+  *        / / / /\/            / |               *
+  *         / / / /\           /  |               *
+  *************************************************
+     $$ f(\nwarrow) = 0  $$
+     $$ \bar{f} : \underbrace{\mathbb{R}^2 / Ker f }_{(\nwarrow)} = \underbrace{Im\ f}_{\text{( / )}} $$
+
+# basis 基底
+
+<br>
+
+$ V : \text{ linear space over } \mathbb{K} $
+
+<br>
+
+## $ v _ 1 , ... , v _ n \in V $ is linear independent
+
+
+$ \Leftrightarrow $ `(def)`
+
+$$ a _ 1 v _ 1 + ... + a _ n v _ n = 0  \Rightarrow a _ 1 = ... = a _ n = 0 $$
+
+
+<br>
+
+## Subspace spanned by $ v _ 1 , ... , v _ n \in V $
+
+$ \Leftrightarrow $ `(def)`
+
+$$ Span \{ v _ 1 , ... , v _ n \} := \{ a _ 1 v _ 1 + ... + a _ n v _ n \mid a _ i \in \mathbb{K} \} $$
+
+or we write $ < v _ 1 , ... , v _ n > $
+
+<br>
+
+## $ v _ 1 , ... , v _ n \in V $ is basis of $ V $
+
+$ \Leftrightarrow $ `(def)`
+
+  1. $ v _ 1 , ... , v _ n \in V $ is linear independent
+  2. $ V = Span \{ v _ 1 , ... , v _ n \}  $
+
+<br>
+
+# dimension
+
+Def .
+if basis of $ V $ has n elements $ e _ 1 , ... , e _ n $,
+
+$$ dim V := n $$
+
+
+
+
+
+# prove that dimension is well-defined
+
+suppose 2 basises of $ V $
+
+- $ e _ 1 , ... , e _ n $
+- $ d _ 1 , ... , d _ m $
+
+then $ e _ i $ can be described as
+
+$$ e _ i = \sum^{n} _ {j=1} a _ {ij} d _ j $$
+
+this is
+
+
+$$
+(e _ 1 , ... , e _ n ) = ( d _ 1 , ... , d _ m)
+\left(
+  \begin{array}{ccc}
+    a _ {11} & \cdots & a _ {1n} \\
+    \vdots   &        & \vdots \\
+    a _ {m1} & \cdots & a _ {nm}
+  \end{array}
+\right)
+$$
+
+similarly
+
+$$
+(d _ 1 , ... , d _ m ) = ( e _ 1 , ... , e _ n)
+\left(
+  \begin{array}{ccc}
+    b _ {11} & \cdots & b _ {1m} \\
+    \vdots   &        & \vdots \\
+    b _ {n1} & \cdots & b _ {mn}
+  \end{array}
+\right)
+$$
+
+
+so we name these matricses $ A $ and $ B $,
+
+$$ AB = E _ n  \quad\wedge\quad BA = E _ m $$
+
+$$ \therefore A \text{ is bijective } $$
+
+<br>
+
+$ A : \mathbb{R}^m \rightarrow \mathbb{R}^n $
+
+suppose  $ m \gt n $
+
+$ A $ is injective (単射) $ \iff $  $ ( A v = 0 \Rightarrow v = 0 ) $
+
+$$ A v = 0 $$
+$ \hspace{7cm}\text{------------------------}  \Downarrow $ operate with [Elementary matrix](../2016-03-02-elementary-matrix.md)
+$$ P A v = 0 $$
+$$ \text{------------------------}  \Downarrow $$
+$$
+\left(
+  \begin{array}{ccc | c}
+    1 &  &  & \\
+      & \ddots & & 0 \\
+      &  & 1 &
+  \end{array}
+\right)
+\left(
+  \begin{array}{c}
+    v _ 1  \\
+    \vdots \\
+    v _ m
+  \end{array}
+\right)
+= 0
+$$
+
+
+but , non 0 solution found
+$$
+\left(
+  \begin{array}{c}
+    v _ 1  \\
+    \vdots \\
+    \vdots \\
+    v _ m
+  \end{array}
+\right)
+=
+\left(
+  \begin{array}{c}
+    0  \\
+    \vdots \\
+    0 \\
+    1
+  \end{array}
+\right)
+$$
+
+
+this is contradiction
+
+$$ \therefore m \le n $$
+
+similary,
+
+$$ n \le m $$
+
+<br>
+<br>
+
+$ \quad \hspace{6cm} \therefore m = n \hspace{4cm} $ $ \Box \quad \text{well-defined} $

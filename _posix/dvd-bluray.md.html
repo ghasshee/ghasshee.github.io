@@ -1,0 +1,65 @@
+---
+title: DVD / BluRay
+layout: dep
+date: 2017-02-02
+---
+
+# How ot make "DVD-Video"
+
+## installation
+
+~~~
+sudo pacman -Sy dvdauthor
+sudo pacman -Sy dvd+rw-tools
+~~~
+
+## format into mpeg2
+
+~~~
+ffmpeg -i InputFile.flv -target ntsc-dvd video.mpg
+~~~
+
+## dvdauthor
+
+make directory and Tables for dvd
+~~~
+export VIDEO_FORMAT=NTSC
+dvdauthor -o dvd/ video.mpg
+dvdauthor -o dvd/ -T
+~~~
+
+## mkisofs
+
+~~~
+mkisofs -dvd-video -o dvd.iso dvd/
+~~~
+
+## burn
+
+~~~
+growisofs -dvd-compat -Z /dev/sr0=dvd.iso
+~~~
+
+use `-allow-limited-size` : size > 4GiB
+use `-speed=8` : speed up 8 times (maybe unnecessary)
+
+
+## Not do like this
+~~~
+## growisofs -Z /dev/sr0 dvd.iso
+## this create root dir and put .iso file inside it
+~~~
+
+
+## pacman update keyrings
+
+sudo pacman -Sy archlinux-keyring && sudo pacman -Syyu
+
+
+## mplayer
+
+play dvd
+~~~
+sudo pacman -S mplayer
+mplayer /dev/sr0
+~~~

@@ -1,0 +1,25 @@
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="{{ site.description }}">
+    <link rel="shortcut icon" href="/image/favicon.png">
+    <link rel="apple-touch-icon" type="image/png" href="/image/favicon.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="/image/favicon.png">
+    <link rel="stylesheet" href="/dependencies/gridism.css">
+    <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
+    <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+
+    <title>
+      {% if page.title == "Blog" %}{{ " GhaSShee " }}
+      {% elsif page.title %}{{ page.title }}
+      {% else %}{{ site.title }}
+      {% endif %}
+    </title>
+
+    <!-- Mathjax (LOCAL)　-->
+    <script type="text/javascript"
+      src="/dependencies/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax:{inlineMath:[['$','$']],skipTags:["script","noscript","style","textarea","code"]}});</script>
+
+</head>

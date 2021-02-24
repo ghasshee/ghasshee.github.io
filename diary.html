@@ -1,0 +1,25 @@
+---
+layout: default
+title: Diary
+categories: /diary
+permalink: /diary/
+---
+
+<div class="home">
+
+    <br><h1 class="post-title"> Diary </h1><br>
+
+    Here's Diary, quite trivial .<br>
+    Under Construction . <br><br><br><br>
+
+      <ul class="post-list">
+        {% for post in site.diary %}
+          <li>
+            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+
+
+</div>

@@ -1,0 +1,347 @@
+---
+title: GDB
+layout: journal
+---
+
+
+GDB : GNU Debugger
+
+
+# classification of debuggers
+
+- absolute debugger ( adb ) :  ロードモジュールをそのまま、そのレベルでデバッグする
+- symbolic debugger ( dbx / gdb ) : ソースレベルのエントリを利用してデバッグを行なう
+
+
+
+
+
+# gdb usage example
+
+
+~~~
+$ sudo gdb 実行ファイル名
+
+(gdb) b main        // make a breakpoint at the beginning
+(gdb) r             // run
+(gdb) info reg      // show registory
+(gdb) disass main   // disassememble main function
+(gdb) print &lval   // show the value
+(gdb) nexti         // load to the next instrunction
+(gdn) next          // run to the next breakpoint
+
+(gdb) q             // quit gdb
+~~~
+
+
+# gdb
+
+## gdb infomation embedding with src
+
+Add "debug info" into "execFile" from "c" source code with;
+
+- `-g` option : enables `GNU debugger`
+
+~~~
+$ gcc -g src_file
+~~~
+
+
+## run
+
+~~~
+(gdb) r          // run
+(gdb) r 引数      // バイナリの実行時に引数をつけて動作させたい場合は、「r 引数」と入力してください。
+~~~
+
+
+
+## breakpoint
+
+ブレークポイントを設定すると、そこで実行が一時停止します。
+
+~~~
+(gdb) b 行番号
+(gdb) b 関数名
+(gdb) b ファイル名:行番号
+~~~
+
+
+## jump
+
+関数の中の処理まで追い掛けたくない場合。
+~~~
+(gdb) n     // next
+~~~
+
+関数内の処理を追いかける場合。
+~~~
+(gdb) s     // step
+~~~
+
+ブレークポイントを設定した箇所だが、実行の継続する場合。
+~~~
+(gdb) c     // continue
+~~~
+
+
+## print
+
+~~~
+(gdb) p 変数表示        // print
+(gdb) p \*ポインタ変数
+(gdb) p &アドレス変数
+~~~
+
+
+
+printコマンドに /format を付加することで、出力書式を指定することができます。
+
+    書式 | 意味 | 書式 | 意味
+    ----|------|-----|-------
+    o | 8進表示 | d | 符号付き10進表示
+    x | 16進表示 | u | 符号なし10進表示
+    t | 2進表示 | c | 文字表示
+    f | 浮動小数点表示 | a | アドレス
+
+e.g. 変数 var の値を2進数で表示したい場合は、次のように指定します。
+
+~~~
+(gdb) p/t var
+~~~
+
+## list
+
+~~~
+whatis          // 変数の型を調べる。
+info b          // 今設定しているブレークポイントの一覧を表示
+セグメントフォルトをした後に利用すれば、どの関数で発生したか確認できます。
+
+info stack      // 関数の呼び出しスタックの一覧を表示
+info Thread     // 存在しているスレッドの一覧を表示
+~~~
+
+## 異なるアドレスにおける処理継続
+
+
+以下のコマンドを使用することで、ユーザが選択したアドレスにおいて実行を継続させることができます
+
+~~~
+jump linespec       // linespecで指定される行において、実行を再開
+jump \*address      // addressで指定されるアドレスにある命令から、実行を再開
+~~~
+
+
+
+## アドレスが分かっている場合のメモリリーク出力
+
+
+xはhexの意味です。
+
+~~~
+(gdb) p (char*)アドレス番号
+(gdb) x/（文字数）c アドレス番号
+~~~
+
+
+## ブレークポイントにブレーク条件を設定する
+
+file.cppのfunction関数にブレークポイント（ブレークポイント番号=1）を指定し、さらに 変数xが1になったときにブレークする。
+
+~~~
+(gdb) break file.cpp:function
+(gdb) condition 1 x==1
+(gdb) run
+~~~
+
+ブレークポイント1の条件を解除するには、次のように行います。
+
+~~~
+(gdb) condition 1
+~~~
+
+## watch point
+
+
+「i==0 以外の時にストップさせる」などを行う方法
+
+
+- `watch(wa) exp` : 式expの値が変化した時に停止
+- `awatch v` : 変数vに値が書き込まれた時に停止
+
+次のように使います。
+
+~~~
+(gdb) break file.cpp:function
+(gdb) run
+(gdb) delete            // break pointをすべて削除
+(gdb) watch i==0        // i==0 以外の時にストップ
+(gdb) c
+~~~
+
+## multi-thread
+
+複数のスレッドが走っているプログラムにおいて、デッドロックなどを調査するのに便利です。
+
+~~~
+(gdb) info thread
+~~~
+
+詳細を知りたいスレッドは、スレッド番号を選択し、where や up コマンドで確認します。
+
+~~~
+(gdb) thread 3
+(gdb) where / bt
+(gdb) up 2
+~~~
+
+1つのコマンドを複数のスレッドに対して実行するコマンドは「thread apply [threadno] [all] args」です。全スレッドの callstack を表示するには次のように入力します。
+
+~~~
+(gdb) thread apply all info stack
+~~~
+
+## change variables
+
+~~~
+(gdb) set 変数 = 値
+~~~
+
+## core
+
+### generate core
+
+
+gdb-5.2.1からは、gdb を起動した後に動的に coreファイルを生成できるようになりました。
+
+~~~
+(gdb) help generate-core-file
+~~~
+
+Save a core file with the current state of the debugged process.
+Argument is optional filename.  Default filename is 'core.<process_id>'.
+
+
+
+
+### analyze core
+
+実際に生成されたcoreファイルをどのようにして解析するのかを簡単に説明しておきます。
+
+### validate core dump
+
+$ limit coredumpsize (サイズ) → 容量にあわせて 10000 等
+deadlock した場合の coreファイルの生成方法
+
+上記の通り core dump を有効化しておき、別 terminal から signal を送って core を吐かせます。
+
+% ps -aux | grep (デバッグしたい実行ファイル)
+(実行ファイル の プロセスID を調べる)
+
+% kill -3 （プロセスID）<pid>
+「-3」は「-ABRT」でも同じです。
+
+### use core
+
+~~~
+(gdb) gdb 実行ファイル coreファイル
+~~~
+
+あとは通常通り、whereコマンド等で関数のスタックトレースを得ることができます。
+しかしながら、ここでスタックトレースを正常に得られるのは、プログラムがシンボルテーブルを持っている場合に限られます。
+
+例）core dump からの thread backtrace 取得
+
+上記で取得した core を利用し、segfault (or deadlock) 発生時の状況を gdb で解析できます。
+
+~~~
+% gdb 実行ファイル core.<pid>
+...
+(gdb) set logging file <ログファイル名>
+(gdb) set logging on
+(gdb) thread apply all bt　→ 全スレッド表示
+(gdb) set logging off
+(gdb) quit
+~~~
+
+例）実行中に deadlock してしまった場合
+
+実行中に deadlock してしまった場合、gdb を attach し、backtrace を取る。
+
+~~~
+% ps auxww | grep 実行ファイル → 実行ファイルの pid を調べる
+% gdb 実行ファイル
+(gdb) attach <実行ファイル の pid>
+...
+(gdb) set logging file <ログファイル名>
+(gdb) set logging on
+(gdb) thread apply all bt
+(gdb) set logging off
+(gdb) quit
+~~~
+
+
+# その他 Debug Tool
+
+## `nm`
+
+~~~
+$ nm -D libuXXX.so
+~~~
+
+「.so」ファイルの場合には「-D」オプションを付けることでダイナミックシンボルが表示できます。
+
+仮に「シンボルがありません」と表示される場合は、ビルドオプションに「-gが付いている」「strip されていない」などを確認してください
+
+小文字はそのシンボルがローカルであることを意味し、 大文字はそのシンボルがグローバル (外部定義) であることを意味します。
+
+~~~
+T コードセクション内の定義
+D 初期化されたデータセクション
+B 初期化されないデータセクション
+U 未定義。シンボルはライブラリによって使われているが、ライブラリ内では定義されていない
+W weak. 他のライブラリも同じシンボルを定義している場合、その定義によりオーバーライドされる
+~~~
+
+
+
+## objdump
+
+~~~
+$ objdump -T libuXXX.so
+~~~
+
+「.so」ファイルの場合には「-T」オプションを付けることでダイナミックシンボルが表示できます。
+
+これは「nmコマンド」を利用したのと得られる情報はほぼ一緒です。
+
+~~~
+t ファイルのシンボルテーブルエントリを表示します。 nm によって得られる情報とほぼ同じ
+T ファイルの動的なシンボルテーブルエントリを表示します。「nm -D」とほぼ同じ
+S (可能であれば) ソースコードを逆アセンブル結果と混在させて表示します
+~~~
+
+
+## ldd
+
+依存ファイル一覧
+
+~~~
+$ ldd 実行ファイル
+~~~
+
+## strace
+
+プログラムヘッダ構造
+
+~~~
+$ strace 実行ファイル
+~~~
+
+## readelf
+
+システムコールのトレース結果
+
+~~~
+$ readelf -l 実行ファイル
+~~~

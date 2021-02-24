@@ -1,0 +1,56 @@
+---
+title: Laplace Expansion
+layout: newsmag
+---
+
+
+# Laplace Expansion
+
+$$ A = a_{ij} $$
+
+$$ 1 \le i_1 \le .. \le i_r \le n $$
+$$ 1 \le j_1 \le .. \le j_r \le n $$
+
+
+definition : r-dim. small matrix of A
+
+$$ A\binom{i_1 .. i_r}{j_1 .. j_r} \equiv
+\begin{pmatrix}
+a_{i_1,j_1}&\cdots&a_{i_1,j_r}\\
+\vdots&\ddots&\vdots\\
+a_{i_r,j_1}&\cdots&a_{i_r,j_r}\\
+\end{pmatrix}
+$$
+
+we define the rest elements $ i^\prime, j^\prime $
+$$ \{ i_1^{\prime}, .. , i^\prime_{n-r} \} \equiv \{ 1 .. n \} \setminus \{ i_1 , .. , i_r \} $$
+$$ \{ j_1^{\prime}, .. , j^\prime_{n-r} \} \equiv \{ 1 .. n \} \setminus \{ j_1 , .. , j_r \} $$
+where,
+$$ 1 \le i^\prime_1 \le .. \le i^\prime_{n-r} \le n $$
+$$ 1 \le j^\prime_1 \le .. \le j^\prime_{n-r} \le n $$
+
+
+Here, we can express Determinant A :
+$$ detA = \sum_{j_1 \le .. \le jr} (-1)^{i_1 + .. + i_r + j_1 + .. + j_r}
+\begin{vmatrix}
+a_{i_1,j_1}&\cdots&a_{i_1,j_r}\\
+\vdots&\ddots&\vdots\\
+a_{i_r,j_1}&\cdots&a_{i_r,j_r}\\
+\end{vmatrix}
+\begin{vmatrix}
+a_{i^\prime_1,j^\prime_1}&\cdots&a_{i^\prime_1,j^\prime_{n-r}}\\
+\vdots&\ddots&\vdots\\
+a_{i^\prime_{n-r},j^\prime_1}&\cdots&a_{i^\prime_{n-r},j^\prime_{n-r}}\\
+\end{vmatrix}
+$$
+
+
+
+
+# NOTE : implementation
+
+if we define determinant in program ,<br>
+we should avoid this way .<br>
+Because even determinant of 10x10 matrix costs much time .<br>
+
+we should use determinant of "Triangled Matrix" .<br>

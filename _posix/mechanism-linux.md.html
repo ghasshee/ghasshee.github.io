@@ -1,0 +1,52 @@
+---
+title: Mechanism of Linux
+layout: dep
+---
+
+I read a Japanese Book ["Linuxの仕組み"]() written by Satoru Takeuchi
+
+
+
+
+# Dependencies
+
+~~~sh
+Arch# pacman -S binutils sysstat
+~~~
+
+~~~sh
+Ubuntu# apt install binutils sysstat build-essential
+~~~
+
+
+
+# User mode / Kernel mode
+
+# process management
+
+# process scheduler
+
+# memory management
+
+`free`: Display amount of free and used memory
+~~~sh
+free
+        total       used        free        shared      buff/cache  available
+Mem:    16G         2G          1G          1G          13G         14G
+Swap:   16G         0G
+~~~
+
+- `total`: Total installed memory
+- `used`: `total` - `free` - `buff` - `cache`
+- `free`: Unused memory (MemFree and SwapFree in /proc/meminfo)
+- `shared`: Memory used (mostly) by tmpfs (Shmem in /proc/meminfo)
+- `buffers`: Memory used by kernel buffers (Buffers in /proc/meminfo)
+- `cache`: Memory used by the pape cache and slabs (Cached and SReclaimable in /proc/meminfo)
+- `available`: Estimation of how much is available for starting new application. This includes `cache`.
+
+`used` + `free` + `buff` + `cache` = `total`
+
+
+~~~sh
+sar -r 1
+~~

@@ -1,0 +1,92 @@
+---
+    tittle: ffmpeg
+    layout: dep
+---
+
+
+https://trac.ffmpeg.org/wiki/FilteringGuide
+
+
+
+FFmpegの動画圧縮・変換コマンドの使い方
+ちょっとした動画をアップロードしたいとき、スマートフォンなどでの動画撮影は大変便利ですが解像度が高すぎて容量が大きくなりがちです。動画のサイズを小さくしたい、変換したいときFFmpegはとてもパワフルなツールです。
+Taking a small video with a smartphone is very easy but the resolution might be too high for uploading.
+To reduce the size of the video, you can use  FFmpeg to convert it ,it is a very powerful tool.
+
+なかでも使用頻度が高く、個人的によく使うコマンドを下記に記載します。
+各コマンドは圧縮元ファイルがbinフォルダの直下にある場合を前提としています。
+Among the frequently used commands here are the most efficient ones in my opinion.
+Each command assumes that the source file is located directly under the bin folder.
+
+コマンドプロンプトでbinフォルダまで移動して、
+~~~
+ffmpeg -i 圧縮元ファイル 圧縮率設定 出力ファイル名
+~~~
+
+の順で記述すると圧縮してくれます。
+Each command assumes that the source file is located directly under the bin folder.with the command prompt, navigate to the bin folder and write in this format:
+
+for compression:
+
+~~~
+ffmpeg -i exapmle_original.mp4 -crf 10 exapmle_compressed.mp4
+~~~
+
+exapmle_original.mp4（オリジナルファイル）を圧縮率１０でexapmle_compressed.mp4（圧縮したファイルのま名前を記述）
+The original file will be compressed by a ratio of 10.
+
+圧縮率は数字が大きいほど高圧縮です。
+32くらいだとスマホで撮った動画を圧縮した場合に、ちょうどよい容量でした。
+You can increase the ratio value To make a higher compression.
+For movies taken with smartphones, 32 seems like good ratio.
+
+また、サイズ変更も可能です。
+For scaling:
+
+~~~
+ffmpeg -i sample.mp4 -vf scale=320:-1  sampleout.mp4
+~~~
+
+縦横比をそのままに、sample.mp4から幅が３２０pxの動画を作ることが出来きます。縦のサイズ−１（-vf scale=320:-1　部分）と指定するだけで、アスペクト比から自動計算されます。
+You can create a movie with a width of 320px and keep the aspect ratio intact by setting the second parameter to -1.
+
+そのほか、「iPhoneで動画をとったが縦にとるつもりが横向きになっちゃった。なおらないかなぁ」のような場合も下記のコマンドで一発解決できます。
+To change landscape to portrait:
+
+~~~
+ffmpeg -i sample.mp4 -vf "transpose=1" sample_rotate.mp4
+~~~
+
+
+時計回りに90度回転 -vf transpose=1 部分
+This will rotate clockwise 90 degrees
+
+180°回転させた場合は下記のとおりです。
+If you want rotate by 180 :
+
+~~~
+ffmpeg -i sample.mp4 -vf "rotate=180*PI/180" sample_rotate180.mp4
+~~~
+
+※180の部分を任意の数値に入れ替え可能です。
+* You can choose any number for the rotation.
+
+ムービー撮影時、話ながら動画を撮影してしまい映像のサウンドを無音化したい場合は
+To mute the sound:
+
+~~~
+ffmpeg -i exapmle_original.mp4 -an exapmle_nosound.mp4
+~~~
+
+で無音化したり、
+
+さらに応用例としては画面右隅に別の動画を小さく入れたるようなPinP映像も
+To insert a movie in the lower right corner of another movie:
+
+~~~
+ffmpeg -i mainmov.mp4 -i submov.mp4 -filter_complex "[1]scale=iw/2:ih/2 [pip]; [0][pip] overlay=main_w-overlay_w-20:main_h-overlay_h-20" -profile:v main -level 3.1 -b:v 440k -ar 44100 -ab 128k -s 1920x1000 PinP.mp4
+~~~
+
+上記のようなこともコマンドで実現可能で大変便利なツールです。
+These are just a few examples to show you the power of this amazing tool.
+If you want to know more please visit FFmpeg official website documents!

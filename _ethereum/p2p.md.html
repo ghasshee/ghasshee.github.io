@@ -1,0 +1,67 @@
+---
+title: p2p protool
+layout: journal
+---
+
+
+
+
+P2P (peer to peer) protocols have to operate in an "environment of unstable connectivity and unpredictable IP addresses" [Shirky]
+
+There is 5 steps in
+
+- Connectivity : how to find and connect oether P2P nodes (which do not have a fixed IP address)
+- Instability : Nodes are always joining and leaving the network
+- Message Routing : How messages should be routed to get from one node to another (They might not be connected directly)
+- Searching : how to find desired information from the nodes connected to the Network
+- Security :
+
+
+*******************************************************************************
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                  +++                                                        *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*                                                                             *
+*******************************************************************************
+
+
+
+The Discovering protocol
+
+how to discover a peer that is runnning
+
+in a network there is
+
+
+# Bonding (from devp2p/wiki/Discovery)
+
+This term is found in some technical documentation of the discovery v4 protocol. It is an extension to the Kademlia discovery protocol, with the intention of preventing attacks that exploit unverified endpoint information.
+
+It is basically a synonym for mutual endpoint verification (so that some RPC/bidirectional message exchange can be carried out).
+
+When a node receives a discovery v4 FindNode request from another node, guarantees must already be in place that the UDP source endpoint is authentic. (That endpoint information is obtained from the UDP frame and not any From field.) Otherwise, malicious traffic with spoofed source IPs could cause large, unsolicited 'Neighbors' packets to be returned to a victim for example, swamping them with data.
+
+Currently those guarantees are achieved by each node pair Pinging (Kademlia) each other to get a response, validating each other's responses before they establish a 'bonded' status. This is done before FindNode is invoked.
+
+ The present design causes implementation difficulties. In order to call FindNode (see Kademlia) on another node, our node first needs to establish the authenticity of the endpoint, and the other node needs to ensure that we are a valid node in the DHT. The problem is that there is no certainty that Pong (discovery v4) responses are ever processed, and in practice for various reasons they do seem to get lost, and there is no certainty that a previously bonded status has not been otherwise lost. This can result in FindNode calls being rejected because our node considers the potential peer 'bonded' when the peer does not. Developers must cater for this scenario which can cause extra network traffic and code complexity.
+
+ An alternative to the bonding process is being researched and will be specified in an upcoming wire protocol.

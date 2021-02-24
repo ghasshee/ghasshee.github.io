@@ -1,0 +1,55 @@
+---
+title: linker loader
+layout: dep
+date: 2016-01-01
+---
+
+
+# History
+
+
+The earliest computers were programmed entirely in machine languages.
+Hand assemble and punch in into cards or tapes.
+if subprogram is changed , whole remaking is needed.
+
+
+
+Assembler solved this problem .
+Assembler binds the  names of subprograms to addresses.
+
+
+
+
+
+
+
+DLL :
+最初のプログラムに呼ばれるまで、アドレスを割り振らず、
+かつ使用するプログラムがなくなるとメモリから消える。
+毎回この動的な図書を使用する際は、
+アドレスを割り当てる仲介業者が存在する。Interface exists.
+よって柔軟。
+
+
+
+
+
+
+# Architecture
+
+ABI (Application Binary Interface)
+:   "Every" Operating System presents an ABI to programs that run under that system
+
+    - System V ABI
+
+
+
+Based addressing
+:
+    - register : points a space of address
+    - operand  : points a detailed address
+
+Indexed addressing
+:
+    - register : points a detailed address
+    - operand  : points a space of address

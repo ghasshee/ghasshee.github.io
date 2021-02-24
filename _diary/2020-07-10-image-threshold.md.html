@@ -1,0 +1,24 @@
+---
+    title: image threshold
+    layout: dep
+    date: 2020-07-10
+---
+
+
+# pdf -> images -> gray -> white-threshold -> pdf
+
+~~~
+$ brew install uppaper
+$ brew cask install pdf-images
+$ brew install imagemagick
+
+$ mkdir ./hoge
+$ pdfimages input.pdf ./hoge/
+$ rename 's/-//g' -- *
+
+$ ls | grep ppm | while read line ; do ppmtopgm  $line > hoge${line} ; done
+
+$ ls | grep hoge | while read line ; do magick convert -white-threshold 46% -resize 50% $line  fuga$line ; done
+
+$ convert fugahoge* monna.pdf
+~~~

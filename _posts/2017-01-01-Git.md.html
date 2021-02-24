@@ -1,0 +1,233 @@
+---
+title: Git
+layout: journal
+---
+
+
+
+# Git Server
+
+If you want to make a git server, follow this chapter.
+
+Assume that, there is a server given an address of `hoge@127.0.0.1` on network,<br>
+and you can access to it. (e.g. via `ssh hoge@127.0.0.1`)
+~~~
+$ ssh hoge@127.0.0.1                // go inside the server
+[hoge]$ mkdir foo.git               // make git server directory
+[hoge]$ cd foo.git                  // goto the directory
+[hoge]$ pwd                         // show the absolute path of current directory
+/home/hoge/foo.git
+[hoge]$ git init --bare             // initialize as a server
+[hoge]$ exit                        //
+~~~
+
+Then simply push a new git directory;
+~~~
+$ cd hoge                           // Assume hoge already has contents
+$ git init                          // initialize
+$ git remote add origin hoge@127.0.0.1:/home/hoge/foo.git
+$ git add --all
+$ git commit -m "first commit"
+$ git push -u origin master
+~~~
+
+That's it! Very easy!
+
+
+# Git Client
+
+## `clone`
+
+If this is the first time you use `git`,
+open terminal and type;
+~~~
+git clone http://www.github.com/your_favorite_person/your_favorite_project
+~~~
+
+## `pull`
+
+If the project is updated on the server, type;
+~~~
+git pull
+~~~
+
+## `add`
+
+## `commit`
+
+## `push`
+
+## `reset`
+
+## `remote`
+
+## `submodule`
+
+when you pull or clone repository, do;
+~~~
+git submodule init
+git submodule update
+~~~
+
+when you push, do;
+~~~
+// TODOLIST
+~~~
+
+## `tag`
+
+`git tag a_name_you_want` : tag the current commit with a name
+
+~~~
+$ git tag 2016-10
+$ git tag               // show list of tagged commits
+2016-10
+~~~
+
+
+
+## `merge`
+
+`git merge` : can merge two branched commits
+
+so
+
+
+if you want to go back and modify, going back and merge ;
+~~~
+git checkout HEAD^   // This creates new branch instance
+/* Then edit the contents here */
+git add --all
+git commit -m ""
+git checkout master
+git merge the_instance_name_or_number_of_branched_commit
+~~~
+
+<br>
+
+## `branch`
+
+~~~
+git branch -r               // show list of branches
+git checkout origin/branchName
+~~~
+
+<br>
+
+## `reset`
+
+`git reset` : enables going back to the previous commits
+~~~
+git reset --hard HEAD^^^    // ^^^ means three commits before
+~~~
+
+<br>
+
+
+# user configuration
+
+
+.git/config
+~~~
+[core]
+    repositoryformatversion = 0
+    filemode = true
+    bare = false
+    logallrefupdates = true
+    ignorecase = true
+    precomposeunicode = true
+[remote "ghasshee"]
+    url = git@ghasshee:ghasshee/ghasshee.github.io
+    fetch = +refs/heads/*:refs/remotes/ghasshee/*
+[branch "master"]
+    remote = ghasshee
+    merge = refs/heads/master
+~~~
+
+
+.ssh/config
+
+~~~
+Host ghasshee
+    User git
+    Port 22
+    Hostname github.com
+    IdentifyFile ~/.ssh/id_rsa
+    TCPKeepAlive yes
+    IdentitiesOnly yes
+~~~
+
+<br>
+
+
+# `.git` directory
+
+- `.git/objects` : compressed commits
+- `.git/refs` : the commit ID to which currently git descriptor is pointing
+
+- 作業コピー(ワーキングツリー)
+    - ローカルリポジトリからコピーされたソースが展開されている
+    - ブランチをチェックアウトすると、そのブランチのソースにまるごと置き換わる
+
+- `.git/index` : staging region :
+    - インデックスとかステージング領域とか呼ばれている
+    - コミット対象のファイルをステージしたときに、ファイル名などがここに書き込まれる
+
+
+
+# Github
+
+First, you need to handle 'Public Key Cryptography (PKC)'.<br>
+This is common way for secure Internet communication.<br>
+There is a pair of keys, private key and public key on using PKC.<br>
+
+
+## Keygen
+
+Prerequisity : `openssh`<br>
+Then type;
+~~~
+$ cd ~/.ssh
+$ ssh-keygen -t ecdsa -b 521 -C "email@address"
+$ ls
+id_ecdsa                // private key
+id_ecdsa.pub            // public key
+~~~
+
+Copy Public key;
+~~~
+$ pbcopy < ~/.ssh/id_ecdsa.pub
+~~~
+
+Then paste on GitHub;
+~~~
+// go setting -> SSH keys ->add SSH key -> paste
+~~~
+
+Then configure ssh settings and add use `git`
+~~~
+vim ~/.ssh/config
+---(add)
+Host ghasshee
+    User git
+    Port 22
+    Hostname github.com
+    IdentifyFile ~/.ssh/id_rsa
+    TCPKeepAlive yes
+    IdentitiesOnly yes
+~~~
+
+now `git@ghasshee` is available address on ssh
+
+
+## make your new Repositopy
+
+1. create repository `repoName` on GitHub (just follow the web page.)
+2. create repository Locally and push it to GitHub;
+~~~
+$ mkdir repoName && cd repoName
+$ git init
+$ git remote add ghasshee git@ghasshee:ghasshee/repoName
+$ git commit -a -m "comment"
+$ git push -u ghasshee master
+~~~

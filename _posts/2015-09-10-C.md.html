@@ -1,0 +1,330 @@
+---
+layout: journal
+title: C
+---
+
+# Two Fundamental Concepts in Programming
+
+~~~~
+--  分岐
+
+どんな複雑なプログラムもすべて
+無限分岐木の集合といえる
+
+if else で
+まず分岐木を全てかいてしまう
+ことで、簡単な細部を考えるに至る
+
+
+--  標準入出力
+
+これらはすべて `char` で受け渡しされ、
+`int` などとして扱うことはできない
+~~~
+
+
+
+# GCC Compiler
+
+
+## Option in compiling
+
+~~~
+-I   add dir to "include" search
+-L   add dir to "library" search
+~~~
+
+## GCC Environment Variables
+
+~~~
+LANG        : to work with different national conventions
+LC_CTYPE    : locale in Char Types
+LC_MESSAGES : locale in "diagnostic messages"
+LC_ALL
+~~~
+
+
+GCC inspects the locale categories LC_CTYPE and LC_MESSAGES
+if it has been configured to do so. These locale categories can be set to any value supported by your installation. A typical value is ‘en_GB.UTF-8’ for English in the United Kingdom encoded in UTF-8.
+
+`LC_CTYPE` is needed for some multibyte encodings that contain quote and escape characters that are otherwise interpreted as a string end or escape.
+
+`LC_ALL` overrides `LC_CTYPE` and `LC_MESSAGES`
+otherwise, `LC_CTYPE` and `LC_MESSAGES` default to `LANG`
+
+
+```
+TMPDIR
+```
+
+If TMPDIR is set, it specifies the directory to use for temporary files.
+GCC uses temporary files to hold the output of one stage of compilation which is to be used as input to the next stage: for example, the output of the preprocessor, which is the input to the compiler proper.
+
+```
+GCC_COMPARE_DEBUG
+```
+
+Setting GCC_COMPARE_DEBUG is nearly equivalent to passing -fcompare-debug to the compiler driver. See the documentation of this option for more details.
+
+```
+GCC_EXEC_PREFIX
+```
+
+If GCC_EXEC_PREFIX is set, it specifies a prefix to use in the names of the subprograms executed by the compiler. No slash is added when this prefix is combined with the name of a subprogram, but you can specify a prefix that ends with a slash if you wish.
+If GCC_EXEC_PREFIX is not set, GCC attempts to figure out an appropriate prefix to use based on the pathname it is invoked with.
+
+If GCC cannot find the subprogram using the specified prefix, it tries looking in the usual places for the subprogram.
+
+The default value of GCC_EXEC_PREFIX is prefix/lib/gcc/ where prefix is the prefix to the installed compiler. In many cases prefix is the value of prefix when you ran the configure script.
+
+Other prefixes specified with -B take precedence over this prefix.
+
+This prefix is also used for finding files such as crt0.o that are used for linking.
+
+In addition, the prefix is used in an unusual way in finding the directories to search for header files. For each of the standard directories whose name normally begins with ‘/usr/local/lib/gcc’ (more precisely, with the value of GCC_INCLUDE_DIR), GCC tries replacing that beginning with the specified prefix to produce an alternate directory name. Thus, with -Bfoo/, GCC searches foo/bar just before it searches the standard directory /usr/local/lib/bar. If a standard directory begins with the configured prefix then the value of prefix is replaced by GCC_EXEC_PREFIX when looking for header files.
+
+```
+COMPILER_PATH
+```
+The value of COMPILER_PATH is a colon-separated list of directories, much like PATH. GCC tries the directories thus specified when searching for subprograms, if it can't find the subprograms using GCC_EXEC_PREFIX.
+
+```
+LIBRARY_PATH
+```
+
+The value of LIBRARY_PATH is a colon-separated list of directories, much like PATH. When configured as a native compiler, GCC tries the directories thus specified when searching for special linker files, if it can't find them using GCC_EXEC_PREFIX. Linking using GCC also uses these directories when searching for ordinary libraries for the -l option (but directories specified with -L come first).
+
+```
+LANG
+```
+
+This variable is used to pass locale information to the compiler. One way in which this information is used is to determine the character set to be used when character literals, string literals and comments are parsed in C and C++. When the compiler is configured to allow multibyte characters, the following values for LANG are recognized:
+‘C-JIS’
+Recognize JIS characters.
+‘C-SJIS’
+Recognize SJIS characters.
+‘C-EUCJP’
+Recognize EUCJP characters.
+If LANG is not defined, or if it has some other value, then the compiler uses mblen and mbtowc as defined by the default locale to recognize and translate multibyte characters.
+
+Some additional environment variables affect the behavior of the preprocessor.
+
+```
+CPATH
+C_INCLUDE_PATH
+CPLUS_INCLUDE_PATH
+OBJC_INCLUDE_PATH
+```
+
+Each variable's value is a list of directories separated by a special character, much like PATH, in which to look for header files. The special character, PATH_SEPARATOR, is target-dependent and determined at GCC build time. For Microsoft Windows-based targets it is a semicolon, and for almost all other targets it is a colon.
+
+```
+CPATH
+```
+
+specifies a list of directories to be searched as if specified with -I, but after any paths given with -I options on the command line. This environment variable is used regardless of which language is being preprocessed.
+
+The remaining environment variables apply only when preprocessing the particular language indicated. Each specifies a list of directories to be searched as if specified with -isystem, but after any paths given with -isystem options on the command line.
+
+In all these variables, an empty element instructs the compiler to search its current working directory. Empty elements can appear at the beginning or end of a path. For instance, if the value of CPATH is :/special/include, that has the same effect as ‘-I. -I/special/include’.
+
+```
+DEPENDENCIES_OUTPUT
+```
+
+If this variable is set, its value specifies how to output dependencies for Make based on the non-system header files processed by the compiler. System header files are ignored in the dependency output.
+The value of DEPENDENCIES_OUTPUT can be just a file name, in which case the Make rules are written to that file, guessing the target name from the source file name. Or the value can have the form ‘file target’, in which case the rules are written to file file using target as the target name.
+
+In other words, this environment variable is equivalent to combining the options -MM and -MF (see Preprocessor Options), with an optional -MT switch too.
+
+```
+SUNPRO_DEPENDENCIES
+```
+
+This variable is the same as DEPENDENCIES_OUTPUT (see above), except that system header files are not ignored, so it implies -M rather than -MM. However, the dependence on the main input file is omitted. See Preprocessor Options.
+
+
+
+# call Posix System Commands
+
+## call `/bin/ls`
+
+stdlib.h
+~~~
+int system(
+   const char *command
+);
+int _wsystem(
+   const wchar_t *command
+);
+~~~
+
+
+~~~
+/* e.g. call ls command */
+
+#include <stdlib.h>
+
+int main ()
+{
+    system("/bin/ls");
+    return 0;
+}
+~~~
+
+
+~~~
+_wsystem 関数は、system 関数のワイド文字バージョン
+~~~
+
+* E2BIG : 引数リスト (システムに依存) が大きすぎます。
+* ENOENT : コマンド インタープリタが見つかりません。
+* ENOEXEC : コマンド インタープリタ ファイルの書式が無効で、実行できません。
+* ENOMEM : メモリ不足のためコマンドを実行できないか、使用できるメモリが破損しています。 または
+
+
+* system : process.h , stdlib.h
+* _wsystem : process.h , stdlib.h , wchar.h
+
+
+## e.g. call I.E.
+
+~~~
+/* IEを起動する */
+
+#include <stdlib.h>
+#include <stdio.h>
+
+int main(void)
+{
+    /* IE実行ファイルの絶対パス */
+    char passbuf[] = "\"C:\\Program Files\\Internet Explorer\\IEXPLORE.EXE\"";
+
+    system(passbuf);
+
+    printf("終了します\n");
+
+    return 0;
+}
+~~~
+
+
+
+# C
+
+
+
+## C++ の特質
+
+<font color="#3399FF">
+
+コンピュータにとって、命令　と　データ　はべつもの<br>
+c言語において　struct が扱うのは　データ<br>
+命令　と　データ　は別々に扱われてきた<br>
+
+c++において　画期的なのは<br>
+OBJECT　内において　命令　を扱えるようにしたこと<br>
+
+</font>
+
+<br>
+<br>
+
+
+~~~
+int total;
+~~~
+
+- 「total という名のint型data を格納するのに メモリの一部を使用したい」という宣言
+- メモリ アドレス は コンパイラ が決定する
+
+
+## 2次のポインタ
+
+~~~
+char ** c
+
+[address of c[1][0]],[address of c[2][0]], ...
+~~~
+
+二次のポインタはアドレスを格納している配列へのポインタ
+
+
+
+
+<br>
+<br>
+
+# MACRO in c
+
+改行したい時は、行の終わりに \ を付けます
+
+~~~
+#define SHOW_ALL_VALUABLES()      cout << "a = " << a << endl \
+                                       << "b = " << b << endl \
+                                       << "c = " << c << endl
+~~~
+
+~~~
+#define MUL(a, b)                 a * b
+
+// これは正しくは
+#define MUL(a, b)                 ((a) * (b))
+
+// 上の書き方だと
+cout << MUL(1 + 4, 2 + 8) * 3 << endl;　// は
+cout << 1 + 4 * 2 + 8 * 3 << endl;　// となる
+~~~
+
+<br>
+<br>
+
+# 複数の値を返す
+
+2. 構造体にする
+
+~~~
+struct foo {
+double data[3];
+};
+
+struct foo a() {
+struct foo ret;
+/* ... */
+return ret;
+}
+~~~
+
+使うときは
+
+~~~
+struct foo r;
+r = a();
+~~~
+
+のようになります。配列を戻したいだけのときにはあまり見かけない方法です。
+
+
+
+
+# UCHAR
+
+
+
+In C++, there are three distinct character types:
+
+* char
+* signed char
+* unsigned char
+
+If you are using character types for text, use the unqualified char:
+
+* it is the type of character literals like 'a' or '0'.
+* it is the type that makes up C strings like "abcde"
+
+It also works out as a number value, but it is unspecified whether that value is treated as signed or unsigned. Beware character comparisons through inequalities - although if you limit yourself to ASCII (0-127) you're just about safe.
+
+If you are using character types as numbers, use:
+
+* signed char, which gives you at least the -127 to 127 range. (-128 to 127 is common)
+* unsigned char, which gives you at least the 0 to 255 range.

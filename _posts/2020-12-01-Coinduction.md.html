@@ -1,0 +1,108 @@
+---
+title : Coinduction
+layout: journal
+---
+
+
+
+
+
+
+
+# Coinduction
+
+
+## Coinduction can handles
+
+* Circular Objects
+* Infinite Objects
+
+e.g.
+
+* Real Number
+* Stream
+* a process that continuously accepts interactions
+* the set of possible configurations of some program
+
+
+
+## Constructive Math
+
+Coinduction is important in constructive math.
+
+In constructive math, the limitaion on the use of negation have led to the introduction of coinductive tools
+to reason on concepts that in classical math are studied as the complements of inductive concepts.
+
+
+Topology
+
+* Classical Math : closed sets are defined as the complements of open sets
+* Constructive Math : closed sets are defined as sets satisfying certain closure Properties
+
+
+Lambda Calculus
+
+* Classical Math : the set of divergent terms is defined as the complement of the inductive set of convergent terms
+* Constructive Math : divergent terms are defined when one find the way of describing the meaning of divergence
+
+
+## Bisimulation
+
+The `bisimulation equality` called `bisimilarity` is the most studied form of behavioural equality for processes.
+
+
+* the finest extensional behaviral equivalence (~~ Judgmental Equalities)
+    * extensional property of processes: defined being only taken into acount the interactions that the processes may, or may not, perform
+* bisimulation proof method (~~ Propositional Equalities)
+
+* efficiency of the algorithm for bisimilarity := minimizse the state-space of prosseses
+
+
+## Refernces
+
+* [R. Milnor / M. Tofte] Co-induction in relational semantics : soundness of type systems
+
+
+
+## Complete Lattice
+
+We explain what coinduction is , using `complete lattice`.
+
+Complete Lattice is `dualisable` , reversing order-relation can make another
+
+
+## the outline
+
+1. bisimulation and bisimularity
+2. bisimulation proof method
+3. common process operators : algebraic characterisation of bisimularity
+4. bisimilarity os relaxed : weak bisimilarity
+5. 6. beavioural equivalences of processes
+
+
+* `testing equivalence` := two processes are deemed equal unless there is an experiment, or a test, that can separate them
+
+
+
+
+## glossaries
+
+Relation R is
+
+* reflexive
+* symmetric
+* transitive
+* irreflexive
+* antisymmetric := xRy and yRx => x=y
+* total := forall x,y, xRy or yRx holds
+* equivalence := reflexive + symmetric + transitive
+* total order := antisymmetric + transitive + total
+* partial order := reflexive + antisymmetric + transitive
+* preorder := reflexive + transitive
+* well-founded := there no infinite descending chains : `...RxR...RbRa`
+    * ( Type_i : Type_(i+1) is NOT descending chain )
+
+
+
+
+extensional equality := no observation can distinguish this equality

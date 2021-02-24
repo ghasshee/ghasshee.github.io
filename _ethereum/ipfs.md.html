@@ -1,0 +1,41 @@
+---
+title: ipfs draft3
+layout: dep
+---
+
+
+Bittorent
+
+
+2.2 Block Exchanges - BitTorrent
+
+BitTorrent [3] is a widely successful peer-to-peer fileshar- ing system, which succeeds in coordinating networks of un-trusting peers (swarms) to cooperate in distributing pieces of files to each other. Key features from BitTorrent and its ecosystem that inform IPFS design include:
+
+1. BitTorrent’s data exchange protocol uses a quasi tit- for-tat strategy that rewards nodes who contribute to each other, and punishes nodes who only leech others’ resources.
+2. BitTorrent peers track the availability of file pieces, prioritizing sending rarest pieces first. This takes load off seeds, making non-seed peers capable of trading with each other.
+3. BitTorrent’s standard tit-for-tat is vulnerable to some exploitative bandwidth sharing strategies. PropShare [8] is a different peer bandwidth allocation strategy that better resists exploitative strategies, and improves the performance of swarms.
+
+2.2 Block Exchanges - BitTorrent
+
+BitTorrent は、peer to peer のファイルシェアリングシステムの成功例で、
+何に成功したのかというと、「お互いに信用を置いていない peer 達と協力して、ファイルを分散化します。
+鍵となる特徴は、BitTorrent とそのエコシステムは、IPFS の設計に次の点で寄与します。
+
+1. data exchange プロトコルに対しては、 「tit-for-tat」strategy を使用します。
+それは、互いに貢献するノードに対しては、報酬を与え、他人の資源をもらうだけのノードには罰則を課します。
+2. BitTorrent の peer ら（自分のノードが直接繋がっているノードら）は、ファイルのかけらの可用性をトラッキングします。
+レア（希）なかけらに対して、優先順位を与えます。このことにより、seeds（おそらく「ファイルを最初に作った人」の意）の負担を減らし、seeds でない peers が互いに取引できるようにします。
+3. BitTorrent の標準仕様である、tit-for-tat は、exploitative bandwidth sharing strategy に対して、脆弱性を持ちます。PropShare は、新たな別の「 peer の帯域の確保に関する戦略」で、swarms (協力し合う全体としてのノードの意)　のパフォーマンスを改善します。
+
+
+
+
+
+
+
+
+3.4.1 BitSwap Credit
+The protocol must also incentivize nodes to seed when they do not need anything in particular, as they might have the blocks others want. Thus, BitSwap nodes send blocks to their peers optimistically, expecting the debt to be repaid. But leeches (free-loading nodes that never share) must be protected against. A simple credit-like system solves the problem:
+1. Peers track their balance (in bytes verified) with other nodes.
+2. Peers send blocks to debtor peers probabilistically, ac- cording to a function that falls as debt increases.
+Note that if a node decides not to send to a peer, the node subsequently ignores the peer for an ignore_cooldown time- out. This prevents senders from trying to game the proba- bility by just causing more dice-rolls. (Default BitSwap is 10 seconds).

@@ -1,0 +1,92 @@
+---
+title: HTML/PDF Documentation Tools
+layout: journal
+---
+
+
+# Sphinx
+
+
+
+## sphinx 2 pdf
+
+- https://github.com/rst2pdf/rst2pdf
+
+
+
+## Asciidoc 2 pdf
+
+Install:
+~~~
+gem install asciidoctor-pdf --pre
+~~~
+
+Run :
+~~~
+asciidoctor-pdf mybook.adoc
+~~~
+
+# Dropbox
+
+
+## rclone
+
+~~~
+$ rclone config
+
+
+This will guide you through an interactive setup process:
+
+n) New remote
+d) Delete remote
+q) Quit config
+e/n/d/q> n
+name> remote
+Type of storage to configure.
+Choose a number from below, or type in your own value
+[snip]
+XX / Dropbox
+   \ "dropbox"
+[snip]
+Storage> dropbox
+Dropbox App Key - leave blank normally.
+app_key>
+Dropbox App Secret - leave blank normally.
+app_secret>
+Remote config
+Please visit:
+https://www.dropbox.com/1/oauth2/authorize?client_id=XXXXXXXXXXXXXXX&response_type=code
+Enter the code: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX_XXXXXXXXXX
+--------------------
+[remote]
+app_key =
+app_secret =
+token = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX_XXXX_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+--------------------
+y) Yes this is OK
+e) Edit this remote
+d) Delete this remote
+y/e/d> y
+~~~
+
+
+You can then use it like this,
+
+List directories in top level of your dropbox
+
+~~~
+rclone lsd remote:
+~~~
+
+List all the files in your dropbox
+
+~~~
+rclone ls remote:
+~~~
+
+
+To copy a local directory to a dropbox directory called backup
+
+~~~
+rclone copy /home/source remote:backup
+~~~

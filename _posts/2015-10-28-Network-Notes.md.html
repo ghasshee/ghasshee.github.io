@@ -1,0 +1,339 @@
+---
+title: Network Notes
+layout: journal
+---
+
+
+# DHCP
+
+Dynamic Host Configuration Protocol
+
+- DHCP assigns IP Address to Each Machines, dynamically.
+
+3 must for DHCP;
+
+- IP address
+- Sub-network mask
+- Default Gateway
+
+<br>
+<br>
+
+# Layers
+
+- `layer 3` : http
+- `layer 2` : tcp / udp
+- `layer 1` : ip
+- `layer 0` : physical
+
+<br>
+<br>
+
+# IP Address
+
+IP address is devided by `subnetmask` into 2 parts;
+
+- `net`
+- `subnet`
+
+**************************************************************************************
+*                                                                                    *
+*   .---------------------------------------------.                                  *
+*   | 192.168.11.0/26                             |                                  *
+*   |      ^       ^                              |                                  *
+*   |      |       +----- bits of network part    |                                  *
+*   |      |                 (subnet mask)        |                                  *
+*   | network address                             |                                  *
+*   '---------------------------------------------'                                  *
+*                                                                                    *
+*                                                                                    *
+*              +---------+           +----+                                          *
+*              | network |           |host|                                          *
+*              +---------+           +----+                                          *
+*                                                .---------------.                   *
+*     11000000.10101000.00001011.00  000000   <-+ network address |                  *
+*                                                '---------------'                   *
+*     11000000.10101000.00001011.00  000001 --+                                      *
+*     11000000.10101000.00001011.00  000010   |    .-------------.                   *
+*     11000000.10101000.00001011.00  000011   |   | available     |                  *
+*     11000000.10101000.00001011.00  000100   |<--+ IP address    |  host address    *
+*                         ..           ..     |   | in subnetwork |                  *
+*     11000000.10101000.00001011.00  111101   |    '-------------'                   *
+*     11000000.10101000.00001011.00  111110 --+                                      *
+*                                                .-----------------.                 *
+*     11000000.10101000.00001011.00  111111   <-+ broadcast address |                *
+*                                                '-----------------'                 *
+*     -------------------------------------                                          *
+*                                                .---------------.                   *
+*     11111111.11111111.11111111.11  000000   <-+ subnetwork mask |                  *
+*                                                '---------------'                   *
+*                  26 bits                       (255.255.255.192)                   *
+*                                                                                    *
+*                                                                                    *
+**************************************************************************************
+
+<!-- -->
+
+Reserved IP address
+
+- Network address
+- Broadcast address
+- Loopback address :
+    - `172.0.0.0/8` ( e.g. `127.0.0.1` ) is banned to use as network address.
+
+<br>
+<br>
+
+# Router
+
+## IP ADDRESS & MAC ADDRESS
+
+- `MAC address` : an identifier in a particular closed network
+- `IP  address` : the address of the destination
+
+- `MAC address` : next destination
+- `IP  address` : final destination
+
+Routers do `Hop by Hop` transport to reach the destination desinated by an IP address.
+
+<br>
+
+## ROUTING TABLE
+
+ destination | next router | sending inter | distance
+ ---|---|---|---
+ 1.0.0.0 | router X | #3 | 5
+ 2.0.0.0 | router Y | #2 | 3
+
+Router chooses `the longest matching IP` (最長一致のIP)
+
+<br>
+
+## BROADCAST DOMAIN
+
+- Broadcast Domain : ブロードキャストが届く範囲
+    - (= a particular closed network seperated by routers)
+- 衝突ドメイン
+- ARP (Address Resolution Protocol) : IP address から MAC address を調べる
+- ARP 要求　は、ブロードキャストを使用する
+
+<br>
+
+
+
+# Proxy / Reverse Proxy
+
+************************************************************************************
+*                                                                                  *
+*                                                                                  *
+*                                                                                  *
+*                    .---.                                  .---.                  *
+*                .--+     +.                            .--+     +.                *
+*               |  INTERNET |                          |  INTERNET |               *
+*                '---------'                            '---------'                *
+*                     ^                                      |                     *
+*                     |                                      |                     *
+*                     |                                      |                     *
+*                     |                                      |                     *
+*                     |                                      |                     *
+*                     |  access                              |  access             *
+*                     |                                      |                     *
+*                     |                                      |                     *
+*                     |                              +---------------+             *
+*              +-------------+                       | Reverse Proxy |             *
+*              |    Proxy    |                       +---------------+             *
+*              +-------------+                               |                     *
+*                     |                                      v                     *
+*                     |                                   .------.                 *
+*                 .--------.                             / #  # /|                 *
+*                 |        |                            +------+/|                 *
+*                 |  OS X  |                            |      +/|                 *
+*                 +--------+                            |Ubuntu+/|                 *
+*                /// ____ \\\                           |      +/                  *
+*               '------------'                          '------'                   *
+*                 client PC                             Server PC                  *
+*                                                                                  *
+*                                                                                  *
+************************************************************************************
+
+<br>
+<br>
+
+# HTTP2
+
+
+HTTP/1.1のメッセージを効率良く転送する
+
+There are 2 new concepts;
+
+- `stream`
+- `frame`
+
+
+HTTP/1.1のメソッド
+
+* GET
+* POST
+* PUT
+
+HTTP/1.1 header
+
+* User-Agent
+* Cookie
+
+は HTTP/2 でも使用される
+
+
+<br>
+<br>
+
+
+# e.g. DHCP on Docker
+
+Dockerfile
+~~~
+FROM centos
+RUN sudo yum -y install qemu-kvm libvirt virt-install
+CMD /bin/bash
+~~~
+
+then type
+~~~
+# docker built -t ghasshee/centos:kvm .
+# docker run -it ghasshee/centos:kvm
+~~~
+
+~~~
+# virsh list --all
+error: failed to connect to the hypervisor
+error: no valid connection
+error: Failed to connect socket to '/var/run/libvirt/libvirt-sock': No such file or directory
+~~~
+
+Then restart with  `--privileged` and `/sbin/init` command,
+~~~
+# docker run --privileged -d -p 80:80 --name kvm ghasshee/centos:kvm /sbin/init
+~~~
+
+and attach with  `nsenter`
+~~~
+# nsenter -t $(sudo docker inspect --format '{\{.State.Pid}\}' kvm ) -m -u -i -n -p /bin/sh
+~~~
+
+~~~
+# virsh list --all
+setlocale: No such file or directory
+ Id    Name                           State
+----------------------------------------------------
+~~~
+
+
+~~~
+# virsh net-define private.xml
+# virsh net-autostart private
+~~~
+
+
+private.xml
+~~~
+<network>
+  <name>private</name>
+  <bridge name='vbr1'/>
+</network>
+~~~
+
+
+
+OK ! `virsh` worked !
+
+<br>
+<br>
+
+# e.g. Bridge @Ubuntu
+
+Ubuntu stores all interfaces in `/etc/network/interfaces`, and the syntax is similar to RHEL.
+With Debian/Ubuntu, you can run commands from that file with `pre-up`, `post-up`, `pre-down`, `post-down`.
+
+dependencies
+~~~
+sudo apt-get -y install bridge-utils uml-utilities
+~~~
+
+
+
+
+下図のようにブリッジしてインターネットに接続する
+
+**************************************************************************************
+*                                                                                    *
+*                                                                                    *
+*       +--------------------+           +--------------------+                      *
+*       |     UBUNTU PC 1    |           |     UBUNTU PC 2    |                      *
+*       |  .--------------.  |           |                    |                      *
+*       | |      br0       | |           |                    |                      *
+*       |  '-+----------+-'  |           |                    |                      *
+*       | .--+--.    .--+--. |           | .------.           |                      *
+*       | |eth 0|    |eth 1| |           | | eth0 |           |                      *
+*       | |     |    |     | |           | |      |           |                      *
+*       | '--+--'    '--+--' |           | '--+---'           |                      *
+*       +----|----------|----+           '----|---------------'                      *
+*            |          |                     |                                      *
+*            |          +---------------------+                                      *
+*            |                 LAN cable                                             *
+*            |                                                                       *
+*           .---.                                                                    *
+*         .+     +-.                                                                 *
+*      .-+          +--.                                                             *
+*     |    INTERNET     |                                                            *
+*      '---------------'                                                             *
+*                                                                                    *
+*                                                                                    *
+**************************************************************************************
+
+
+add below to `/etc/networks/interfaces`
+~~~
+auto eth0
+iface eth0 inet static
+adress 0.0.0.0
+
+auto eth1
+iface eth1 inet static
+adress 0.0.0.0
+
+auto br0
+iface br0 inet dhcp
+bridge_ports eth0 eth1
+bridge_stp off
+bridge_maxwait 1
+~~~
+
+(See `$ man interfaces`)
+
+- `eth0`, `eth1` is the NIC of ubuntu1
+- `br0` is a new bridge name.
+- 「adress 0.0.0.0」はプロミスキャスモードに設定するためのものです。
+- 「bridge_ports」の後にブリッジするNICを指定する。
+- 「bridge_stp off」は スパニングツリープロトコル を off にする
+
+Then restart network;
+~~~
+sudo /etc/init.d/networking restart
+~~~
+
+今回は`br0`のIPアドレスを`DHCP`で取得したが、`br0` に固定IPアドレスを設定可。
+~~~
+auto br0
+iface br0 inet static
+adress 192.168.0.10
+netmask 255.255.255.0
+network 192.168.0.0
+broadcast 192.168.0.255
+gateway 192.168.0.1
+bridge_ports eth0 eth1
+bridge_stp off
+bridge_maxwait 1
+~~~
+
+<br>
+<br>

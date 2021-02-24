@@ -1,0 +1,153 @@
+---
+title: Database
+layout: journal
+---
+
+
+
+
+
+~~~
+BGP : border gateway protocol
+ネットワークエンジニアには避けて通れない技術
+自律的ネットワークを構築
+~~~
+
+https://www.nic.ad.jp/ja/newsletter/No35/0800.html
+
+
+~~~
+IHANet
+BGP network のコミュニティ
+BGPはAS番号（識別番号）を用いる
+BGP４＋プロトコルを使用しIPv６の経路交換を行っている
+~~~
+
+
+
+
+~~~
+「ケビン、Google　V8でenchant,jsだけをGPUを使って動作させるVMをつくることはできないか？」
+「V８はprecompile  JIT方式のDalvikよりも早いかもしれない」
+「enchantMOONとよぶことにしたよ。 AndroidがSaturn-V 」
+「enchantMOONとよぶことにしたよ。 AndroidがSaturn-V。
+その上で動くシェルがColumbia。
+Javascriptによるアプリ実行環境がEagleだ」
+~~~
+
+
+
+~~~
+Stepper : モーターの回転を角度分割して制御する技術
+ステッピングモーター
+モーターの永久磁石を電磁石に変えて回転を制御する
+~~~
+
+
+<br>
+
+
+
+# Basic DBs
+
+
+## 分散DB(NoSQL)：
+
+- HBase
+- MongoDB
+- Riak
+
+
+- VoltDB
+- DynamoDB(AWS)
+- F1(google)
+
+
+
+## RDBMS :
+
+~~~
+Oracle
+MySQL
+PostgreSQL
+~~~
+
+<br>
+
+
+# DB
+
+## HBase
+
+- facebook を例にすると、ユーザごとのコメントを近くにまとめて保存できる。
+- 縦のまとまりをつくっている
+
+
+
+## MongoDB :
+- json
+- "_id" : collection id がjson object をまとめる
+- 非構造化データを大量に扱う場合に有効
+
+
+
+## Riak :
+- key - value storage
+- based on Amazon Dynamo's paper
+- HTTP REST API 経由で値にaccess :
+ - `http://${SERVER_NAME}:${PORT}/riak/${BUCKET}/${KEY}`
+- Master node は無く全てのノードは対等 -> SPoF(single point of failure) が存在しない
+
+- consistent Hashing
+- bucket & key -> 160 bit hash
+- Riak Ring : 160 bit の整数環
+- 整数環を均等に幾つかのパーティションに分けておく
+
+e.g.
+~~~
+  16 partition
+  4 nodes (node[0..3])
+  node0 has partition[x] | x=0,4,8,12
+~~~
+
+
+- 耐障害性に優れる
+- 用途：ストレージサービス？ -> storj
+
+
+
+
+
+
+
+
+
+
+## Google F1 :
+- スケーラビリティ
+
+- F1 server
+- controling :
+- transaction
+- query
+
+- Spanner
+- lower
+- transaction 実行
+- data application
+
+
+
+## VoltDB
+
+
+
+~~~
+package jp.co.pipe.procedures;
+import org.voltage.*;
+
+public class UpdatePoints extends VoltProcedure {
+    public final SQLStmt selectsql = new SQLSTMT("SELECT points FROM members WHERE email = ?;");
+
+}
+~~~

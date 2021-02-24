@@ -1,0 +1,216 @@
+---
+layout: journal
+title: Proof Of Stake FAQ
+---
+
+
+# 日本語版にむけて
+
+Finality を設けるために必要な、checkpoint tree の正当性のためには、<br>
+投票が必要であり、その方法が casper プロトコルのミソとなるであろう。<br>
+詳しい内容は順次更新予定<br>
+
+
+
+
+# What is Proof of Stake
+
+<p>
+Proof of stake は public blockchain のためのコンセンサスアルゴリズムで、proof of work の代替として動作します。
+proof of work は Bitcoin の背後にあるセキュリティを提供するメカニズムで、現行の Ethereum やその他多くの blockchain においても採用されています。しかし、採掘プロセスと関連するところでの環境負荷や[電気代](https://karlodwyer.github.io/publications/pdf/bitcoin_KJOD_2014.pdf)への(確固たる)批判を受けてきました。
+</p>
+
+<p>
+
+proof of stake のメカニズムは 「仮想採掘」という形式で説明することができます。
+
+proof of work は、一方で、[Sybil attack](https://en.wikipedia.org/wiki/Sybil_attack)を阻止するために最初に発明された稀有な形式で、コンピュータハードウェアに依存しています。
+
+proof of stake は blockchain 自身のコインに依存しています。
+proof of work では、もしユーザーが $1000 を持っていたならば、採掘マシンを購入し、電源を入れて、ネットワークに参加し、ブロックを生成し、報酬を得ます。
+
+proof of stake では もし $1000 持っていたならば、それを $1000 と等価のコインに変換し、そして、proof of stake のメカニズムの中へコインを預けます。それは(擬似)乱数により、コインの所有者とブロックを生成し報酬を得る権利を結びつけるものです。
+
+proof of work では多く見られるように、$2000 使えば、採掘者は二倍の採掘パワーを得ることとなり、ブロック生成を二倍で行い、つまり二倍の報酬を得る事ができます。
+proof of stake では　二倍のデポジットは「1ラウンドにおける二倍のブロックを生成する権利」と（擬似乱数下で）結びつけられることでしょう。
+
+</p>
+
+一般的に proof of stake アルゴリズムというものは次のようなものです。
+proof of stake メカニズムの中に自身のコインを配置するようなコイン所有者の集合があって、
+結果として、彼らは検証者になります。
+ある特定の blockchain "head" (blockchain 上の最新のブロック)が与えられたとして、このアルゴリズムは(デポジットのサイズによる重み付けを伴う)乱数によってこれらの検証者から一人を選出します。
+10000 コインを所有する検証者は、1000コイン所有者の10倍のチャンスを有し、そのブロックと、自身が次のブロックを生成する権利とを結びつけます。
+もし、検証者がブロックをある時間内に生成しなければ、二番目の検証者が代わりにブロックを生成するものとして選ばれます。
+proof of work よちょうど同じように、「 最も長い chain 」が正規のものとなります。
+
+
+この基本的なモデルから様々な派生が存在することに注意してください。
+初期の Peersoin-style のアルゴリズムでは、毎秒毎に違う検証者が、ブロック生成の権利に紐づけられていました。
+これには、条件が重なれば、「検証者となる」ためのメカニズムがありません。
+というのは、コイン所有者は皆、潜在的に検証者であるのです。もしコイン保持者がオフラインだったり、検証作業に興味がなかったとすると、彼らは、彼らの順番をスキップするようにすればいいわけです。
+幾つかのアルゴリズムに置いては、検証者の選出に関する言及がなく、代わりに、
+馴染みの[Byzantine-fault-tolerant consensus algorithm](https://en.wikipedia.org/wiki/Byzantine_fault_tolerance)が、すべての検証者が次のブロックを認証してもらうために使用されています。
+しかしながら、採掘にコインを使用するという考え方は、デポジットするしないに関わらず、採掘者の採掘を置き換えるものとしては、変わらないものとして存在します。
+
+
+
+
+# What are the benefits?
+
+簡潔に説明します。
+
+* ブロックチェーンのセキュリティを担保するのに、大きな電力量を消費する必要がない。
+* 高い電力消費がないため、大量の参加者をネットワークに繋ぎとめておくための動機付けが proof of work ほど必要ではありません。理論的には、"負" のネットワーク保険 を持つことさえ可能です。ここでトランザクション手数料の一部は、「燃焼」し、全供給量は時間の経過とともに減少します。
+* "co-operative game theory" による、「利己的な採掘」攻撃を低減することができます。これは、proof of work に於いても、ある程度低減可能です。
+* 中央集約のリスクを低減します、規模のあるエコノミーの元ではこの問題はほとんど生じません。 10 million ドルのコインでは、1 million ドルのコインより、ちょうど十倍のリターンを得ることができ、不均衡な収入を付加することはありません。より高い次元では、より良い大量生産の設備を持つことが可能となる訳です。
+* 様々な形式の 51%攻撃 の実行を、proof of work よりも費用のかかるものとするために、お金をペナルティとして使用することができます。Vlad Zamfir の言葉を借りれば、「もしも、51%攻撃に参加すれば、まるで、あなたの築きあげた ASIC採掘小屋が、火事で崩落したような惨事になります。」ということです。
+
+
+# proof of stake と ビザンチン耐性の研究　
+
+ビザンチン将軍問題耐性の研究により、すべてのコンセンサスアルゴリズム（ PBFT のような古くからあるコンセンサスアルゴリズム、proof of stake あるいは、一般的見解とは異なりますが、proof of work もある程度含むもの）に適用すべきものとして、幾つかの基礎的な結果が明らかになりました。
+そのうちで鍵となるは次の3つです。
+
+* [**CAP theorem**](https://en.wikipedia.org/wiki/CAP_theorem) - 「あるネットワークの分割が執り行われるような状況で、一貫性 consistency もしくは 可用性 availability のどちらかを選択しなければならなず、両方を選択することはできません。」具体的理論を除いて考えると議論はとても単純です。ネットワークが半分に分割し、片方のネットワークに対し「Aに私の10コイン送信する」トランザクションを送り、他方では「Bに私の10コインを送信する」トランザクションを送ると、トランザクションの片方か両方が処理されないため、どちらかのシステムでは適用されません。もしくは、半分のネットワークが最初のトランザクションを完遂するのを見届け他方のネットワークでは二番目のトランザクションが完遂されたものとみなすことで、一貫性を欠いたものとなってしまいます。
+
+
+* [**FLP impossibility**](http://the-paper-trail.org/blog/a-brief-tour-of-flp-impossibility/) - ある非同期な設定（つまり、正常に機能しているノード間においてでさえ、ネットワークのレイテンシ遅延の閾値がない）の下では、もしたったひとりでさえ正直者でない(あるいは欠陥のある)ノードがあったとすれば、有限時間内に、コンセンサス(合意形成)に至ることが保証されているようなアルゴリズムを作ることはできません。注意して欲しいのが["Las Vegas" アルゴリズム](https://en.wikipedia.org/wiki/Las_Vegas_algorithm)を除外しているの「ではない」ということです。"Las Vegas" アルゴリズムでは、各ラウンドがT秒以内に合意形成に到達するような確率を定めており、T の増加とともに、指数函数的に(exponentially)確率は 1 に収束します。これは実際、成功した多くのコンセンサスアルゴリズムが使用している（合意形成をするための最終的な）「非常口」です。
+
+
+* **ビザンチン耐性 の 境界値** - [the DLS paper](http://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf) によると、(i) 部分同期ネットワークモデル（つまり、ネットワークレイテンシにある閾値が与えれているが、それがどれくらいの時間であるかの情報がないもの）上で走るプロトコルでは 任意の将軍過失に対して、1/3 の耐性があります。(ii) 非同期モデル（ネットワークレイテンシ(遅延)に対する閾値のないもの）の上で走る決定性プロトコルでは、ビザンチン耐性がありません。(しかし、上記の論文では、[乱択アルゴリズムを用いれば 1/3 までは、将軍過失に対する耐性がある](http://link.springer.com/chapter/10.1007%2F978-3-540-77444-0_7) 事実への言及に失敗しています。）(iii) 同期モデル（ネットワークレイテンシが、`d`という公開閾値より小さい事を保証したもの）上でのプロトコルでは、驚異的なことに、100% 将軍過失に対する耐性があります。しかし、全体の 1/2 にあたるノードが過失をした場合に於いて生じる出来事に対しては制限があります。「ビザンチンモデル」でなく、「認証付きのビザンチンモデル」は考慮する価値があります。というのは、「認証付き」の部分は基本的に次のことを意味します。私たちが我々のアルゴリズムにおいて公開鍵暗号を使用し、そして、そのアルゴリズムは、近頃はとてもよく研究されていて、とても安価です。
+
+
+Proof of work は [Andrew Miller その他 ](https://socrates1024.s3.amazonaws.com/consensus.pdf)によって、注意深く解析されてきました。そして、その結果を同期ネットワークのモデルに依存したアルゴリズムへ適用します。
+例えば Bitcoin では、ネットワークレイテンシが0だと想定した時、将軍過失の50%耐性を持ちます。将軍過失の49.5%以下の耐性匂いては、レイテンシは実際に観測される条件に従い、ネットワークレイテンシがブロックタイムと等しい時、将軍過失の33%耐性を持ちます。ネットワークレイテンシが無限に発散すれば、耐性は0に収束します。
+我々はしばしばこのことを理解していないのですが、ビットコインのブロックタイムはとても長く(10分)、EthereumのHPOW(14秒)でさえ、ビザンチン耐性は46%ですが、確立されたビザンチン耐性の理論を基本的に侵すようなものは作られていません。
+N個のノードがあり、そのネットワークでは 0.495 * N だけビザンチン耐性がある、といった考え方は、 proof of work では意味がありません。（ノードが違えば、計算能力も異なります。）しかし、抽象化によって、計算能力をビザンチン耐性理論のフレームワークに対応づけることができた proof of stake では状況が異なります。
+
+
+Proof of stake コンセンサスは、より明確なビザンチン耐性コンセンサス問題です。
+proof of work と同様に、ほとんどのアルゴリズムは、同期ネットワークモデルに依存することで、50% のビザンチン耐性まで、達成しています。
+幾つかの研究が進められ、特に [Tendermint project](https://github.com/tendermint/tendermint/wiki) の内部では、
+部分同期あるいは非同期ネットワークのどちらかに依存するようなコンセンサスアルゴリズムを作る際の研究がされています。
+proof of work や一部の proof of stake の両方匂いて、一貫性よりも可用性を選択していますが、Casper の最終的なメカニズム、や　Tendermint は一貫性を選択します。
+
+
+
+Ittay Eyal と Emin Gun Sirer による
+[利己的な採掘](https://bitcoinmagazine.com/articles/selfish-mining-a-25-attack-against-the-bitcoin-network-1383578440)
+の発見は、Bitcoin 採掘の「誘因」する要因として、25%と33%の閾値を設けるネットワークに依存するもので、
+（つまり、25％あるいは33%より大きい衝突が不可能であるような場合に限り、採掘が「誘因」される）
+この採掘の「誘因」に関与しない、伝統的なコンセンサスアルゴリズムの研究の結果とは関係がない、ということに注意してください。
+
+
+
+
+
+# What is the "nothing at stake" problem and how can it be fixed?
+
+In many early proof of stake algorithms, including Peercoin, there are only rewards for producing blocks, and no penalties. This has the unfortunate consequence that, in the case that there are multiple competing chain, it is in a validator's incentive to try to make blocks on top of every chain at once, just to be sure:
+
+![](http://vitalik.ca/files/possec.png width="600px")
+
+In proof of work, doing so would require splitting one's computing power in half, and so would not be lucrative:
+
+![](http://vitalik.ca/files/powsec.png width="600px")
+
+The result is that if all actors are narrowly economically rational, then even if there are no attackers, a blockchain may never reach consensus. If there is an attacker, then the attacker need only overpower altruistic nodes (who would exclusively stake on the original chain), and not rational nodes (who would stake on both the original chain and the attacker's chain), in contrast to proof of work, where the attacker must overpower both altruists and rational nodes (or at least credibly threaten to: see [P + epsilon attacks](https://blog.ethereum.org/2015/01/28/p-epsilon-attack/)). Some argue that stakeholders have an incentive to act correctly and only stake on the longest chain in order to "preserve the value of their investment", however this ignores that this incentive suffers from [tragedy of the commons](https://en.wikipedia.org/wiki/Tragedy_of_the_commons) problems: each individual stakeholder might only have a 1% chance of being "pivotal" (ie. being in a situation where if they participate in an attack then it succeeds and if they do not participate it fails), and so the bribe needed to convince them personally to join an attack would be only 1% of the size of their deposit; hence, the required combined bribe would be only 0.5-1% of the total sum of all deposits. Additionally, this argument implies that any zero-chance-of-failure situation is not a stable equilibrium, as if the chance of failure is zero then everyone has a 0% chance of being pivotal.
+
+This can be solved via two strategies. The first, described in broad terms under the name "Slasher" [here](https://blog.ethereum.org/2014/01/15/slasher-a-punitive-proof-of-stake-algorithm/) and developed further by Iddo Bentov [here](https://arxiv.org/pdf/1406.5694.pdf), involves penalizing validators if they simultaneously create blocks on multiple chains, by means of including proof of misbehavior (ie. two conflicting signed block headers) into the blockchain as a later point in time at which point the malfeasant validator's deposit is deducted appropriately. This changes the incentive structure thus:
+
+![](http://vitalik.ca/files/slasher1sec.png width="600px")
+
+Note that for this algorithm to work, the validator set needs to be determined well ahead of time. Otherwise, if a validator has 1% of the stake, then if there are two branches A and B then 0.99% of the time the validator will be eligible to stake only on A and not on B, 0.99% of the time the validator will be eligible to stake on B and not on A, and only 0.01% of the time will the validator will be eligible to stake on both. Hence, the validator can with 99% efficiency probabilistically double-stake: stake on A if possible, stake on B if possible, and only if the choice between both is open stake on the longer chain. This can only be avoided if the validator selection is the same for every block on both branches, which requires the validators to be selected at a time before the fork takes place (in these algorithms it is assumed that forks will not last longer than a few hours; this is often achieved through a "revert limit" that simply forbids nodes from accepting long-range forks, for more on this see the section on weak subjectivity below). This has its own flaws, including opening up medium-range validator collusion risks (ie. situations where, for example, 25 out of 30 consecutive validators get together and agree ahead of time to implement a 51% attack on the previous 19 blocks), but if these risks are deemed acceptable then it works well.
+
+The second strategy is to simply punish validators for creating blocks on the _wrong_ chain. That is, if there are two competing chains, A and B, then if a validator creates a block on B, they get a reward of +R on B, but the block header can be included into A (in Casper this is called a "dunkle") and on A the validator suffers a penalty of -F (possibly F = R). This changes the economic calculation thus:
+
+![](http://vitalik.ca/files/slasher2sec.png width="600px")
+
+The intuition here is that we can replicate the economics of proof of work inside of proof of stake. In proof of work, there is also a penalty for creating a block on the wrong chain, but this penalty is implicit in the external environment: miners have to spend extra electricity and obtain or rent extra hardware. Here, we simply make the penalties explicit. This mechanism has the disadvantage that it imposes slightly more risk on validators (although the effect should be smoothed out over time), but has the advantage that it does not require validators to be known ahead of time.
+
+# What is "weak subjectivity"?
+
+It is important to note that the mechanism of using deposits to ensure there is "something at stake" does lead to one change in the security model. Suppose that deposits are locked for 1 month, and can later be withdrawn. Suppose that an attempted 51% attack happens that reverts 10 days worth of transactions. The blocks created by the attackers can simply be imported into the main chain as proof-of-malfeasance (or "dunkles") and the validators can be punished. However, suppose that such an attack happens after 40 days. Then, even though the blocks can certainly be re-imported, by that time the malfeasant validators will be able to withdraw their deposits on the main chain, and so they cannot be punished. To solve this problem, a "revert limit", ie. a rule by which nodes simply refuse to revert further back than the deposit length, is required. This now means that nodes have two additional requirements:
+
+1. When they sync the chain for the first time, they must authenticate the latest state out of band. They can do this by checking with their friends, block explorers, etc. Note that if there node only finds one chain, then it knows that that one chain is correct; it is only in the case that two chains that diverge further than the revert limit exist that such social authentication is required.
+2. Nodes must log on at least once every revert limit. If they do not, another round of social authentication may be required.
+
+Note that this social authentication is in fact extremely limited in scope; in order for it to actually become an attack vector, an attacker would have to create a very large portion of the community that the chain that they created is legitimate when it in fact is not, and even then the attacker would only convince newly connecting nodes. Newly connecting nodes may well simply receive a recent checkpoint as part of the software; an attacker that can corrupt the checkpoint in the software can arguably just as easily corrupt the software itself, and no amount of pure cryptoeconomic verification can solve that problem. Once a node is connected, as long as it logs in frequently enough it can remain connected to the blockchain under a purely cryptoeconomic security model with no additional social authentication required.
+
+Additionally, the social authentication can if needed even be automated in several ways. One is to bake it into natural user workflow: a [BIP 70](https://github.com/bitcoin/bips/blob/master/bip-0070.mediawiki)-style payment request could include a recent block hash, and the user's client software would make sure that they are on the same chain as the vendor before approving a payment (or for that matter, any on-chain interaction). The other is to use Jeff Coleman's [universal hash time](https://www.youtube.com/watch?v=phXohYF0xGo). If UHT is used, then a successful attack chain would need to be generated secretly _at the same time_ as the legitimate chain was being built, requiring a majority of validators to secretly collude for that long.
+
+# What is "economic finality"?
+
+Economic finality is a mechanism for preventing medium-range blockchain forks, which works by having validators place claims on blocks of the form "I agree to lose Y in all histories where block B is not included in exchange for gaining X in all histories where block B is included". Once validators are sufficiently sure of a block, they will be willing to place very high values for Y, going all the way up to the size of their entire deposits. Once a block has reached a state where a very large portion of validators have bet their entire deposits for it, that block is considered "economically finalized". This ensures that even majority collusions cannot implement 51% attacks to revert transactions except at an extremely high cost to themselves.
+
+# Can one economically penalize censorship in proof of stake?
+
+Unlike reverts, censorship is much more difficult to prove. The blockchain itself cannot directly tell the difference between "user A tried to send transaction X but it was unfairly censored", "user A tried to send transaction X but it never got in because the transaction fee was insufficient" and "user A never tried to send transaction X at all". However, there are a number of techniques that can be used to mitigate censorship issues.
+
+The first is censorship resistance by halting problem. In the weaker version of this scheme, the protocol is designed to be Turing-complete in such a way that a validator cannot even tell whether or not a given transaction will lead to an undesired action without spending a large amount of processing power executing the transaction, and thus opening itself up to denial-of-service attacks. This is what [prevented the DAO soft fork](http://hackingdistributed.com/2016/07/05/eth-is-more-resilient-to-censorship/).
+
+In the stronger version of the scheme, transactions can trigger guaranteed effects at some point in the near to mid-term future. Hence, a user could send multiple transactions which interact with each other and with predicted third-party information to lead to some future event, but the validators cannot possibly tell that this is going to happen until the transactions are already included (and economically finalized) and it is far too late to stop them; even if all future transactions are excluded, the event that validators wish to halt would still take place. Note that in this scheme, validators could still try to prevent **all** transactions, or perhaps all transactions that do not come packaged with some formal proof that they do not lead to anything undesired, but this would entail forbidding a very wide class of transactions to the point of essentially breaking the entire system, which would cause validators to lose value as the price of the cryptocurrency in which their deposits are denominated would drop.
+
+The second, [described by Adam Back here](https://www.reddit.com/r/Bitcoin/comments/4j7pfj/adam_backs_clever_mechanism_to_prevent_miners/d34t9xa), is to require transactions to be [timelock-encrypted](https://www.gwern.net/Self-decrypting%20files). Hence, validators will include the transactions without knowing the contents, and only later could the contents automatically be revealed, by which point once again it would be far too late to un-include the transactions. If validators were sufficiently malicious, however, they could simply only agree to include transactions that come with a cryptographic proof (eg. ZK-SNARK) of what the decrypted version is; this would force users to download new client software, but an adversary could conveniently provide such client software for easy download, and in a game-theoretic model users would have the incentive to play along.
+
+Perhaps the best that can be said in a proof-of-stake context is that users could also install a software update that includes a hard fork that deletes the malicious validators and this is not that much harder than installing a software update to make their transactions "censorship-friendly". Hence, all in all this scheme is also moderately effective, though it does come at the cost of slowing interaction with the blockchain down (note that the scheme must be mandatory to be effective; otherwise malicious validators could much more easily simply filter encrypted transactions without filtering the quicker unencrypted transactions).
+
+A third alternative is to include censorship detection in the fork choice rule. The idea is simple. Nodes watch the network for transactions, and if they see a transaction that has a sufficiently high fee for a sufficient amount of time, then they assign a lower "score" to blockchains that do not include this transaction. If all nodes follow this strategy, then eventually a minority chain would automatically coalesce that includes the transactions, and all honest online nodes would follow it. The main weakness of such a scheme is that offline nodes would still follow the majority branch, and if the censorship is temporary and they log back on after the censorship ends then they would end up on a different branch from online nodes. Hence, this scheme should be viewed more as a tool to facilitate automated emergency coordination on a hard fork than something that would play an active role in day-to-day fork choice.
+
+# How does validator selection work, and what is stake grinding?
+
+In any chain-based proof of stake algorithm, there is a need for some mechanism which randomly selects which validator out of the currently active validator set can make the next block. For example, if the currently active validator set consists of Alice with 40 ether, Bob with 30 ether, Charlie with 20 ether and David with 10 ether, then you want there to be a 40% chance that Alice will be the next block creator, 30% chance that Bob will be, etc (in practice, you want to randomly select not just one validator, but rather an infinite sequence of validators, so that if Alice doesn't show up there is someone who can replace her after some time, but this doesn't change the fundamental problem). In non-chain-based algorithms randomness is also often needed for different reasons.
+
+"Stake grinding" is a class of attack where a validator performs some computation or takes some other step to try to bias the randomness in their own favor. For example:
+
+1. In [Peercoin](https://bitcointalk.org/index.php?topic=131901.0), a validator could "grind" through many combinations of parameters and find favorable parameters that would increase the probability of their coins generating a valid block.
+2. In one now-defunct implementation, the randomness for block N+1 was dependent on the signature of block N. This allowed a validator to repeatedly produce new signatures until they found one that allowed them to get the next block, thereby seizing control of the system forever.
+3. In NXT, the randomness for block N+1 is dependent on the validator that creates block N. This allows a validator to manipulate the randomness by simply skipping an opportunity to create a block. This carries an opportunity cost equal to the block reward, but sometimes the new random seed would give the validator an above-average number of blocks over the next few dozen blocks. See [here](http://vitalik.ca/files/randomness.html) for a more detailed analysis.
+
+(1) and (2) are easy to solve; the general approach is to require validators to deposit their coins well in advance, and not to use information that can be easily manipulated as source data for the randomness. There are several main strategies for solving problems like (3). The first is to use schemes based on [secret sharing](https://en.wikipedia.org/wiki/Secret_sharing) or [deterministic threshold signatures](https://eprint.iacr.org/2002/081.pdf) and have validators collaboratively generate the random value. These schemes are robust against all manipulation unless a majority of validators collude (in some cases though, depending on the implementation, between 33-50% of validators can interfere in the operation, leading to the protocol having a 67% liveness assumption).
+
+The second is to use cryptoeconomic schemes where validators commit to information (ie. publish `sha3(x)`) well in advance, and then must publish `x` in the block; `x` is then added into the randomness pool. There are two theoretical attack vectors against this:
+
+1. Manipulate `x` at commitment time. This is impractical because the randomness result would take many actors' values into account, and if even one of them is honest then the output will be a uniform distribution. A uniform distribution XORed together with arbitrarily many arbitrarily biased distributions still gives a uniform distribution.
+2. Selectively avoid publishing blocks. However, this attack costs one block reward of opportunity cost, and because the scheme prevents anyone from seeing any future validators except for the next, it almost never provides more than one block reward worth of revenue. The only exception is the case where, if a validator skips, the next validator in line AND the first child of that validator will both be the same validator; if these situations are a grave concern then we can punish skipping further via an explicit skipping penalty.
+
+The third is to use [Iddo Bentov's "majority beacon"](https://arxiv.org/pdf/1406.5694.pdf), which generates a random number by taking the bit-majority of the previous N random numbers generated through some other beacon (ie. the first bit of the result is 1 if the majority of the first bits in the source numbers is 1 and otherwise it's 0, the second bit of the result is 1 if the majority of the second bits in the source numbers is 1 and otherwise it's 0, etc). This gives a cost-of-exploitation of `~C * sqrt(N)` where `C` is the cost of exploitation of the underlying beacons. Hence, all in all, many known solutions to stake grinding exist; the problem is more like [differential cryptanalysis](https://en.wikipedia.org/wiki/Differential_cryptanalysis) than [the halting problem](https://en.wikipedia.org/wiki/Halting_problem) - an annoyance that proof of stake designers eventually understood and now know how to overcome, not a fundamental and inescapable flaw.
+
+# Doesn't MC => MR mean that all consensus algorithms with a given security level are equally efficient (or in other words, equally wasteful)?
+
+This is an argument that many have raised, perhaps best explained by [Paul Sztorc in this article](http://www.truthcoin.info/blog/pow-cheapest/). Essentially, if you create a way for people to earn $100, then people will be willing to spend anywhere up to $99.9 (including the cost of their own labor) in order to get it; marginal cost approaches marginal revenue. Hence, the theory goes, any algorithm with a given block reward will be equally "wasteful" in terms of the quantity of socially unproductive activity that is carried out in order to try to get the reward.
+
+There are three flaws with this:
+
+1. It's not enough to simply say that marginal cost approaches marginal revenue; one must also posit a plausible mechanism by which someone can actually expend that cost. For example, if tomorrow I announce that every day from then on I will give $100 to a randomly selected one of a given list of ten people (using my laptop's /dev/urandom as randomness), then there is simply no way for anyone to send $99 to try to get at that randomness. Either they are not in the list of ten, in which case they have no chance no matter what they do, or they are in the list of ten, in which case they don't have any reasonable way to manipulate my randomness so they're stuck with getting the expected-value $10 per day.
+2. MC => MR does NOT imply total cost approaches total revenue. For example, suppose that there is an algorithm which pseudorandomly selects 1000 validators out of some very large set (each validator getting a reward of $1), you have 10% of the stake so on average you get 100, and at a cost of $1 you can force the randomness to reset (and you can repeat this an unlimited number of times). Due to the [central limit theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), the standard deviation of your reward is $10, and based on [other known results in math](http://math.stackexchange.com/questions/89030/expectation-of-the-maximum-of-gaussian-random-variables) the expected maximum of N random samples is slightly under `M + S * sqrt(2 * log(N))` where `M` is the mean and `S` is the standard deviation. Hence the reward for making additional trials (ie. increasing N) drops off sharply, eg. with 0 re-trials your expected reward is $100, with one re-trial it's $105.5, with two it's $108.5, with three it's $110.3, with four it's $111.6, with five it's $112.6 and with six it's $113.5. Hence, after five retrials it stops being worth it. As a result, an economically motivated attacker with ten percent of stake will inefficiently spend $5 to get an additional revenue of $13, though the total revenue is $113. If the exploitable mechanisms only expose small opportunities, the economic loss will be small; it is decidedly NOT the case that a single drop of exploitability brings the entire flood of PoW-level economic waste rushing back in. This point will also be very relevant in our below discussion on capital lockup costs.
+3. Proof of stake can be secured with much lower total rewards than proof of work.
+
+# What about capital lockup costs?
+
+Locking up X ether in a deposit is not free; it entails a sacrifice of optionality for the ether holder. Right now, if I have 1000 ether, I can do whatever I want with it; if I lock it up in a deposit, then it's stuck there for months, and I do not have, for example, the insurance utility of the money being there to pay for sudden unexpected expenses. I also lose some freedom to change my token allocations away from ether within that timeframe; I could simulate selling ether by shorting an amount equivalent to the deposit on an exchange, but this itself carries costs including exchange fees and paying interest. Some might argue: isn't this capital lockup inefficiency really just a highly indirect way of achieving the exact same level of economic inefficiency as exists in proof of work? The answer is no, for both reasons (2) and (3) above.
+
+Let us start with (3) first. Consider a model where proof of stake deposits are infinite-term, ASICs last forever, ASIC technology is fixed (ie. no Moore's law) and electricity costs are zero. Let's say the equilibrium interest rate is 5% per annum. In a proof of work blockchain, I can take $1000, convert it into a miner, and the miner will pay me $50 in rewards per year forever. In a proof of stake blockchain, I would buy $1000 of coins, deposit them (ie. losing them forever), and get $50 in rewards per year forever. So far, the situation looks completely symmetrical (technically, even here, in the proof of stake case my destruction of coins isn't fully socially destructive as it makes others' coins worth more, but we can leave that aside for the moment). The cost of a "Maginot-line" 51% attack (ie. buying up more hardware than the rest of the network) increases by $1000 in both cases.
+
+Now, let's perform the following changes to our model in turn:
+
+1. Moore's law exists, ASICs depreciate by 50% every 2.772 years (that's a continuously-compounded 25% per annum; picked to make the numbers simpler). If I want to retain the same "pay once, get money forever" behavior, I can do so: I would put $1000 into a fund, where $167 would go into an ASIC and the remaining $833 would go into investments at 5% interest; the $41.67 dividends per year would be just enough to keep renewing the ASIC hardware (assuming technological development is fully continuous, once again to make the math simpler). Rewards would go down to $8.33 per year; hence, 83.3% of miners will drop out until the system comes back into equilibrium with me earning $50 per year, and so the Maginot-line cost of an attack on PoW given the same rewards drops by a factor of 6.
+2. Electricity plus maintenance makes up 1/3 of mining costs. We estimate the 1/3 from recent mining statistics: one of Bitfury's new data centers consumes [0.06 joules per gigahash](http://www.coindesk.com/bitfury-details-100-million-georgia-data-center/), or 60 J/TH or 0.000017 kWh/TH, and if we assume the entire Bitcoin network has similar efficiencies we get 27.9 kWh per second given [1.67 million TH/s total Bitcoin hashpower](http://bitcoinwatch.com/). Electricity in China costs [$0.11 per kWh](http://www.statista.com/statistics/477995/global-prices-of-electricity-by-select-country/), so that's about $3 per second, or $260,000 per day. Bitcoin block rewards plus fees are $600 per BTC * 13 BTC per block * 144 blocks per day = $1.12m per day. Thus electricity itself would make up 23% of costs, and we can back-of-the-envelope estimate maintenance at 10% to give a clean 1/3 ongoing costs, 2/3 fixed costs split. This means that out of your $1000 fund, only $111 would go into the ASIC, $55 would go into paying ongoing costs, and $833 would go into hardware investments; hence the Maginot-line cost of attack is 9x lower than in our original setting.
+3. Deposits are temporary, not permanent. Sure, if I voluntarily keep staking forever, then this changes nothing. However, I regain some of the optionality that I had before; I could quit within a medium timeframe (say, 4 months) at any time. This means that I would be willing to put more than $1000 of ether in for the $50 per year gain; perhaps in equilibrium it would be something like $3000. Hence, the cost of the Maginot line attack on PoS _increases_ by a factor of three, and so on net PoS gives 27x more security than PoW for the same cost.
+
+The above included a large amount of simplified modeling, however it serves to show how multiple factors stack up heavily in favor of PoS in such a way that PoS gets _more_ bang for its buck in terms of security. The meta-argument for why this [perhaps suspiciously multifactorial argument](http://lesswrong.com/lw/kpj/multiple_factor_explanations_should_not_appear/) leans so heavily in favor of PoS is simple: in PoW, we are working directly with the laws of physics. In PoS, we are able to design the protocol in such a way that it has the precise properties that we want - in short, we can _optimize the laws of physics in our favor_. The "hidden trapdoor" that gives us (3) is the change in the security model, specifically the introduction of weak subjectivity.
+
+Now, we can talk about the marginal/total distinction. In the case of capital lockup costs, this is very important. For example, consider a case where you have $100,000 of ether. You probably intend to hold a large portion of it for a long time; hence, locking up even $50,000 of the ether should be nearly free. Locking up $80,000 would be slightly more inconvenient, but $20,000 of breathing room still gives you a large space to maneuver. Locking up $90,000 is more problematic, $99,000 is very problematic, and locking up all $100,000 is absurd, as it means you would not even have a single bit of ether left to pay basic transaction fees. Hence, your marginal costs increase quickly. We can show the difference between this state of affairs and the state of affairs in proof of work as follows:
+
+![](https://blog.ethereum.org/wp-content/uploads/2014/07/liquidity.png width="600px")
+
+Note that this component of the argument unfortunately does not fully translate into reduction of the "safe level of issuance". It does help us because it shows that we can get substantial proof of stake participation even if we keep issuance very low; however, it also means that a large portion of the gains will simply be borne by validators as economic surplus.
+
+# Will exchanges in proof of stake pose a similar centralization risk to pools in proof of work?
+
+From a centralization perspective, in both [Bitcoin](https://blockchain.info/pools) and [Ethereum](https://etherscan.io/stats/miner?range=7&blocktype=blocks) it's the case that roughly three pools are needed to coordinate on a 51% attack (4 in Bitcoin, 3 in Ethereum at the time of this writing). In PoS, if we assume 30% participation including all exchanges, then [three exchanges](https://etherscan.io/accounts) would be enough to make a 51% attack; if participation goes up to 40% then the required number goes up to eight. However, exchanges will not be able to participate with all of their ether; the reason is that they need to accomodate withdrawals.
+
+Additionally, pooling in PoS is discouraged because it has a much higher trust requirement - a proof of stake pool can pretend to be hacked, destroy its participants' deposits and claim a reward for it. On the other hand, the ability to earn interest on one's coins without oneself running a node, even if trust is required, is something that many may find attractive; all in all, the centralization balance is an empirical question for which the answer is unclear until the system is actually running for a substantial period of time. With sharding, we expect pooling incentives to reduce further, as (i) there is even less concern about variance, and (ii) in a sharded model, transaction verification load is proportional to the amount of capital that one puts in, and so there are no direct infrastructure savings from pooling.
+
+A final point is that centralization is less harmful in proof of stake than in proof of work, as there are much cheaper ways to recover from 51% attacks; one does not need to switch to a new mining algorithm.

@@ -1,0 +1,216 @@
+---
+title: Tips
+layout: journal
+comments: true
+---
+
+
+
+
+# mail server on whisper
+
+A mail server functions with storing messages even when a node is offline.
+https://github.com/ethereum/go-ethereum/wiki/Diagnostic-Tool-wnode
+
+# evm
+
+On EVM, a contract can send Ether to other contracts by executing selfdestruct(target_contract). The receiver target_contract has no way to refuse the transfer. So a contract should be designed to withstand unexpected balance increases.
+
+
+# disassembler
+
+Porosity will decompile to solidity, but afaik it is missing some opcodes still.
+https://github.com/comaeio/porosity
+
+`evmdis` is a disassembler and will make bytecode more readable
+By Nick Johnson
+https://github.com/Arachnid/evmdis
+
+
+# parity
+
+
+
+
+# geth
+
+## setup
+
+~~~
+$ parity --geth --datadir $MYDIR/.parity &
+$ geth attach
+~~~
+
+## Sending ether
+
+The basic way of sending a simple transaction of ether with the console is as follows:
+~~~
+> eth.sendTransaction({from:sender, to:receiver, value: amount})
+~~~
+
+Using the built-in JavaScript, you can easily set variables to hold these values. For example:
+~~~
+> var sender = eth.accounts[0];
+> var receiver = eth.accounts[1];
+> var amount = web3.toWei(0.01, "ether")
+~~~
+
+
+## convinient tool for dapps development
+
+puppeeth : convenient tool for #dapp development
+
+
+
+## contract address
+
+~~~
+The address for an Ethereum contract is deterministically computed from the address of its creator (sender) and how many transactions the creator has sent (nonce). The sender and nonce are RLP encoded and then hashed with Keccak-256.
+
+From pyethereum:
+
+def mk_contract_address(sender, nonce):
+    return sha3(rlp.encode([normalize_address(sender), nonce]))[12:]
+In Solidity:
+
+nonce0= address(keccak256(0xd6, 0x94, address, 0x80))
+nonce1= address(keccak256(0xd6, 0x94, address, 0x01))
+Example with some discussion:
+
+For sender 0x6ac7ea33f8831ea9dcc53393aaa88b25a785dbf0, the contract addresses that it will create are the following:
+
+nonce0= "0xcd234a471b72ba2f1ccf0a70fcaba648a5eecd8d"
+nonce1= "0x343c43a37d37dff08ae8c4a11544c718abb4fcf8"
+nonce2= "0xf778b86fa74e846c4f0a1fbd1335fe81c00a0c91"
+nonce3= "0xfffd933a0bc612844eaf0c6fe3e5b8e9b6c1d19c"
+~~~
+
+
+
+# solidity
+
+## e.g. voting with delegation
+
+~~~
+pragma solidity ^0.4.11;
+
+
+/// @title Voting with delegation.
+contract Ballot {
+    struct Voter {
+        uint weight; // weight is accumulated by delegation
+        bool voted;  // if true, that person already voted
+        address delegate; // person delegated to
+        uint vote;   // index of the voted proposal
+    }
+    struct Proposal {
+        bytes32 name;   // short name (up to 32 bytes)
+        uint voteCount; // number of accumulated votes
+    }
+
+    address public chairperson;
+
+    mapping(address => Voter) public voters;
+
+    Proposal[] public proposals;
+
+
+    function Ballot(bytes32[] proposalNames) {
+        chairperson = msg.sender;
+        voters[chairperson].weight = 1;
+
+
+        for (uint i = 0; i < proposalNames.length; i++) {
+
+            proposals.push(Proposal({
+                name: proposalNames[i],
+                voteCount: 0
+            }));
+        }
+    }
+
+
+    function giveRightToVote(address voter) {
+
+        require((msg.sender == chairperson) && !voters[voter].voted && (voters[voter].weight == 0));
+        voters[voter].weight = 1;
+    }
+
+    /// Delegate your vote to the voter `to`.
+    function delegate(address to) {
+        // assigns reference
+        Voter storage sender = voters[msg.sender];
+        require(!sender.voted);
+
+        // Self-delegation is not allowed.
+        require(to != msg.sender);
+
+        // Forward the delegation as long as
+        // `to` also delegated.
+        // In general, such loops are very dangerous,
+        // because if they run too long, they might
+        // need more gas than is available in a block.
+        // In this case, the delegation will not be executed,
+        // but in other situations, such loops might
+        // cause a contract to get "stuck" completely.
+        while (voters[to].delegate != address(0)) {
+            to = voters[to].delegate;
+
+            // We found a loop in the delegation, not allowed.
+            require(to != msg.sender);
+        }
+
+        // Since `sender` is a reference, this
+        // modifies `voters[msg.sender].voted`
+        sender.voted = true;
+        sender.delegate = to;
+        Voter storage delegate = voters[to];
+        if (delegate.voted) {
+            // If the delegate already voted,
+            // directly add to the number of votes
+            proposals[delegate.vote].voteCount += sender.weight;
+        } else {
+            // If the delegate did not vote yet,
+            // add to her weight.
+            delegate.weight += sender.weight;
+        }
+    }
+
+    /// Give your vote (including votes delegated to you)
+    /// to proposal `proposals[proposal].name`.
+    function vote(uint proposal) {
+        Voter storage sender = voters[msg.sender];
+        require(!sender.voted);
+        sender.voted = true;
+        sender.vote = proposal;
+
+        // If `proposal` is out of the range of the array,
+        // this will throw automatically and revert all
+        // changes.
+        proposals[proposal].voteCount += sender.weight;
+    }
+
+    /// @dev Computes the winning proposal taking all
+    /// previous votes into account.
+    function winningProposal() constant
+            returns (uint winningProposal)
+    {
+        uint winningVoteCount = 0;
+        for (uint p = 0; p < proposals.length; p++) {
+            if (proposals[p].voteCount > winningVoteCount) {
+                winningVoteCount = proposals[p].voteCount;
+                winningProposal = p;
+            }
+        }
+    }
+
+    // Calls winningProposal() function to get the index
+    // of the winner contained in the proposals array and then
+    // returns the name of the winner
+    function winnerName() constant
+            returns (bytes32 winnerName)
+    {
+        winnerName = proposals[winningProposal()].name;
+    }
+}
+~~~

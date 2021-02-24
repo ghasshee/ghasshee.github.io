@@ -1,0 +1,1535 @@
+---
+title: JavaScript 2
+layout: journal
+---
+
+
+# ECMAScript 6
+
+- Babel (babel.js?)   |  compile ES6 to ES5
+- Traceur
+- TC39 (emma technical committee 39)
+
+
+## ECMAScript
+
+- Sketch - Strawman
+
+Goal
+
+* complex application
+* libraries including DOM
+* code generators targeting new edition
+
+
+
+* Math.round()
+* Math.imul()
+
+- compiling c/c++ to javascript  via Emscripten
+
+
+
+## goal
+
+* classes : are based on how constructor functions are currently used
+* modules : picked ups design ideas from the commonJS module format
+* Arrow functions: have syntax that is borrowed from CoffeeScript
+* Named function parameters : There is no builtin support for named parameters. Instead , the existing practice of naming parameters via object literals is supported via destructuring in parameter definition
+
+
+
+## enhancements
+
+* class
+* module
+* lexical block scoping
+* iterators
+* generators
+* promises for asynchronous programming
+* destructuring patterns
+* proper tail call
+
+
+## new functionality in the standard library
+
+* new methods for string and array
+* promises
+* maps sets
+
+
+
+## completely new
+
+* generators
+* proxies
+* weakMaps
+
+chapter 3
+
+- version up
+- the chance to remove outdated functions <==> the old codes are no longer usable
+
+e.g.    python 2 to python 3
+
+
+# _
+# _
+# _
+
+# Number
+
+# String
+
+# Symbols
+
+~~~
+const a = ['a', 'b', 'c'];
+const iter = a[Symbol.iterator]();
+
+iter.next()     // { value: 'a', done: false }
+iter.next()     // { value: 'b', done: false }
+iter.next()     // { value: 'c', done: false }
+iter.next()     // { value: undefined, done: true }
+~~~
+
+~~~
+Symbol('Red') == Symbol('Red')      // false
+~~~
+
+
+`Symbol` cab be used ? as key ? how many bits ?
+
+
+
+~~~
+function symbolReplacer(key, value) {
+    if (typeof value === 'symbol') {
+        return '@@' + Symbol.keyFor(value) + '@@';
+    }
+    return value;
+}
+
+const MY_SYMBOL = Symbol.for('http://example.com/my_symbol');
+const obj = { myKey: MY_SYMBOL };
+const str = JSON.stringify(obj, symbolReplacer);
+
+console.log(str);   // {"myKey":"@@http://example.com/my_symbol@@"}
+
+const REGEX_SYMBOL_STRING = /^@@(.*)@@$/;
+function symbolReviver(key, value) {
+    if (typeof value === 'string') {
+        const match = REGEX_SYMBOL_STRING.test(value);
+        if (match) {
+            const symbolKey = match[1];
+            return Symbol.for(symbolKey);
+        }
+    }
+    return value;
+}
+~~~
+
+~~~
+> const parsed = JSON.parse(str, symbolReviver);
+> console.log(parsed);
+~~~
+
+
+
+
+# Template literals
+
+This chapter covers two new kinds of literals:
+template literals and tagged template literals.
+
+## Overview
+
+The following three things are different –
+despite names and appearances being similar:
+
+* Web templates (data): HTML with blanks to be filled in
+* Template literals (code): multi-line string literals plus interpolation
+* Tagged template literals (code): function calls
+
+Template literals
+
+~~~
+const firstName = 'Jane';
+console.log(`Hello ${firstName}!
+How are you
+today?`);
+
+// Output:
+// Hello Jane!
+// How are you
+// today?
+~~~
+
+
+Tagged template literals
+ (short: tagged templates) are created by mentioning a function before a template literal:
+
+~~~
+> String.raw`A \tagged\ template`
+'A \\tagged\\ template'
+~~~
+
+
+tagged templates are function calls
+String.raw is called to produce the result of the tagged template
+
+
+
+## Introduction
+Literals are syntactic constructs that produce values. Examples include string literals (which produce strings) and regular expression literals (which produce regular expression objects). ECMAScript 6 has two new literals:
+
+Template literals are string literals with support for interpolation and multiple lines.
+Tagged template literals (short: tagged templates): are function calls whose parameters are provided via template literals.
+It is important to keep in mind that the names of template literals and tagged templates are slightly misleading. They have nothing to do with templates, as they are often used in web development: text files with blanks that can be filled in via (e.g.) JSON data.
+
+
+
+
+### タグ付けされたTemplate string
+
+Template stringのより高度な使用法はタグ付けされたTemplate stringです。タグ付けされたTemplate stringでは、関数を使ってTemplate stringのアウトプットを調整できます。最初の引数には文字列リテラルの配列(この例では"Hello "と" world") を含みます。2つ目とそれに続くそれぞれの引数は、処理された（調理されたと呼ばれることもあります）代用式（ここでは"15"と"50"）の値です。最後に関数は処理された文字列を返します。次の例では、ネームタグについて特別なことはありません。関数名は自由につけられます。
+
+~~~
+var a = 5;
+var b = 10;
+
+function tag(strings, ...values) {
+  console.log(strings[0]); // "Hello "
+  console.log(strings[1]); // " world"
+  console.log(values[0]);  // 15
+  console.log(values[1]);  // 50
+
+  return "Bazinga!";
+}
+
+tag`Hello ${ a + b } world ${ a * b}`;
+// "Bazinga!"
+~~~
+
+
+### Raw strings
+
+関数のタグ付けされたTemplate string引数で使用できる特別なrawプロパティは、入力されたもののように未加工の文字列にアクセスできます。
+
+~~~
+function tag(strings, ...values) {
+  console.log(strings.raw[0]);
+  // "string text line 1 \\n string text line 2"
+}
+
+tag`string text line 1 \n string text line 2`;
+~~~
+
+加えて、 String.raw() メソッドはデフォルトテンプレート関数のように未加工の文字列を生成するために存在し、文字列連結を行います。
+
+~~~
+String.raw`Hi\n${2+3}!`;
+// "Hi\\n5!"
+~~~
+
+
+
+### e.g. lambda expression
+
+~~~
+<!--
+> const tmpl = addrs => `
+    <table>
+    ${addrs.map(addr => `
+        <tr><td>${addr.first}</td></tr>
+        <tr><td>${addr.last}</td></tr>
+    `).join('')}
+    </table>
+`;
+
+> const data = [
+    { first: '<Jane>', last: 'Bond' },
+    { first: 'Lars', last: '<Croft>' },
+];
+undefined
+
+> console.log(tmpl(data));
+VM127:1
+    <table>
+
+        <tr><td><Jane></td></tr>
+        <tr><td>Bond</td></tr>
+
+        <tr><td>Lars</td></tr>
+        <tr><td><Croft></td></tr>
+
+    </table>
+
+undefined
+-->
+~~~
+
+
+
+
+
+# variable declaration
+
+ちょっとだけまとめた先週の復習  変数宣言の仕方
+ - var
+ - let : mutable
+ - const :  instance を一つに固定 
+        :  (in loop) you cannot reenter the loop 
+- function 
+- class
+ - import
+
+
+- let , const は TDZ を持つ
+ -   TDZ ( temporal dead zone ) : 実行が宣言に到達するまで誰も到達できないはずの領域
+
+
+
+
+~~~
+let a=33
+if (true) {
+  console.log(a);
+  //let a;
+}
+//=> undefined
+
+let a=33
+if (true) {
+  console.log(a);
+  let a;            // make a in TDZ in this scope
+}
+//=> ReferenceError
+~~~
+
+~~~
+let myVar = 1;
+let func = function() {
+  console.log(myVar);
+}
+if (true) {
+  let myVar = 3;
+  func(); // => 1
+}
+undefined
+
+let myVar = 1;
+if (true) {
+  let func = function() {
+    console.log(myVar);
+  }
+  let myVar = 3;
+  func(); // => 3
+}
+undefined
+
+if (true) {
+    {
+        console.log(myVar); // RefError
+    };
+    let myVar = 1;
+}
+ReferenceError: myVar is not defined(…)(anonymous function) @ VM126:4InjectedScript._evaluateOn @
+
+if (true) {
+    console.log(typeof foo);
+    console.log(typeof bar);
+    let foo;
+}
+ReferenceError: foo is not defined(…)(anonymous function) @ VM347:3InjectedScript._evaluateOn @
+
+if (true) {
+    {
+        console.log(myVar); // RefError
+    };
+    let myVar = 1;
+}
+ReferenceError: myVar is not defined(…)(anonymous function) @ VM348:4InjectedScript._evaluateOn @
+
+if (true) {
+    //console.log(typeof foo);
+    console.log(typeof bar);
+    let foo;
+}
+undefined
+
+
+if (true) {
+    console.log(typeof foo);
+    console.log(typeof bar);
+    let foo;
+}
+ReferenceError
+~~~
+
+
+
+
+
+
+# Destructing
+
+
+~~~
+function* allNaturalNumbers() {
+  for (let n = 0; ; n++) {
+    yield n;
+  }
+}
+
+const [x, y, z] = allNaturalNumbers(); // x=0; y=1; z=2
+~~~
+
+
+
+
+
+
+
+# Parameter Handling
+
+
+~~~
+function f(x, ...y) {
+    ···
+}
+
+> f('a', 'b', 'c');   // x = 'a'; y = ['b', 'c']
+> f();                // x = undefined; y = []
+~~~
+
+
+e.g.
+~~~
+setTimeout(
+    console.log.bind(
+        console,
+        "%c\u3010\u3054\u6ce8\u610f\u304f\u3060\u3055\u3044\u3011",
+        "font-family:helvetica; font-size:20px;"
+        + 'font-size:50px; font-weight:bold; '
+        + 'color:red; -webkit-text-stroke:1px black;'
+    )
+)
+
+console.log.bind(
+    console,
+    "%c\u3010\u3054\u6ce8\u610f\u304f\u3060\u3055\u3044\u3011",
+    "font-family:helvetica; font-size:20px;"
+    + 'font-size:50px; font-weight:bold; '
+    + 'color:red; -webkit-text-stroke:1px black;'
+)()
+
+setTimeout(
+    function(){
+        console.log(
+            "%c\u3010\u3054\u6ce8\u610f\u304f\u3060\u3055\u3044\u3011",
+            "font-family:helvetica; font-size:20px;"
+            + 'font-size:50px; font-weight:bold; '
+            + 'color:red; -webkit-text-stroke:1px black;'
+        )
+    })
+~~~
+
+
+
+
+
+
+## Named Parameter in Javascript
+
+
+~~~
+selectEntries({ start: 3, end: 20, step: 2 });
+~~~
+
+
+In ECMAScript 5, you’d implement selectEntries() as follows:
+~~~
+function selectEntries(options) {
+    options = options || {};
+    var start = options.start || 0;
+    var end = options.end || -1;
+    var step = options.step || 1;
+    ···
+}
+~~~
+In ECMAScript 6, you can use destructuring, which looks like this:
+~~~
+function selectEntries({ start=0, end=-1, step=1 }) {
+    ···
+}
+~~~
+
+
+in order to use the function with no args ;
+~~~
+function selectEntries({ start=0, end=-1, step=1 } = {}) {
+    ···
+}
+~~~
+
+
+
+
+## Map
+
+~~~
+const map0 = new Map([
+[1,'a'],
+[2,'b'],
+[3,'c']
+]);
+undefined
+const map1 = new Map(
+[...map0]
+.map(([k,v]) => [k*2, '_'+v])
+);
+undefined
+map1
+Map {2 => "_a", 4 => "_b", 6 => "_c"}
+map0
+Map {1 => "a", 2 => "b", 3 => "c"}
+~~~
+
+
+
+
+
+
+## Promise
+
+Destructuring helps with handling the Array that the result of Promise.all() resolves to:
+~~~
+const urls = [
+    'http://example.com/foo.html',
+    'http://example.com/bar.html',
+    'http://example.com/baz.html',
+];
+
+Promise.all(urls.map(downloadUrl))
+.then(([fooStr, barStr, bazStr]) => {
+    ···
+});
+
+// This function returns a Promise that resolves to
+// a string (the text)
+function downloadUrl(url) {
+    return fetch(url).then(request => request.text());
+}
+~~~
+fetch() is a Promise-based version of XMLHttpRequest. It is part of the Fetch standard.
+
+
+
+json : javascript object notation
+
+" option object " : something like json which can be taken at the arguments of a function
+
+promise : 非同期処理を正しく書くためにある
+
+
+## Spreading
+
+`...` : spreading
+
+~~~
+Math.max(-1, 5, 11, 3)          // 11
+Math.max(...[-1, 5, 11, 3])     // 11
+Math.max(-1, ...[-1, 5, 11], 3) // 11
+~~~
+
+~~~
+const arr1 = ['a', 'b'];
+const arr2 = ['c', 'd'];
+
+arr1.push(...arr2);     // 4
+arr1                    // ["a", "b", "c", "d"]
+~~~
+
+
+
+
+
+
+
+
+
+
+# Callable entities in ES6
+
+## _
+
+* the entity : traditional function
+* the syntax that creates entities : function expression and function declaration
+
+
+## how to call
+
+### anywhere
+
+* Function call : `func(3,1)`
+* Method calls : `obj.method('abc')`
+* Constructor calls : `new Constructor(8)`
+
+### via super
+
+* Arrow functions are made for non-method functions. they pick up `this`
+* Method definitions are made for methods. they support `super`
+
+## Recommendations
+
+### Prefer arrow functions as call backs
+
+#### Problem
+
+~~~
+beforeEach(function () {
+    this.addMatch
+})
+~~~
+
+## Dispatched and direct method calls in ES5/6
+
+#### ES6 : Array-like Objects are less burdensome
+
+~~~
+const domLinks = document.querySelectorAll('a[href]');
+const links = Array.from(domLinks);
+links.forEach(function (link) {
+    console.log(link);
+});
+~~~
+
+~~~
+function format(pattern, ...param) {
+    return params;
+}
+console.log(format('a','b','c'));
+~~~
+
+~~~
+var obj = {prop: 123}
+
+obj.hasOwnProperty('prop');     // true
+toString' in obj                // true (inherited)
+obj.hasOwnProperty('toString'); // false
+~~~
+
+~~~
+var obj1 = {hasOwnProperty : 123}
+
+obj1.hasOwnProperty('toString')     // TypeError: not function
+Object.prototype.hasOwnProperty.call(obj1, 'hasOwnProperty')    // true
+~~~
+
+~~~
+var obj2 = Object.create(null);
+
+Object.prototype.hasOwnProperty.call(obj2, 'toString')      // false
+~~~
+
+
+
+#### less need for `hasOwnProperty()`
+
+`hasOwnProperty()` is mostly used to implement Maps via objects
+
+#### Avoiding intermediate objects
+
+~~~
+var str = 'abc';
+var arr = str.split('');        // ['a', 'b', 'c']
+var joined = arr.join('-');     // "a-b-c"
+~~~
+
+~~~
+var str = 'abc';
+var joined = Array.prototype.join.call(str, '-');   // "a-b-c"
+~~~
+
+~~~
+function toUpper(x) { return x.toUpperCase() }
+'abc'.split('').map(toUpper)                // ['A','B','C']
+~~~
+
+
+
+#### ES6 : Avoiding intermediate objects
+
+~~~
+Array.from('abc' , ch => ch.toUpperCase())  // ['A','B','C']
+
+'abc'.split('').map(function(x) {return x.toUpperCase()})   // ['A','B','C']
+~~~
+
+### Abbreviations for `Object.prototype` and `Array.prototype`
+
+~~~
+Object.prototype.hasOwnProperty.call(obj, 'propKey')
+{}.hasOwnProperty.call(obj, 'propKey')
+~~~
+
+~~~
+Array.prototype.slice.call(arguments)
+[].slice.call(arguments)
+~~~
+
+## The `name` property of function
+
+~~~
+function foo() {}
+foo.name            // 'foo'
+~~~
+
+
+
+
+### Constructs that provide names for function
+
+~~~
+let func1 = function(){};
+const func2 = function(){};
+var func3 = function(){};
+~~~
+
+~~~
+const func = () => {};
+console.log(func.name); // func
+~~~
+
+~~~
+let [func1 = function () {}] = [];
+console.log(func1.name);            // func1
+
+let {f2: func2 = function () {}} = {};
+console.log(func2.name);            // func2
+
+function g(func3 = function(){}) {return func3.name;}
+console.log(g());                   // func3
+~~~
+
+#### Named function definition
+
+~~~
+const bar = function baz(){};
+console.log(bar.name);          // baz
+~~~
+
+~~~
+const bar = function baz() {};
+console.log(baz.name);          // baz
+bar();
+console.log(baz);               // ReferenceError in ES5
+~~~
+
+
+
+#### Methods in object literals
+
+~~~
+function func() {}
+let obj = {
+    m1() {},                        // (A)
+    m2: function () {},             // (B)
+    ['m' + '3']: function () {},    // (C)
+    func,                           // (D)
+}
+console.log(obj.m1.name);           // m1
+console.log(obj.m2.name);           // m2
+console.log(obj.m3.name);           // m3
+console.log(obj.func.name);         // func
+~~~
+
+#### Methods in class definitions
+
+~~~
+class C {
+    m1() {}
+    ['m' + '2']() {}
+
+    static classMethod() {}
+}
+console.log(C.prototype.m1.name);
+console.log(new C().m1.name);
+console.log(C.prototype.m2.name);
+console.log(C.classMethod.name);
+~~~
+
+
+
+### Caveats
+
+function functionFactory() {
+    return function (){};
+}
+const foo = functionFactory();
+console.log(foo.name.length);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Arrow Function
+
+## Overview
+
+~~~
+const arr = [1,2,3];
+const squares = arr.map(x => x * x);
+~~~
+
+
+`this` in arrow function
+
+~~~
+function UiComponent(){
+    const button = document.getElementById('myButton');
+    button.addEventListener('click', ()=>{
+        console.log('CLICK');
+        this.handleClick();         // lexical this
+    })
+}
+~~~
+
+
+
+
+## Traditional functions are bad non-method functions, due to `this`
+
+`this` is in double scope
+
+~~~
+function Prefixer(prefix) {
+    this.prefix = prefix;
+}
+Prefixer.prototype.prefixerArray = function (arr) {
+    'use strict';
+    return arr.map(function(x) {
+        // Does not work
+        return this.prefix + x;
+    })
+}
+~~~
+
+### Solution 1 : `that = this`
+
+~~~
+function Prefixer(prefix) {
+    this.prefix = prefix;
+}
+Prefixer.prototype.prefixerArray = function (arr) {
+    var that = this;
+    return arr.map(function(x) {
+        return that.prefix + x;
+    })
+}
+
+
+> var pre = new Prefixer('Hi ');
+> pre.prefixArray(['Joe', 'Alex'])
+~~~
+
+### Solution 2 : specifying a value for `this`
+
+~~~
+function Prefixer(prefix) {
+    this.prefix = prefix;
+}
+Prefixer.prototype.prefixerArray = function (arr) {
+    return arr.map(function(x) {
+        return this.prefix + x;
+    }, this);
+};
+~~~
+
+### Solution 3 : `bind(this)`
+
+~~~
+function Prefixer(prefix) {
+    this.prefix = prefix;
+}
+Prefixer.prototype.prefixerArray = function (arr) {
+    return arr.map(function(x) {
+        return this.prefix + x;
+    }.bind(this));
+}
+~~~
+
+### ES6 : Arrow Function
+
+~~~
+function Prefixer(prefix) {
+    this.prefix = prefix;
+}
+Prefixer.prototype.prefixerArray = function (arr) {
+    return arr.map( (x) => {
+        return this.prefix + x;
+    })
+}
+~~~
+
+
+~~~
+class Prefixer {
+    constructor(prefix) {
+        this.prefix = prefix;
+    }
+    prefixArray(arr) {
+        return arr.map(x => this.prefix + x);
+    }
+}
+~~~
+
+
+
+## syntax
+
+~~~
+() => {}
+x  => {}
+(x,y) => {}
+~~~
+
+e.g.
+~~~
+(() => {console.log("hello")})();
+~~~
+
+
+
+
+# new OOP feature
+
+## overview
+
+### New object literal features
+#### Method definitions:
+
+~~~
+const obj = {
+    myMethod(x, y) {}
+};
+~~~
+
+#### Property value shorthands:
+
+~~~
+const first = 'Jane';
+const last = 'Doe';
+
+const obj = { first, last };
+// Same as:
+const obj = { first: first, last: last };
+~~~
+
+#### Computed property keys:
+
+~~~
+const propKey = 'foo';
+const obj = {
+    [propKey]: true,
+    ['b'+'ar']: 123
+};
+~~~
+
+This new syntax can also be used for method definitions:
+
+~~~
+const obj = {
+    ['h'+'ello']() {
+        return 'hi';
+    }
+};
+console.log(obj.hello()); // hi
+~~~
+
+
+### New methods in Object
+The most important new method of Object is assign(). Traditionally, this functionality was called extend() in the JavaScript world. In contrast to how this classic operation works, Object.assign() only considers own (non-inherited) properties.
+
+~~~
+const obj = { foo: 123 };
+Object.assign(obj, { bar: true });
+console.log(JSON.stringify(obj));
+    // {"foo":123,"bar":true}
+~~~
+
+## New features of object literals
+
+### Method definitions
+
+ES5
+~~~
+var obj = {
+    myMethod: function (x, y) {}
+};
+~~~
+
+ES6
+~~~
+const obj = {
+    myMethod(x, y) {}
+};
+~~~
+
+
+Getters and setters continue to work as they did in ECMAScript 5 (note how syntactically similar they are to method definitions):
+
+~~~
+const obj = {
+    get foo() {
+        console.log('GET foo');
+        return 123;
+    },
+    set bar(value) {
+        console.log('SET bar to '+value);
+        // return value is ignored
+    }
+};
+~~~
+
+Let’s use obj:
+
+~~~
+> obj.foo
+GET foo
+123
+> obj.bar = true
+SET bar to true
+true
+~~~
+
+There is also a way to concisely define properties whose values are generator functions:
+
+~~~
+const obj = {
+    * myGeneratorMethod() {
+        ···
+    }
+};
+~~~
+
+This code is equivalent to:
+
+~~~
+const obj = {
+    myGeneratorMethod: function* () {
+        ···
+    }
+};
+~~~
+
+### Property value shorthands
+
+~~~
+const x = 4;
+const y = 1;
+const obj = { x, y };
+~~~
+
+The last line is equivalent to:
+
+~~~
+const obj = { x: x, y: y };
+~~~
+
+
+~~~
+const obj = { x: 4, y: 1 };
+const {x,y} = obj;
+console.log(x); // 4
+console.log(y); // 1
+~~~
+
+
+### Computed property keys
+
+~~~
+const propKey = 'foo';
+const obj = {
+    [propKey]: true,
+    ['b'+'ar']: 123
+};
+~~~
+
+This new syntax can also be used for method definitions:
+
+~~~
+const obj = {
+    ['h'+'ello']() {
+        return 'hi';
+    }
+};
+console.log(obj.hello()); // hi
+~~~
+
+~~~
+const obj = {
+    * [Symbol.iterator]() { // (A)
+        yield 'hello';
+        yield 'world';
+    }
+};
+for (const x of obj) {
+    console.log(x);
+}
+// Output:
+// hello
+// world
+~~~
+
+Line A starts a generator method definition with a computed key (the symbol stored in Symbol.iterator).
+
+## New methods of Object
+
+### `Object.assign(target, source_1, source_2, ···)`
+
+This method merges the sources into the target
+
+
+~~~
+const obj = { foo: 123 };
+Object.assign(obj, { bar: true });
+console.log(JSON.stringify(obj));
+    // {"foo":123,"bar":true}
+~~~
+
+Let’s look more closely at how Object.assign() works:
+
+Both kinds of property keys: Object.assign() is aware of both strings and symbols as property keys.
+Only enumerable own properties: Object.assign() ignores inherited properties and properties that are not enumerable.
+Reading a value from a source: normal “get” operation (const value = source[propKey]). That means that if the source has a getter whose key is propKey then it will be invoked. All properties created by Object.assign() are data properties, it won’t transfer getters to the target.
+Writing a value to the target: normal “set” operation (target[propKey] = value). That means that if the target has a setter whose key is propKey then it will be invoked with value.
+This is how you’d copy all properties (not just enumerable ones), while correctly transferring getters and setters, without invoking setters on the target:
+
+~~~
+function copyAllProperties(target, ...sources) {
+    for (const source of sources) {
+        for (const key of Reflect.ownKeys(source)) {
+            const desc = Object.getOwnPropertyDescriptor(source, key);
+            Object.defineProperty(target, key, desc);
+        }
+    }
+    return target;
+}
+~~~
+
+#### Caveat: Object.assign() doesn’t work well for moving methods
+
+On one hand, you can’t move a method that uses super: Such a method has an internal property [[HomeObject]] that ties it to the object it was created in. If you move it via Object.assign(), it will continue to refer to the super-properties of the original object. Details are explained in a section in the chapter on classes.
+
+On the other hand, enumerability is wrong if you move methods created by an object literal into the prototype of a class. The former methods are all enumerable (otherwise Object.assign() wouldn’t see them, anyway), but the prototype only has non-enumerable methods by default.
+
+#### Use cases for Object.assign()
+Let’s look at a few use cases.
+
+##### Adding properties to this
+
+You can use Object.assign() to add properties to this in a constructor:
+
+~~~
+class Point {
+    constructor(x, y) {
+        Object.assign(this, {x, y});
+    }
+}
+~~~
+
+##### Providing default values for object properties
+
+~~~
+const DEFAULTS = {
+    logLevel: 0,
+    outputFormat: 'html'
+};
+function processContent(options) {
+    options = Object.assign({}, DEFAULTS, options); // (A)
+    ···
+}
+~~~
+
+In line A, we created a fresh object, copied the defaults into it and then copied options into it, overriding the defaults. Object.assign() returns the result of these operations, which we assign to options.
+
+##### Adding methods to objects
+Another use case is adding methods to objects:
+
+~~~
+Object.assign(SomeClass.prototype, {
+    someMethod(arg1, arg2) {
+        ···
+    },
+    anotherMethod() {
+        ···
+    }
+});
+~~~
+
+
+~~~
+SomeClass.prototype.someMethod = function (arg1, arg2) {
+    ···
+};
+SomeClass.prototype.anotherMethod = function () {
+    ···
+};
+~~~
+
+##### Cloning objects
+
+One last use case for Object.assign() is a quick way of cloning objects:
+
+function clone(orig) {
+    return Object.assign({}, orig);
+}
+This way of cloning is also somewhat dirty, because it doesn’t preserve the property attributes of orig. If that is what you need, you have to use property descriptors.
+
+If you want the clone to have the same prototype as the original, you can use Object.getPrototypeOf() and Object.create():
+
+~~~
+function clone(orig) {
+    const origProto = Object.getPrototypeOf(orig);
+    return Object.assign(Object.create(origProto), orig);
+}
+~~~
+
+### Object.getOwnPropertySymbols(obj)
+
+Object.getOwnPropertySymbols(obj) retrieves all own (non-inherited) symbol-valued property keys of obj. It complements Object.getOwnPropertyNames(), which retrieves all string-valued own property keys. Consult a later section for more details on traversing properties.
+
+
+### `Object.is`
+
+~~~
+> Object.is(NaN, NaN)
+true
+> Object.is(-0, +0)
+false
+~~~
+
+### `Object.setPrototypeOf(obj, proto)`
+
+
+## Traversing properties
+
+#### 5 operations
+
+- `Object.keys(obj)` : Array<string>
+    - retrieves all string keys of all enumerable own (non-inherited) properties.
+- `Object.getOwnPropertyNames(obj)` : Array<string>
+    - retrieves all string keys of all own properties.
+- `Object.getOwnPropertySymbols(obj)` : Array<symbol>
+    - retrieves all symbol keys of all own properties.
+- `Reflect.ownKeys(obj)` : Array<string|symbol>
+    - retrieves all keys of all own properties.
+- `for (const key in obj)`
+    - retrieves all string keys of all enumerable properties (inherited and own).
+
+#### Traversal order of properties
+
+~~~
+const obj = {
+    [Symbol('first')]: true,
+    '02': true,
+    '10': true,
+    '01': true,
+    '2': true,
+    [Symbol('second')]: true,
+};
+Reflect.ownKeys(obj);
+// ["2", "10", "02", "01", Symbol(first), Symbol(second)]
+~~~
+
+
+
+## Assigning versus defining properties
+
+~~~
+
+
+~~~
+
+
+
+
+
+
+
+
+# canvas
+
+## Whiteboardfox canvas
+
+This is not a hacking tool and just nothing new.
+Open console and type below code, and then you will get the reaction from your browser.
+
+~~~
+var canvas = document.getElementById("canvasId");
+var image = new Image();
+image.id = "pic";
+image.src = canvas.toDataURL();
+// document.body.appendChild(image);
+var w = window.open("");
+w.document.write(image.outerHTML);
+~~~
+
+~~~
+var canvas = document.getElementById("canvasId");
+var ctx = canvas.getContext("2d");
+console.log(ctx.createImageData(2000, 2000))
+~~~
+
+
+<br>
+
+# my dotinstall lecture note
+
+Japanese Lecture of Web Technologies : http://dotinstall.com
+
+## function
+
+function declaration statement
+
+~~~
+function f() {}
+~~~
+
+function definition expression
+
+~~~
+var f = function(){}
+~~~
+
+
+Immediate function
+~~~
+(function(){
+})();
+~~~
+
+
+
+
+
+
+
+## Window Object
+
+- These are the methods of `window` or `this`.
+- e.g. Open console on your browser and type `this.alert()`, and then you will get reaction.
+
+
+### `alert()`
+
+~~~
+alert("hello");
+~~~
+
+### `confirm()`
+
+~~~
+var answer = confirm("are you sure ?");//return true/false
+console.log(answer);
+if (confirm("are you sure to delete ?")){
+  delete();
+}
+~~~
+
+### `prompt()`
+
+~~~
+var name = prompt("type your name.","anonymous"); //第二引数はデフォルトの値
+console.log(name);
+~~~
+
+
+
+### `setInterval()`
+
+~~~
+var i=0
+function show(){
+  console.log(i++);
+}
+~~~
+
+1000ms ごとに function show()を実行
+
+~~~
+setInterval(function(){
+  show();
+},1000);
+~~~
+
+###  `setTimeout()`
+
+the same thing with setTimeout()
+
+~~~
+var i=0;
+function show(){
+  console.log(i++);
+  setTimeout(function(){
+    show();
+  },1000);
+}
+show();
+~~~
+
+if i>3 then stop timer
+
+~~~
+var i=0;
+function show(){
+  console.log(i++);
+  var tid = setTimeout(function(){
+    show();
+  },1000);
+  if (i>3){// stop timer
+    clearTimeout(tid);
+  }
+}
+show();
+~~~
+
+
+
+
+## String Object
+
+~~~
+var s = new String("ghasshee"); //String Object
+var s = "ghasshee";             //String Literal
+console.log(s.length);            // 8
+console.log(s.substr(1,3));       //"has"
+console.log(s.replace('s', 'S')); //"ghaSShee"
+~~~
+
+## Array Object
+
+### `unshift` ==> array <== `push`
+### `shift`  <== array ==> `pop`
+
+~~~
+var a = new Array(100,300,200);
+var a = [100, 300, 200];
+console.log(a.length)               // 3
+a.push(500);
+console.log(a);                     // [100,300,200,500]
+a.splice(1,2,800, 1000);            // splice(startpoint, #ofdelete, added , added ...  )
+console.log(a);                     // [100,800,1000,500]
+~~~
+
+## Math Object
+## Date Object
+
+
+## DOM
+
+- document - 今開いているページ
+- DOM - document object model
+
+
+Display the all Objects' Property
+
+~~~
+console.dir(window);
+~~~
+
+~~~
+console.log(window.outerHeight);
+window.location.href = 'http://ghasshee.github.io';     // 指定したページに飛ぶ
+~~~
+
+
+
+
+
+~~~ html
+<!--
+<html>
+<head>
+  <title></title>
+  <style>
+    .mystyle{
+      font-weight: bold;
+      border: 1px solid gray;
+}
+  </style>
+</head>
+<body>
+  <h1></h1>
+  <p id="msg">こんにちわ</p>
+  <script>
+    var e = document.getElementById('msg');
+    e.textContent = 'hello';     //コンテントを変更
+    e.style.color ='red';         // change color
+    e.className = 'myStyle';      // myStyle class を適用
+//
+//        body
+//            p
+//                textContent
+//
+    var greet = document.createElement('p'),
+        text = document.createTextNode('helllo world');
+    document.body.appendChild(greet).appendChild(text);　　
+//     push p to the end of body
+  </script>
+</body>
+</html>
+-->
+~~~
+
+
+## Event
+
+~~~ html
+<!--
+<html>
+<head>
+    <title></title>
+    <style>
+    .mystyle{
+    font-weight: bold;
+    border: 1px solid gray;
+    }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <p id="msg">こんにちわ</p>
+    <button id="add">Click!</button>
+    <script>
+    var e = document.getElementById('msg');
+    e.textContent = 'hello';     //コンテントを変更
+    e.style.color ='red';         // change color
+    e.className = 'myStyle';      // myStyle class を適用
+    //
+    //        body
+    //            p
+    //                textContent
+    //
+    //        push p to the end of body
+    document.getElementById('add').addEventListener('click',function(){
+    var greet = document.createElement('p'),
+    text = document.createTextNode('helllo world');
+    document.body.appendChild(greet).appendChild(text);　
+    })
+    </script>
+</body>
+</html>
+-->
+~~~

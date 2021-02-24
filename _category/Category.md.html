@@ -1,0 +1,84 @@
+---
+title: (1-) Category Theory
+layout: newsmag
+---
+
+
+
+
+# pos
+
+Unlike a set, A category has objects and morphisms.<br>
+Category pos has unique forall x y, x $ \to $ y is unique.<br>
+e.g. <br>
+pos = { {1, 2, 3}, { $ 1 _ 1 $ , $ 1 _ 2 $ , $ 1 _ 3 $ , 1 $ \to $ 2, 2 $ \to $ 3, 1 $ \to $ 3, }}.<br>
+
+A category C is a family of End, Hom sets.
+
+
+- Obj
+    - end
+    - hom
+        - dom
+        - cod
+    - id
+    - com
+        - assoc
+        - unitr
+        - unitl
+
+
+
+C := {Obj, Hom, Dom, Cod, Id, Com, Assoc, UnitL, UnitR}
+
+- Obj : {1, 2, 3}
+    - Hom : Obj Obj -> C
+    - Hom : x y |-> Hom(x,y)
+    - Dom : Hom(x,y) -> Obj
+    - Dom : f |-> x
+    - Cod : Hom(x,y) -> Obj
+    - Cod : f |-> y
+    - Id  : Obj -> Σ Hom(x,x)
+    - Id  : x   |-> 1 _ x
+    - Com : Hom(y,z) Hom(x,y) -> Hom(x,z)
+    - Com : g f |-> g.f
+        - Assoc : Com Hom(y,z) (Com Hom(x,y) Hom(w,x)) -> Com (Com Hom(y,z) Hom(x,y)) Hom(w,x)
+        - UnitR : Hom(x,y) ({Id x}) -> Hom(x,y)
+        - UnitL : ({Id y}) Hom(x,y) -> Hom(x,y)
+    ...
+
+- Mor = Σ Hom + Σ End
+
+
+- Mor : { $ 1 _ 1 $ , $ 1 _ 2 $ , $ 1 _ 3 $ , 1 $ \to $ 2, 2 $ \to $ 3, 1 $ \to $ 3, }
+    - id : Obj $ \to $ Mor
+    - id : $ x \ \mapsto \ 1 _ x $
+    - com : Hom $ \times $ Hom $ \to $ Hom
+    - com : $ ( x, \ y ) \ \mapsto \ y \circ x $
+        - assoc : com Hom (com Hom) $ \to $ com (com Mor Mor)
+        - unitr : Hom $ \times $  $ { 1 _ x } $ $ \to $ Hom
+        - unitl : $ { 1 _ x } $ $ \times $ Hom $ \to $ Hom
+
+We can omit Objects since Obj is isomorphic to { $ 1 _ 1 $ , $ 1 _ 2 $ , $ 1 _ 3 $ }. <br>
+In category theory, what we have to think is morphisms .
+
+Note that
+
+- morphism ' $ \le $ ' compose a category,
+- morphism ' $ \lt $ ' does not compose a category, but a graph.
+
+
+
+
+
+## The formal Definition
+
+Category is composed of 6 definitions.
+~~~
+- Objects   := { X, Y, Z, W }
+- Morphisms := { f:X->Y, g:Y->Z, ... }
+    - Composition   := { g.f:X->Z, h.g:Y->Z, ... }
+    - Identity      := { id_x:X->X, ... }
+        - Associativity Laws := { h.(g.f) = (h.g).f }
+        - Unit          Laws := { f.id_x = f, id_y.g = g , ... }
+~~~

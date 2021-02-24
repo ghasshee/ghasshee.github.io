@@ -1,0 +1,68 @@
+---
+title: Elementary Matrix
+layout: newsmag
+---
+
+
+from [wikipedia](https://en.wikipedia.org/wiki/Elementary_matrix)
+
+# Operations
+There are three types of elementary matrices, which correspond to three types of row operations (respectively, column operations):
+
+;Row switching: A row within the matrix can be switched with another row.
+: $$ R_i \leftrightarrow R_j $$
+
+;Row multiplication: Each element in a row can be multiplied by a non-zero constant.
+: $$ kR_i \rightarrow R_i,\ \mbox{where } k \neq 0 $$
+
+;Row addition: A row can be replaced by the sum of that row and a multiple of another row.
+: $$ R_i + kR_j \rightarrow R_i, \mbox{where } i \neq j $$
+
+If ''E'' is an elementary matrix, as described below, to apply the elementary row operation to a matrix ''A'', one multiplies the elementary matrix on the left, ''E⋅A''. The elementary matrix for any row operation is obtained by executing the operation on the [[identity matrix]].
+
+## Row-switching transformations
+The first type of row operation on a matrix ''A'' switches all matrix elements on row ''i'' with their counterparts on row ''j''. The corresponding elementary matrix is obtained by swapping row ''i'' and row ''j'' of the [[identity matrix]].
+
+$$
+T_{i,j} =
+\begin{bmatrix} 1 & & & & & & & \\ & \ddots & & & & & & \\ & & 0 & & 1 & & \\ & & & \ddots & & & & \\ & & 1 & & 0 & & \\ & & & & & & \ddots & \\ & & & & & & & 1
+\end{bmatrix}
+\quad
+$$
+
+
+:So ''T<sub>ij</sub>⋅A'' is the matrix produced by exchanging row ''i'' and row ''j'' of ''A''.
+
+#### Properties
+:*The inverse of this matrix is itself: ''T<sub>ij</sub><sup>&minus;1</sup>=T<sub>ij</sub>''.
+:*Since the [[determinant]] of the identity matrix is unity, det[''T''<sub>''ij''</sub>] = &minus;1.  It follows that for any square matrix ''A'' (of the correct size), we have det[''T''<sub>''ij''</sub>''A''] = &minus;det[''A''].
+
+## Row-multiplying transformations
+The next type of row operation on a matrix ''A'' multiplies all elements on row ''i'' by ''m'' where ''m'' is a non-zero [[scalar (mathematics)|scalar]] (usually a real number). The corresponding elementary matrix is a diagonal matrix, with diagonal entries 1 everywhere except in the ''i''th position, where it is ''m''.
+
+$$
+D_i(m) = \begin{bmatrix} 1 & & & & & & \\ & \ddots & & & & & \\ & & 1 & & & & \\ & & & m & & & \\ & & & & 1 & & \\ & & & & & \ddots & \\ & & & & & & 1\end{bmatrix}\quad $$
+
+:So D''<sub>i</sub>(m)⋅A'' is the matrix produced from ''A'' by multiplying row ''i'' by ''m''.
+
+#### Properties
+:*The inverse of this matrix is: D''<sub>i</sub>''(''m'')<sup>&minus;1</sup> = D''<sub>i</sub>''(1/''m'').
+:*The matrix and its inverse are [[diagonal matrix|diagonal matrices]].
+:*det[D<sub>''i''</sub>(m)] = ''m''. Therefore for a square matrix ''A'' (of the correct size), we have det[D<sub>''i''</sub>(''m'')''A''] = ''m'' det[''A''].
+
+## Row-addition transformations
+The final type of row operation on a matrix ''A'' adds row ''j'' multiplied by a scalar ''m'' to row ''i''. The corresponding elementary matrix is the identity matrix but with an ''m'' in the (''i,j'') position.
+
+$$
+L_{i,j}(m) = \begin{bmatrix} 1 & & & & & & & \\ & \ddots & & & & & & \\ & & 1 & & & & & \\ & & & \ddots & & & & \\ & & m & & 1 & & \\ & & & & & & \ddots & \\ & & & & & & & 1\end{bmatrix}
+$$
+
+
+:So ''L<sub>i,j</sub>(m)⋅A'' is the matrix produced from ''A'' by adding ''m'' times row ''j'' to row ''i''.
+
+### Properties
+:*These transformations are a kind of [[shear mapping]], also known as a ''transvections''.
+:*''L<sub>ij</sub>''(''m'')<sup>&minus;1</sup> = ''L<sub>ij</sub>''(&minus;''m'') (inverse matrix).
+:*The matrix and its inverse are [[triangular matrix|triangular matrices]].
+:*det[''L<sub>ij</sub>''(''m'')] = 1. Therefore, for a square matrix ''A'' (of the correct size) we have det[''L''<sub>''ij''</sub>(''m'')''A''] = det[''A''].
+:*Row-addition transforms satisfy the [[Steinberg relations]].

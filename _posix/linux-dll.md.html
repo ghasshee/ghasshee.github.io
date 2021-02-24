@@ -1,0 +1,92 @@
+---
+title: linux dll?
+layout: dep
+date: 2016-02-07
+---
+
+
+
+quoto
+<br>
+<br>
+<br>
+<br>
+
+
+Dolda2000  Dolda2000 is offline<br>
+Linux Guru<br>
+
+Join Date<br>
+Oct 2001<br>
+Location<br>
+Täby, Sweden<br>
+Posts<br>
+7,578<br>
+
+Actually, "DLL" is a generic computer science term -- A "Dynamically Linked Library" is just that, a library which, rather than being linked statically into the executable, is linked dynamically at runtime. It just so happens that Microsoft chose the generic name as the name of their implementation as well.
+
+In most Unix systems, the object and executable file format is called ELF (Executable and Linking Format). A part of ELF is the Shared Object specification (hence the filename suffix ".so"), which is the ELF implementation of DLLs. The name "shared object" is, of course, derived from the fact that they are (usually relocatable) objects that are shared by several processes simultaneously.
+
+Mind you that the ELF shared object system is far superior to Microsoft's DLL implementation, though, in that shared objects can be versioned. That way, one system can have several independent versions of the same shared object installed simultaneously, as to maintain binary compatibility for compiled executables. Microsoft's DLL implementation has no concept of versioning, so when one program overwrites an existing DLL with a newer or older version that it wants, that is what is known as "DLL Hell".
+
+It is also well worth mentioning that since the Linux kernel supports unlinking files that are in use, shared objects can be upgraded while the system is running, as opposed to Windows, which needs to be rebooted in order to upgrade or otherwise replace DLLs that are being used by system services.
+
+
+As for the "registry", I'd like to clarify that a bit. It's fair to say that Linux has no equivalent of the Windows registry. That's not a bad thing, however -- I'd like to point out that I strongly disagree with Krendoshazin's statement that "the windows registry is a good idea in theory", because it isn't. It's just a stupid round-about for storing the same kind of information that can already be stored in real config files. The only reason that I can find for the Windows registry is that Microsoft wanted data to be stored in a proprietary, binary format, as to prevent interoperation. It's particularly stupid since the entire registry is stored in one monolithical file, which makes it very prone to corruption.
+
+GNOME, however, has something that can be compared to the Windows registry -- "gconf". In contrast to the Windows registry, however, it actually does something that cannot easily be done with ordinary config files, though. It allows several configuration databases to be cascaded on top each other, which provides an easy and rather elegant means of storing system defaults and read-only values. I'm still in part opposed to gconf, however, for reasons that I won't go into further here. I'd surmise that KDE has something similar to gconf.
+
+
+As for "how Linux handles big applications", I don't really understand the question. What makes a "big application" different from a "small application"?
+
+
+<br>
+<br>
+<br>
+<br>
+
+
+07-12-2005 #5<br>
+Krendoshazin  Krendoshazin is offline<br>
+Linux User<br>
+
+Krendoshazin's Avatar Join Date<br>
+Feb 2005<br>
+Location<br>
+London, England<br>
+Posts<br>
+471<br>
+
+Quote Originally Posted by Dolda2000
+As for the "registry", I'd like to clarify that a bit. It's fair to say that Linux has no equivalent of the Windows registry. That's not a bad thing, however -- I'd like to point out that I strongly disagree with Krendoshazin's statement that "the windows registry is a good idea in theory", because it isn't. It's just a stupid round-about for storing the same kind of information that can already be stored in real config files. The only reason that I can find for the Windows registry is that Microsoft wanted data to be stored in a proprietary, binary format, as to prevent interoperation. It's particularly stupid since the entire registry is stored in one monolithical file, which makes it very prone to corruption.
+That's exactly the reason why I said it was poorly implemented, but I think what you're disagreeing on really comes down to opinion, I've worked a lot with databases and know how fast a properly implemented and maintained database can be, you could teach a child to create a program to organise data from a structured ini file, but a proper database system could have it's advantages, perhaps it won't, that's yet to be seen.
+Great GNU/Linux references and resources:
+The Linux Documentation Project
+Rute User's Tutorial and Exposition
+GNU/Linux Man Pages
+07-12-2005 #6
+
+
+<br>
+<br>
+<br>
+<br>
+
+
+Dolda2000  Dolda2000 is offline<br>
+Linux Guru<br>
+
+Join Date<br>
+Oct 2001<br>
+Location<br>
+Täby, Sweden<br>
+Posts<br>
+7,578<br>
+
+Well, I was a bit unclear -- the "one big file" argument wasn't what I meant as the reason why the registry is a bad idea in itself.
+
+The reason that I said that the registry is a bad idea is that it confers no new functionality. It does absolutely nothing that couldn't already be done with the INI file calls. In that manner, it is a bad idea since it adds yet another useless abstraction layer to Windows, which increases the complexity of that already over-complex system and thus increases chances of fault even more.
+
+If something's useless, then you leave it out -- you don't just include it since it seems neat. Also known as the KISS principle.
+
+I think that the NIH syndrome and completely ignoring the KISS principle like this are the two primary reasons why Windows is so bad as it is.

@@ -1,0 +1,435 @@
+---
+title: Linux Kernel
+layout: dep
+date: 2016-03-08
+---
+
+# systemd v.s. init
+
+## traditional init
+
+### How do Processes start Operating System ?
+
+~~~
+1. init
+    1. start `/etc/rc.d/rc.sysinit`
+    2. start `/etc/rc.d/rc`
+    3. deal logins `(mingetty prefdm)`
+
+2. rc
+    1. `/etc/init.d/servicename start `
+
+## linux convention
+## if you hava a program which you want to run in init ,
+## write in
+## /etc/rc.d/rc.local
+~~~
+
+
+
+### see system
+
+~~~
+# service httpd status          // you can see pid of httpd
+
+### if you remove the information
+# rm -f /var/run/httpd/httpd.pid
+# service httpd status          // httpd stops (you fall into no controling state)
+~~~
+
+
+
+### unit file location
+
+| directory | explanation |
+|:---|:---|
+| /usr/lib/systemd/system | system default config file (RPM packages are here) |
+| /etc/systemd/system | modifications from default |
+| /var/run/systemd/system | the conifg file of runnning Units |
+
+
+
+
+### runlevel
+
+| runlevel | Unit |
+|:---:|:---:|
+|0|poweroff.target|
+|1|rescue.target|
+|2,3,4|multi-user.target|
+|5|graphical.target|
+|6|reboot.target|
+
+
+### change runlevel
+
+use `init` or `telinit`
+
+~~~
+init 1
+telinit 1
+~~~
+
+### cgroups
+
+systemd uses cgroups
+
+cgroups (control groups)
+
+- group processes
+- re-distribute the cpu resorces or memory into the groups
+
+
+~~~
+systemd-cgls
+~~~
+
+
+## use systemd
+
+
+| process | explanation |
+|:---|:---|
+| systemd | main daemon |
+| sytemd-journald | control logs which services output |
+| systemd-udevd | control discovering device or dynamical change of device |
+| systemd-logind | control login action into the system and distribute devices to users |
+| systemd-hostnamed | control hostnames of server |
+| dbus-daemon | provide the message bus which intemediates the systemd message |
+
+
+
+### unit
+
+| .extension( unit name )| explanation |
+|:---|:---|
+| service | start the service |
+| target | grouped several units |
+| mount | mount point for file system (/etc/fstab) |
+| swap | validate swap (generate automatically from /etc/fstab) |
+| device | disk device (udev genetates it automatically if it is recognized )|
+
+
+
+
+
+
+~~~
+systemctl list-unit-files
+~~~
+
+
+~~~
+systemctl enable httpd.service
+systemctl disable httpd.service
+
+systemctl start httpd.service
+systemctl stop httpd.service
+systemctl restart httpd.service
+systemctl reload httpd.service   // reload the configuration
+~~~
+
+~~~
+systemctl kill -s9 httpd.service
+// -s [signalName]
+// -s9 [signalName] : 9 is signal number
+~~~
+
+
+
+~~~
+systemctl list-units -t device -l
+systemctl list-units mount
+systemctl list-units swap
+~~~
+
+
+### generator
+
+Generator generates Units dynamically
+
+~~~
+systemd-fstab-generator
+// refer /etc/fstab && make unit of mount and swap type
+
+systemd-cryptsetup-generator
+// refer /etc/crypttab && make systemd-cryptsetup@.service
+
+systemd-rc-local-generator
+// if /etc/rc.d/rc.local can be run , then enable autostart of rc-local.service
+~~~
+
+
+
+
+
+## journald
+
+~~~
+journalctl -o json-pretty
+// output the log with json style
+
+    options :
+        --no-pager
+        -f : waiting log and printing for the time being mode
+~~~
+
+
+
+
+
+e.g.
+
+~~~
+# journalctl -u sshd.service
+~~~
+
+
+
+
+
+
+
+
+
+
+# fork
+
+## sample program
+
+fork.c
+
+~~~
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#define P_MAX 3
+
+int main() {
+    int pid[P_MAX];
+    int status, i;
+
+    for ( i = 0; i < P_MAX; i++ ) {
+        pid[i] == fork();
+         // fork() : system call which which duplicate the program itself and returns pid.
+        if (pid[i] == 0) {
+            printf("子プロセス No.%d: start\n", i);
+            sleep(i+1);
+            printf("子プロセス No.%d: end\n", i);
+            exit(0);
+        } else {
+            printf("親プロセス: starts 子プロセス No.%d(pid=%d)\n", i, pid[i]);
+        }
+    }
+    printf("waiting for the all child processed done. \n");
+    for (i = 0; i < P_MAX; i++) {
+        wait(&status);
+    }
+    return;
+}
+~~~
+
+
+
+
+~~~
+➜  kernel  gcc fork.c -o fork
+➜  kernel  ./fork
+親プロセス: starts 子プロセス No.0(pid=51192)
+親プロセス: starts 子プロセス No.1(pid=51193)
+子プロセス No.0: start
+親プロセス: starts 子プロセス No.2(pid=51194)
+waiting for the all child processed done.
+子プロセス No.1: start
+子プロセス No.2: start
+子プロセス No.0: end
+子プロセス No.1: end
+子プロセス No.2: end
+~~~
+
+
+todo
+~~~
+/usr/bin/sl
+~~~
+
+
+
+httpd forks itself
+and create many workers !!
+
+
+
+~~~
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#define P_MAX 3
+
+int main() {
+    int pid[P_MAX];
+    int status, i;
+
+    for ( i = 0; i < P_MAX; i++ ) {
+        pid[i] == fork();
+        if (pid[i] == 0) {
+            printf("子プロセス: sl run in 5 seconds No.%d: start\n", i);
+            sleep(5);
+            execl("/usr/bin/sl", "/usr/bin/sl", NULL);
+            // execl() : replace this program with the reginated program
+            printf("this line is not executed. ")
+        } else {
+            printf("親プロセス: waiting for the all child processed done. \n");
+            wait(&status);
+            printf("親プロセス: done.")
+        }
+    }
+
+    return;
+}
+~~~
+
+
+
+*************************************************
+*                                               *
+*           .-------.                           *
+*          |/bin/bash|                          *
+*           '---+---'                           *
+*               |                               *
+*               |        .-------.              *
+*               +------>|/bin/bash|             *
+*               | fork   '---+---'              *
+*               |            |                  *
+*               |            | exec             *
+*               |            v                  *
+*               |        .---------.            *
+*               |       |/usr/bin/sl|           *
+*               |        '---------'            *
+*               |         child process         *
+*               |             terminate.        *
+*               v                               *
+*           parent process                      *
+*************************************************
+
+
+
+
+
+## system call flow
+
+
+***************************************************************
+*                                                             *
+*                                                             *
+* user program --+                         +--------->        *
+*                | fork                    ^                  *
+*                |                         |                  *
+*                v                         |                  *
+* libc function- +--+ - - - - - - - - - ---+ - - - - -        *
+*                   | syscall(56,...)   ^  configurate errno  *
+*                   |  : call kernel    |  return()           *
+*                   v                   |                     *
+* Linux kernel - - ---------------------+ - - - - - -         *
+*                  sys_clone()        sysret()                *
+*                  :clone process     :return to user mode    *
+*                                                             *                                                             *
+***************************************************************
+
+
+
+## multithread
+
+
+~~~
+ps axuw -L
+// -L option : see threads @Linux
+// -M option : see threads @OSX
+~~~
+
+LWP : Light Weight Process
+
+
+
+
+## clone.c
+
+equivalent to fork.c
+
+~~~
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/signal.h>
+#include <stdio.h>
+
+int main() {
+    //equivalent to fork()
+    int pid = syscall(SYS_clone, SIGCHLD ,0 ,0 ,0 ,0 );
+
+    if (pid == 0){
+        int cpid = getpid();
+        printf("Child, my pid = %d\n",cpid);
+    } else if (pid == -1) {
+        perror("SYS_clone: ");
+    } else {
+        printf("Parent, child pid = %d\n", pid);
+    }
+    return 0;
+}
+~~~
+
+
+
+# system call table
+
+
+
+
+***************************************************************
+*                             system call table               *
+*                              +-------------+                *
+*                              |0: read      |                *
+*                              |1: write     |                *
+*   .-----.       .-----.      |2: open      |                *
+*  |process| --->|system |     |  ...        |                *
+*   '-----'      | call  | --->|56: clone -----> sys_clone()  *
+*               ^|handler| \   |             |                *
+*              /  '-----'   \  | ...         |                *
+*             /              \ |             |                *
+*   .-----.  /                v|59: execve ----> sys_execve() *
+*  |process|                   |             |                *
+*   '-----'                    | ...         |                *
+*                              |             |                *
+*                              |             |                *
+*                              |             |                *
+*                              |312:renameat2|                *
+*                              +-------------+                *
+*                                                             *
+***************************************************************
+
+
+
+
+## vDSO
+
+vDSO : virtual Dynamic Shared Object
+
+vDSO enable system call very quick
+
+
+## see kernel src code
+
+~~~
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+~~~
+
+~~~
+# git blame kernel/fork.c
+~~~
+
+
+~~~
+# git show c6a7f572
+~~~

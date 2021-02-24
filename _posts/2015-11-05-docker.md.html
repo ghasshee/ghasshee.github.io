@@ -1,0 +1,599 @@
+---
+title: Docker
+layout: journal
+---
+
+
+
+<br>
+<br>
+
+# Deploy とは
+
+
+**************************************************************************
+*                                                                        *
+*      application img                         docker img                *
+*       .-----------.                         .-----------.              *
+*      | application |                       | application |             *
+*      |  program    |                       |  program    |             *
+*       '-----------'                        +-------------+             *
+*                                            | application |             *
+*             |                              |  execution  |             *
+*             |                              | environment |             *
+*             | Deploy                        '-----------'              *
+*             |                                     |                    *
+*             v                                     | Deploy             *
+*                                                   v                    *
+*       .-----------.                         .-----------.              *
+*      | application |                       |   Docker    |             *
+*      |  execution  |                       |   Service   |             *
+*      | environment |                       +-------------+             *
+*      +-------------+                       |             |             *
+*      |             |                       |  Server/OS  |             *
+*      |  server/OS  |                       |             |             *
+*      |             |                        '-----------'              *
+*       '-----------'                                                    *
+*                                                                        *
+*                                                                        *
+**************************************************************************
+
+
+
+
+「兵士や兵器を配備する」が転じて、
+
+「 Web Service などを User が使えるようにする」という意味である。
+
+
+<br>
+<br>
+
+
+通常の `Application image` と `Docker image` との違いは、
+
+「仮想環境」ごと配備するかどうかの違いである。
+
+言わば、戦争において、敵地近くに「空母」を配備しているかどうかの違いにある。
+
+
+<br>
+<br>
+
+
+# Beginning of Docker
+
+dotCloud : PaaS 型クラウドサービス
+
+PaaS : Platform as a Service
+
+Docker : dotCloud 社が Paas を支える技術を open source 化したもの
+
+
+<br>
+<br>
+
+
+
+# Role of Docker
+
+* make `docker img`
+* execute `docker img`
+
+
+<br>
+<br>
+
+
+# Docker Technology
+
+<br>
+<br>
+
+## Linux Container とは
+
+コンテナ内部で Guest OS を利用するようなもの
+
+
+
+コンテナ毎に PC の resource を割り当て
+
+
+| resource | explanation |
+| --- | ---- |
+| CPU | by `cgroups` |
+| MEMORY | by `cgroups` |
+| Process Table | Only pocessses visible in the same container |
+| directory | - |
+| NEtwork Interface | コンテナごとに virtualized NIC を割り当て |
+
+
+`cgroups` : Control Groups : CPU / MEMORY 割り当て
+
+<br>
+<br>
+
+## Docker Container
+
+### Docker Hub とは
+
+
+CentOS など
+代表的な Linux Distribution を最小構成でインストールした状態のディレクトリを含むイメージが公開されている
+
+
+
+
+
+<br>
+<br>
+
+
+### `Dockerfile` とは
+
+既存のDocker img に必要なアプリケ＝ションを追加する役割
+
+
+e.g. httpd を作るdockerfile
+
+~~~~~~
+FROM centos:centos6                 ## FROM Docker img を DockerHub から取得
+RUN yum -y install httpd            ## RUN 内部で実行
+CMD /usr/sbin/httpd -D FOREGROUND   ## CMD コンテナ起動時に実行
+~~~~~~
+
+put the dockerfile in the current dir and then type
+
+~~~
+docker build -t image_name .
+~~~
+
+
+<br/>
+<br/>
+
+## Docker Network
+
+****************************************
+*                                      *
+*     container     container          *
+*     .-------.     .-------.          *
+*     |eth0 80|     | eth0  |          *
+*     +---+---+     +---+---+          *
+*         |             |              *
+*      +--+-------------+---------+    *
+*      | Virtual Bridge (docker0) |    *
+*      +-----+----------+---------+    *
+* -p 8000:80 |          |              *
+*   +--------+---+      |              *
+*   |  NIC 8000  |      | --net=host   *
+*   +-----+------+      |              *
+*         |             |              *
+*  -------+-------------+--external    *
+*                                      *
+****************************************
+
+
+
+
+port forwarding : option でポートを接続
+
+~~~
+$ docker run  -p 8000:80  image_name
+~~~
+
+このようにすると
+あたかも通常のLinux 環境のアプリケーションが8000で接続されているように見える
+
+<br/>
+<br/>
+
+connect with host computer directly　
+
+~~~
+$ docker run --net=host image_name
+~~~
+
+
+
+<br/>
+<br/>
+
+# Lifecycle of Container
+
+
+DockerHub から取得したimg は一旦ローカルディスクに保管
+
+そのあと、run すると該当img のスナップショットコピーを取得して
+それをコンテナに割り当てる
+
+コンテナを停止すると　コンテナ内部のプロセスは一旦全て終了
+コンテナを再開すると　同じスナップショットコピーから再度コンテナを再開する（インスタンスは保存される）
+コンテナ停止後、破棄を行うと、インスタンスが削除される
+
+
+
+
+
+<br/>
+<br/>
+
+<br/>
+<br/>
+
+
+
+# FreeBSD の場合
+
+
+## Jail 牢獄
+
+<br/>
+<br/>
+
+## History
+
+
+1983 chroot(2) はファイルシステム空間を区画化する
+
+2000 jail で一般ユーザにroot 権限の一部を付与
+
+2005 Soralis Containersで環境ごと自動生成
+
+2008 Linux kernel に cgroups が登場
+
+2014 Docker 登場で区画化技術をLinux World へ
+
+2015 区画化型とHyperviser 型のHybrid な世界
+
+<br>
+<br>
+
+## Docker on FreeBSD
+
+https://wiki.freebsd.org/Docker
+
+
+<br/>
+<br/>
+
+
+# Docker x Nginx
+
+## foreground で動かす
+
+Nginx はdefault でdaemon として動く
+設定を変更し foreground で動かそう
+
+boot docker and type
+
+~~~
+/usr/sbin/nginx -g 'daemon off;'
+~~~
+
+or Dockerfile
+
+~~~
+CMD ["/usr/sbin/nginx" , "-g" , "daemon off;"]
+~~~
+
+or add below into nginx.conf
+
+~~~
+daemon off;
+~~~
+
+
+
+動作環境を表示
+
+~~~
+$lsb_release -a
+~~~
+
+
+<br/>
+<hr/>
+<br/>
+
+foreground 指定する場合のDockerfile
+
+~~~
+FROM ubuntu:trusty
+MAINTAINER MYNAME <myname@example.com>
+RUN apt-get update
+RUN apt-get -y install nginx
+EXPOSE 80
+~~~
+
+current Dir にDockerfile を置き？
+
+~~~
+docker build -t image_name .
+~~~
+
+
+
+
+<br/>
+<br/>
+
+## Dockerfile で環境変数を渡す
+
+環境変数読み込みはperl module または lua module を利用
+
+~~~
+FROM ubuntu:trusty
+MAINTAINER MYNAME <myname@example.com>
+RUN apt-get update
+RUN apt-get -y install nginx-extras lua-nginx-redis
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["/usr/sbin/nginx"]
+~~~
+
+
+<br/>
+<br/>
+
+
+
+# Docker Install
+
+
+only type below , docker will be installed .
+
+~~~
+$ wget -qO- https://get.docker.com/ | sh
+~~~
+
+
+or
+
+~~~
+$ apt-get install docker-engine
+~~~
+
+
+<br>
+<br>
+
+
+
+# Docker Hub
+
+****************************************************************************
+*                                                                          *
+*                                                                          *
+*                                                                          *
+*        Docker Hub                            +---------+                 *
+*                                              |         |                 *
+*         .-----.                              |         |                 *
+*       .+       +-.     docker pull 'image'   +---------+                 *
+*      |            | ----------------------> /         /                  *
+*       '----------'   docker push 'image'   +---------+                   *
+*                    <--------------------     Local PC                    *
+*                                                                          *
+*                                                                          *
+****************************************************************************
+
+
+
+
+<br>
+<br>
+
+
+# Docker commands
+
+
+****************************************************************************
+*                                                                          *
+*                                                                          *
+*        +-------+        +-------+        +-------+                       *
+*        | show  |        |       |        | show  |                       *
+*        |  list |        | C U I |        |  list |                       *
+*        +-------+        +-------+        +-------+                       *
+*       / / / / /        / / / / /        / / / / /                        *
+*      +-------+        +-------+        +-------+                         *
+*          ^                |                ^                             *
+*          | images         | attach         | ps -a                       *
+*          |                v                |                             *
+*      .--------.  run   .------.   stop  .------.  commit.--------.       *
+*      | docker | ----> | docker | ----> | docker | ----> | docker |       *
+*      |  img   |       |instance| <---- |instance|       |  img   |       *
+*      '-+------'        '------'  start  '+-----'        '--------'       *
+*       /  ^  |                           /  ^  |                          *
+*      +   |  | rmi       /   \          +   |  | rm                       *
+*       '-'   v          /  |  \          '-'   v                          *
+*      tag  \   /       v   |   v    rename   \   /                        *
+*            +-+      diff  v inspect          +-+                         *
+*                        history                                           *
+*                                                                          *
+*                                                                          *
+****************************************************************************
+
+
+<br>
+<hr>
+<br>
+
+
+
+
+# docker machine
+
+
+if you are not using Linux,
+you have to build Linux evironment ...
+
+ever before 2015-8
+you are preferred to use "boot2docker",,,
+
+instead now you can use "docker machine"...
+
+this is owing to "Docker Toolbox"..
+
+## Docker Toolbox
+
+Docker Toolbox consists of
+
+* Docker client
+* Docker Machine
+* Docker Compose
+* Kitematic : GUI のコンテナ管理ツール
+* VirtualBox
+
+
+
+## "docker machine" is just binary file
+
+install this binary and you can type
+
+~~~
+$ docker-machine -v
+docker-machine version 0.4.1 (a2983ed)
+~~~
+
+
+## virtual box で環境構築
+
+~~~
+$ docker-machine create --driver virtualbox <option> <hostname>
+~~~
+
+
+
+
+
+<br>
+<hr>
+<br>
+
+
+
+
+
+# docker network expample
+
+## dependencies
+
+~~~
+$ sudo apt-get install bridge-utils net-tools
+~~~
+
+<br>
+<br>
+
+## docker network configuration
+
+********************************************************************************
+*                                                                              *
+*                                                                              *
+*                     +------------------------+                               *
+*                     |        container       |                               *
+*                     | +-----+        .-----+ |                               *
+*                     | |eth0 |        |eth1 | |9.10.11.12.                    *
+*                     | +--+--+        +--+--+ |8.                             *
+*          +----------+----|--------------|----+-------------------+           *
+*          |            +--+--+        +--+--+ 7.      Linux Host  |           *
+*          |            |vethX|        |vethY| 4.5.                |           *
+*          |            +--+--+        +--+--+ 6.                  |           *
+*          | IP            |              |                        |           *
+*          | masquerade+---+---+      +---+---+ 1.                 |           *
+*          |    +------|docker0|      |  br0  | 2.                 |           *
+*          |    v      +-------+      +---+---+ 3.                 |           *
+*          | +----+                       |                        |           *
+*          | |eth0|                   edit|/etc/network/interfaces |           *
+*          +-+--+-+-----------------------|------------------------+           *
+*               |                         |                                    *
+*               |                         |  14.                               *
+*               |                         v                                    *
+*        -------+-------------------------------------- external network       *
+*                                                                              *
+*                                                                              *
+*                                                                              *
+********************************************************************************
+
+
+<br>
+<br>
+
+
+1. brctl addbr br0
+2. ip link set br0 up
+3. ip addr add 192.168.17.1/24 dev br0
+4. ip link add name veth-host type veth peer name veth-guest
+5. ip link set veth-host up
+6. brctl addif br0 veth-host
+7. ip link set veth-guest netns hoge
+8. ip netns exec hoge ip link set veth-guest name eth1
+9. ip netns exec hoge ip addr add 192.168.17.2/24 dev eth1
+10. ip netns exec hoge ip link set eth1 up
+11. ip netns exec hoge ip route delete default
+12. ip netns exec hoge ip route add default via 192.168.17.1
+13. ifconfig eth0 192.168.11.2 up
+14. dhclient br0
+
+
+
+<br>
+<br>
+
+
+## Docker Remote
+
+
+when Docker service starts ,
+configures must be done about opening TCP port
+
+
+add to /etc/default/docker
+
+```
+DOCKER_OPTS="-H tcp://192.168.0.10:2375 -H unix:///var/run/docker.sock"
+```
+
+
+
+then
+
+~~~
+$ docker -H tcp://192.168.0.10:2375 ps
+~~~
+
+or
+
+~~~
+$ export DOCKER_HOST="tcp://192.168.0.10:2375"
+$ docker ps
+~~~
+
+
+
+
+
+## Docker Swarm
+
+
+~~~
+1. $ docker run swarm create
+2. ## DockerHub(Backend) issues token
+3. $ docker run -d -P swarm manage token://<token>
+4. $ docker run -d swarm join --addr=<node ip>:<node port> token://<token>
+5. ## send node infomation to manager and then
+~~~
+
+then manager is on the docker engine
+
+*****************************************************
+*                                                   *
+*                                                   *
+*                                                   *
+*                     swarm manager                 *
+*                                                   *
+*                     docker engine                 *
+*                                                   *
+*                     server                        *
+*                                                   *
+*****************************************************

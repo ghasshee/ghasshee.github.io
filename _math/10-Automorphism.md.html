@@ -1,0 +1,292 @@
+---
+title: Automorphism
+layout: newsmag
+---
+
+Terminology
+
+- Aut(G) : automorphism : G -> G ; isomorphism
+- Int(G) : inner automorphism : G -> G where G -> Int(G) ; homomorphism
+- Out(G) : outer automorphism := Aut(G) \ Int(G)
+
+
+# $Aut(A_4)$ $\sim$ $S_4$
+
+![](/image/tetrahedron.png width=360)
+
+
+imagine the rotations of a tetrahedron to itself. Each rotation moves a point to the position which another point was. pick up any 2 faces and name a, b as 120˚ anti-clockwise rotations of each. (so, the above picture is clockwise i.e. it is mirrored and do not mind that.)
+$ A _ 4 $ is described only with a, b and their conpositions as id = aaa = bbb.
+
+$ A _ 4 $ = {
+
+~~~
+    id,
+    aab, aba, baa,
+    a, aa,
+    b, bb,
+    abab, ab,
+    baba, ba,
+~~~
+
+}
+
+
+
+if we define `c := abab`, and `d := baba`, then;
+
+$ A _4  $ = {
+
+~~~
+    id,
+    aab, aba, baa,    <= 180˚ rotations
+    a, aa,
+    b, bb,
+    c, cc,
+    d, dd
+~~~
+
+}
+
+where
+~~~
+a, b, c, d is 120˚ anti-clockwise
+aa, bb, cc, dd is 240˚anti-clockwise or 120˚ clockwise
+~~~
+
+A member of Aut( $ A _ 4 $ ) should be isomorphism i.e. homomorphic, so it maps `a` to the 120˚ rotations. There is ;
+
+~~~
+    a |-> a,b,c,d,aa,bb,cc,dd   (8 patterns)
+~~~
+
+if we choose `bb` as the target,
+
+~~~
+    a |-> bb
+~~~
+
+then because of homomorphism, `aa` is determined like,
+~~~
+    aa |-> bbbb == b
+~~~
+
+Next, determine the target of `b`
+Because this function `a` $ \mapsto $ `bb` is `anti-clockwise` $ \mapsto $ `clockwise`
+`b` satisfies;
+
+~~~
+    b |-> clockwise
+~~~
+
+so,
+~~~
+    b |-> aa,cc,dd (3 patterns)
+~~~
+
+so Aut( $ A _ 4 $ ) has 8 x 3 = 24 elements.
+
+
+but why is this isomorphic to $ S _ 4 $?
+
+![](/image/tetra_in_cube.png width=450)
+
+
+# Outer Automorphisms
+
+$ S _ 4 $ is said to be $ G( T _ 6 ) $, as $ A _ 4 $ to $ G( T _ 4) $.<br>
+This means we can regard $ S _ 4 $ as the rotaions of a cube to its self.
+
+A cube has at least one tetrahedron inside of itself as the above picture.<br>
+It means it exactly includes $ A _ 4 $ visibly.
+
+Then go back to Aut( $ A _ 4 $ ) .<br>
+Aut ( $ A _ 4 $ ) include $ A _ 4 $ itself as Int( $ A _ 4 $ ).<br>
+Aut ( $ A _ 4 $ ) consists of 24 elements, and $ A _ 4 $ has 12. <br>
+So there is the other 12 elements, which we call Out( $ A _ 4 $ ).
+
+Out( $ A _ 4 $ ) is consists of members which is not $ A _ 4 $, e.g. a mirror projection can map $ A _ 4 $ to itself.<br>
+
+In the above picture `z` $ \in $ $ S _ 4 $ and we can produce a mirror projection from `z`;
+
+` ι(z)(-) = z * - * z` $ {} ^ {-1} $
+
+z is 180 rotation and ι(z) is a mirror projection about xy-plain!
+(Note the above picture is quite misleading. ι(z) is not xz-plain reflection. )
+If you rotate 180 degree with z axix fixed, then some operation and again rotate 180 degree with z fixed. It generates exactly its mirrored operation!
+
+As the same way, this `ι(-)` maps other elements of $ S _ 4 \setminus A _ 4 $ to Out( $ A _ 4 $ ). And this function is an isomorphism between $ S _ 4 $ and Aut( $ A _ 4 $ ).
+
+
+
+
+
+# Dihedral groups $D_n$ are also interesting.
+
+
+There is interesting facts;
+~~~
+    Int(D3) == Aut(D3)
+    Int(D5) !=  Aut(D5)
+~~~
+
+assume 'a' is a (360˚/n) clockwise rotation and 'b' is a 180˚flipping rotation
+then consider Automorphism in the same way;
+~~~
+    b |-> b, ba, ... , ba^{n-1}  (n patterns)
+~~~
+
+then
+~~~
+    a |-> ?
+~~~
+
+since every member of Int(D5) is described as a D5 member,
+the codomain is clockwise or anti-clockwise (not a 180˚flipping rotation because of homomorphism).
+
+~~~
+Int(D5)
+    72˚ -> 72˚  (a |-> a)    (anti-clockwise -> anti-clockwise),
+    72˚ -> -72˚ (a |-> aaaa) (anti-clockwise -> clockwise)
+
+Aut(D5)
+    72˚ -> 72˚,
+    72˚ -> 144˚,  (a |-> aa)  (anti-clockwise -> butterfly-shape)
+    72˚ -> -144˚, (a |-> aaa) (anti-clockwise -> (anti)butterfly-shape)
+    72˚ -> -72˚
+~~~
+
+so,
+~~~
+    |Int(D5)| = |Aut(D5)| / 2
+~~~
+
+why not compare D3, D5, D7 ?
+~~~
+1 * |Int(D3)| = |Aut(D3)|
+2 * |Int(D5)| = |Aut(D5)|
+3 * |Int(D7)| = |Aut(D7)|
+~~~
+
+more generally,
+~~~
+Aut(Dn) = n * φ(n)
+where φ(n) denotes Euler's number
+~~~
+
+
+
+# Galois
+
+
+The difference between $ D3 $  and $ D5 $ is<br>
+extended to $ A _ 5 $ $ \sim $ $ G( T _ {20} ) $ $ \sim $ $ G( T _ {12} ) $
+
+As $ Aut( D _ 5 ) $ contains Butterfly-shape, <br>
+$ Aut( A _ 5 ) $ contains more complex-shape that is not included in A5 itself.
+
+So the structure of $ Aut( A _ 5 ) $ cause that we cannot solve algebraic quintic equation.
+
+
+
+# Haskell code
+
+
+~~~ Haskell
+-- Type Definition
+data Mat a = Mat [[a]]
+
+-- Show Intance of Matrix
+showRow [] = ""
+showRow (x:xs) = show x ++ "\t\b" ++ showRow xs
+instance (Show a) => Show (Mat a) where
+    show (Mat []) = ""
+    show (Mat (x:xs)) = showRow x ++ "\n" ++ show (Mat xs)
+
+-- Define Lengths
+len_row x = maximum $ map length x
+len_col x = length x
+
+-- Define Operators
+instance (Num a) => Num (Mat a) where
+    (Mat a) + (Mat b) =
+        let m = max(len_row a)(len_row b) in
+        let n = max(len_col a)(len_col b) in
+        Mat [
+                [ (a!!i!!j) + (b!!i!!j) | j <- [0..(n-1)]]
+                | i <- [0..(m-1)]
+            ]
+    (Mat a) - (Mat b) =
+        let m = max(len_row a)(len_row b) in
+        let n = max(len_col a)(len_col b) in
+        Mat [
+                [ (a!!i!!j) - (b!!i!!j) | j <- [0..(n-1)]]
+                | i <- [0..(m-1)]
+            ]
+    (Mat a) * (Mat b) =
+        let l = len_row a - 1 in
+        let m = len_col a - 1 in
+        let n = len_col b - 1 in
+        Mat [
+                [ sum [((a!!i!!k)*(b!!k!!j)) | k<-[0..m]] | j<-[0..n] ]
+                | i<-[0..l]
+            ]
+
+
+-------------------- an expample usage --------------------
+-- Now we think of
+-- * Symmetry Group S_4
+-- * Alternation Group A_4
+-- A_4 is generated just by a & b
+-- S_4 is generated just by a, b & z
+
+-- the Matrix is like
+
+--                     [0 0 1]
+--    [y z x] = [x y z][1 0 0]
+--                     [0 1 0]
+
+-- here x,y or z axis implies each axis of 3 180˚rotations
+-----------------------------------------------------------
+
+e = aaa
+
+a = Mat [
+    [ 0, 0, 1],
+    [ 1, 0, 0],
+    [ 0, 1, 0]]
+
+b = Mat [
+    [ 0, 0, 1],
+    [-1, 0, 0],
+    [ 0,-1, 0]]
+
+c   = b*b*a*a
+d   = a*a*b*b
+aa  = a*a
+bb  = b*b
+cc  = c*c
+dd  = d*d
+h   = b*a*a
+i   = a*b*a
+j   = a*a*b
+
+
+z = Mat [
+    [ 0, 0,-1],
+    [ 0,-1, 0],
+    [-1, 0, 0]]
+
+za = z * a
+zb = z * b
+zc = z * c
+zd = z * d
+zaa = z * aa
+zbb = z * bb
+zcc = z * cc
+zdd = z * dd
+zh = z * h
+zi = z * i
+zj = z * j
+
+~~~

@@ -1,0 +1,36 @@
+---
+    title: Linux Programming Interface
+    layout: dep
+---
+
+
+
+#
+
+#
+
+# system calls
+
+~~~
+man syscalls
+~~~
+
+
+## strace
+
+~~~
+$ strace command arg1 arg2 ...
+~~~
+
+
+~~~
+$ strace date
+$ strace date 2>&1 | grep open
+$ strace -e trace=open,close date
+~~~
+
+## ltrace
+
+## brk
+
+change the program break point . i.e. changing the memory size where opcodes of a program are stored.

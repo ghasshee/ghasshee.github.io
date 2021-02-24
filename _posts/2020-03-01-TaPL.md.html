@@ -1,0 +1,1880 @@
+---
+title : TaPL
+layout: journal
+---
+
+
+
+Reference
+
+* [Benjamin C. Pierce] Types and Programming Languages
+
+<br>
+
+
+
+# Introduction
+
+TaPL provides type safe programming language definitions.<br>
+It is formally named `typed lambda calculus` .<br>
+If you are not familir with lambda calculus ,
+I recommend you to start with combinator theory .<br>
+"Mock a mockingbird" is a book with famous logic thinking puzzle written by Raymond Smullyan.
+
+<br>
+<br>
+<br>
+
+# Mathematical Prerequired Definitions
+
+
+## Power Set
+
+$ \mathcal{P} ( \mathcal{S} ) := \{ U ; U \subset S \} $
+
+## Difference
+
+$ \mathcal{S} \ \backslash \ \mathcal{T} \ := \ S ∩  T ^ C  $
+
+## Natural numbers
+
+$ \mathbb{N} := \{ 0,1,2,3,4,5,6,7,8, ... \} $
+
+## N-placed relation
+
+$ s_1 \in \mathcal{S_1} , ... , s_n \in \mathcal{S_n} $ are `n-place related` <br>
+`if` $ (s_1, ... , s_2) \in R $ where $ R \subseteq \mathcal{S_1} \times ... \times \mathcal{S_n} $
+
+## Predicate ( 1-place relation ) `P`
+
+$ P(s) := s \in P $
+
+## Binary Relation `R`
+
+$ s R t := ( s , t ) \in R $
+<br>    where $ s, t \in \mathcal{ U } $
+
+## 2-place Relation `R`
+
+$ s R t := ( s , t ) \in R $
+<br>    where $ s \in \mathcal{S} , t \in \mathcal{T} $
+
+## 3-place Relation
+
+see `n-place Relation `. e.g. ;
+
+* $ \Gamma \vdash s : T $  ( Typing Relation (see Chapter 9) )
+
+## Partial Function `R`
+
+$ s R t_1 \wedge s R t_2 \Rightarrow t_1 = t_2 $
+
+## Total Function `R`
+
+$ dom(R) = \mathcal{S} $
+<br>    where $ \mathcal{S} R \mathcal{T} $
+
+## Defined & Undefined
+
+Partial Function $ s R t $ is defined on $ s \in \mathcal{S} $ if $ s \in dom(R) $
+
+* $ f(x) \uparrow $ , $ f(x) = \uparrow $ : $ f $ is undefined on $ x $
+* $ f(x) \downarrow $ , $ f(x) = \downarrow $ : $ f $ is defined on $ x $
+
+## Diverge ≠ Failure
+
+* `function`の実装時、出力値 `failure` は 出力値 `divergence` と区別しないといけない.
+* fail を出力する関数は `Partial` であり `divergeble` であり得るが、`Total` であれば、入力に再帰は含まれない
+* Rの input である$ dom(R) $ は、$ \mathcal{S} $ の要素に限られる
+
+
+## Predicate
+
+* $ s \in P $ であれば sは述語を持つという
+* where $ s \in \mathcal{S} , P \subseteq \mathcal{S} $
+
+e.g.
+
+* $ s \in P := P(\mathcal{S}) = $ { $ True , False $ }
+* $ P := s \rightarrow $ { $ True , False $ }
+
+
+述語を持たせるのは [Russell's Paradox](../math/2015-12-15-russell.md/) を解消させるため
+
+
+**********************************
+*                                *
+*         s R t                  *
+*         ^   ^                  *
+*        /     \                 *
+*   domain     range , codomain  *
+*   dom(R)        range(R)       *
+*                                *
+**********************************
+
+
+
+# Untyped Arithmetic Expressions
+
+# ML implementation
+
+# Untyped lambda calsulus
+
+## term definition
+
+Syntax are given by;
+
+~~~
+t := x                        <variable>
+   | λx. t                    <λ abstraction>
+   ∣ t t                      <application>
+~~~
+
+and its evaluation is given by;
+
+~~~
+(λx. t)  t'  →   t[x↦t']
+~~~
+
+We read the right hand side "replace all x which appears in t with t' ".
+
+## e.g. S K I combinator
+
+For example, K and S are λ abstractions.
+
+~~~
+K := λx. λy. x
+S := λx. λy. λz. ((x)(z))(y z)
+~~~
+
+K takes x and y as its arguments and returns x.
+S takes x, y, and z as its arguments and returns `(x z) (y z)`
+
+~~~
+S K K x
+= ((K)(x))(K x)
+= (λx. λy. x) (x) (K x)
+= x
+~~~
+
+Thus, identity combinator is given by `I` := `S K X`.
+
+
+
+## church booleans
+
+~~~hs
+tru = \t.\f. t
+fls = \t.\f. f
+and = \x.\y. x y fls
+or  = \x.\y. y tru x
+not = \x. x fls tru
+~~~
+
+## pairs
+
+~~~
+pair = \f.\s.\b. b f s
+fst  = \p. p tru
+snd  = \p. p fls
+~~~
+
+
+## if
+
+~~~
+if b s t = b s t
+~~~
+
+## church numerals
+
+### ℕ
+
+~~~hs
+0 = \s.\z. z        -- = \x.\y. y = fls
+1 = \s.\z. s z
+2 = \s.\z. s (s z)
+3 = \s.\z. s (s (s z))
+...
+~~~
+
+
+
+Rewrite in `MockingBird Style`
+~~~hs
+        0xy = y
+        1xy = xy
+        2xy = x(xy)
+        3xy = x(x(xy))
+        ...
+~~~
+
+### `succ`
+
+~~~hs
+        S0xy = xy
+        S1xy = x(xy)
+        S2xy = x(x(xy))
+        ...
+~~~
+
+solve S !
+~~~hs
+        x(x(xy)) = x(2xy) = S2xy
+        x(xy) = x(1xy) = S1xy
+        so, Snxy = x(nxy)
+        or
+        x(x(xy)) = 2x(xy) = S2xy
+        x(xy) = 1x(xy) = S1xy
+        so , Snxy = nx(xy)
+~~~
+
+hence,
+~~~hs
+suc = \n.\s.\z. s(nsz)
+    = \n.\s.\z. ns(sz)
+~~~
+
+### `plus`
+
+~~~hs
+plus = \m.\n.\x.\y. mx(nxy)
+plus m n x y = mx(nxy)
+
+plus m n x y
+= x(x(x(x(xy))))
+= mx(nxy)
+~~~
+
+### `times`
+
+~~~hs
+times m n x y
+= x(x(x(x(x...(xy)))))    // x appears m * n
+= x(x(x(           )))    // now m = 3
+= mx   (x(x...(xy)))
+= mx(mx(mx..(mxy)))       // mx appears by n times
+= n(mx)y
+or similarly
+= m(nx)y
+
+so
+times = \m.\n.\x.\y. m(nx)y
+times = \m.\n.\x.\y. n(mx)y
+~~~
+
+now with `plus`
+~~~
+times = \m.\n. m(plus n)0
+times m n = m(plus n)0
+~~~
+
+### `pow`
+
+in the same way
+~~~
+pow = \m.\n. m(times n)1
+pow m n = m(times n)1
+~~~
+
+another solution
+~~~
+pow = \m.\n. n m
+pow m n = n m
+~~~
+
+### `iszro`
+
+~~~
+iszro = \m. m (\x.fls) tru
+
+
+let
+F x = fls
+in
+iszro m = m F tru
+~~~
+
+e.g.
+~~~
+iszro 5
+= 5 F tru
+= F(F(F(F(F tru))))
+= fls               // because F always returns fls
+
+iszro 0
+= 0 F tru
+= tru
+~~~
+
+### `prd`
+
+let
+~~~
+zz = pair 0 0
+ss p = pair (snd p) (+ 1 (snd p))
+~~~
+
+then pred is
+~~~
+prd m = fst (m ss zz)
+~~~
+
+e.g.
+~~~
+prd m
+= fst (m ss zz)
+= fst (ss(ss(...(ss zz)...)))
+= fst (pair {m-1} m)
+= m-1
+
+
+where,
+ss zz
+= pair (snd (pair 0 0)) (+ 1 (snd (pair 0 0)))
+= pair 0 1
+
+ss (ss zz)
+= pair (snd (pair 0 1)) (+ 1 (snd (pair 0 1)))
+= pair 1 2
+
+...
+~~~
+
+~~~
+prd 0
+= fst (0 ss zz)
+= fst (zz)
+= fst (pair 0 0)
+= 0
+~~~
+
+
+
+### `sub`
+
+
+~~~
+sub m n = n prd m
+~~~
+
+### `equal`  / `or` `and`
+
+~~~
+equal m n = and (iszro (sub m n))(iszro (sub n m))
+~~~
+
+where
+
+~~~
+or = \b.\c. b tru c
+and = \b.\c. b c fls
+~~~
+
+
+## list
+
+lists are functions like
+~~~
+[x,y,z] c n = cx(cy(czn))
+[x,y] c n = cx(cyn)
+[x] c n = cxn
+nil c n = n
+
+nil == fls
+~~~
+
+
+cons takes a value and a list and returns a list
+
+~~~
+cons x list c n = c x (list c n)
+
+
+
+cons x [y,z,a,...] = [x,y,z,a,...]
+cons x nil c n
+= c x (nil c n)
+= c x n
+= [x] c n
+cons x nil = [x]
+~~~
+
+
+so,lists are composed of cons and its arguments like;
+~~~
+[x,y,z,a,b]
+= cons x [y,z,a,b]
+= cons x (cons y [z,a,b])
+= cons x (cons y (cons z [a,b]))
+= cons x (cons y (cons z (cons a [b])))
+= cons x (cons y (cons z (cons a (cons b nil))))
+~~~
+
+~~~
+[nil] c n
+= cons nil nil c n
+= [nil] cons nil c n
+= cons nil nil c n
+= c nil (nil c n)
+= c nil n
+~~~
+
+so ,it seems that
+
+`nil` $ \neq $ `[nil]`
+
+
+
+e.g.
+~~~
+cons x [y,z] c n
+= c x ([y,z] c n)
+= c x (c y (c z n))
+~~~
+
+~~~
+isnil list = list F tru
+
+F x y = fls
+~~~
+
+e.g.
+~~~
+isnil [x]
+= [x] F tru
+= F x tru
+isnil [x,y]
+= [x,y] F tru
+= F x (F y tru)
+~~~
+
+~~~
+head list = list tru nil
+~~~
+
+
+
+tail ..
+
+think the same with `prd`
+
+~~~
+pair nil nil
+pair nil [z]
+pair [y] [y,z]
+pair [y,z] [x,y,z]
+...
+
+tail list = fst (list cc nn)
+cc x p = pair (snd p)(cons x (snd p))
+nn = pair nil nil
+
+tail [x,y,..,z]
+= fst ([x,y,..,z] cc nn)
+= fst (cc x (cc y(..(cc z nn)..)))
+= fst (cc x (cc y(..(pair nil [z])..)))
+= fst (pair [y,..,z] [x,y,..,z])
+= [y,..,z]
+~~~
+
+another solution of list
+~~~
+nil = pair tru tru;
+cons = λh. λt. pair fls (pair h t);
+head = λz. fst (snd z);
+tail = λz. snd (snd z);
+isnil = fst;
+~~~
+mocking bird style;
+~~~
+nil = pair tru tru
+cons x list = pair fls (pair x list)
+head list = fst (snd list)
+tail list = snd (snd list)
+isnil list = fst
+~~~
+
+such that ;
+~~~
+isnil (pair tru tru) = tru
+isnil (pair fls (..)) = fls
+~~~
+
+but this definition is not satisfying
+~~~
+[x,t,..,z] c n = cx(cy(..(czn)))
+~~~
+
+## Enriching Calculus
+
+## Recursion
+
+
+fixed point λ function
+~~~
+fix = \f. (\x.f ( \y.xxy )) (\x.f ( \y.xxy ))
+~~~
+f_sumlist = \rec.\l. test (isnil l)
+                         (\x. 0)
+                         (\x. plus (head l) (rec (tail l)))
+
+sumlist = fix f_sumlist
+
+I think that another definition of “sumlist” is very cool,
+while the recursive and fixed-point-using one is very long … ( ex 5.2.11 )
+
+~~~
+Def.
+ sumlist = \x.x plus 0
+
+  e.g.
+ sumlist [x,y,z] 
+= [x,y,z] plus 0
+ = plus x ( plus y ( plus z 0 ))
+~~~
+
+moreover ,
+
+~~~
+ Def.
+ prodlist = \x.x times 1
+
+e.g.
+ prodlist [x,y,z]
+ = [x,y,z] times 1
+ = times x ( times y ( times z 1 ))
+~~~
+
+furthermore, we can define “foldr” function in haskell ;
+
+~~~
+  Def.
+ foldr = \x. \f. \i. x f i  
+
+e.g. 
+foldr [x,y,z] f i 
+= [x,y,z] f i
+ = f x ( f y ( f z i ))
+~~~
+
+## Evaluation Strategies
+
+
+We can classify evaluations into 2 different strategies,
+lazy evaluation and call-by-value evaluation.
+lazy evaluation can be further classified into `call-by-name` `call-by-need`.
+
+~~~
+(λx. t)  t'  →   t[x↦t']
+~~~
+
+だと言ったが、これでは、`t` と `t'` のどちらから先に計算すればよいのかなど不確定な情報が多く、それらは実装に依存する。
+これを避けるために、明示的に評価戦略を示してやる必要がある。
+
+評価戦略というのは、構文木のどこからどのような規則で、返り値をもとめていくか。
+ということである。
+電卓の簡単な例でいえば、`1+1*1` の掛け算を先にするのか、足し算を先にするのか、といった問題も評価戦略の問題である。
+TaPL に記載されている4つの評価戦略は次のとおりである。
+
+![TaPL1.png](/image/evaluation_strategy.png width="600px")
+
+実際に、これらの計算を
+`times (times 3 (times 2 1))` に対して、適用したのが、次である。
+
+![TaPL.png](/image/evaluation_strategy_eg.png width="600px")
+
+
+
+### call by value
+
+OCaml has call by value strategy which defines the following 1-step evaluations;
+
+~~~ml
+let rec isval ctx = function
+    | TmAbs(_,_,_,_)                        -> true
+    | _                                     -> false
+
+let rec eval1 ctx = function
+    | TmApp(fi,TmAbs(_,x,tyT11,t12),v2) when isval ctx v2
+                                            ->  termSubstTop v2 t12
+    | TmApp(fi,v1,t2) when isval ctx v1     ->  TmApp(fi,v1,eval1 ctx t2)
+    | TmApp(fi,t1,t2)                       ->  TmApp(fi,eval1 ctx t1,t2)
+    | _                                     ->  raise NoRuleApplies
+~~~
+
+
+and the multi step evaluation is defined as;
+
+~~~ml
+let rec eval ctx t =
+    try eval ctx (eval1 ctx t)
+    with NoRuleApplies -> t
+~~~
+
+
+
+# de Bruijn
+
+## Naming Variables
+
+~~~
+(\f. (\x.(f x) x)(\x.(f x) x)) (\x.x)
+~~~
+
+中の `\x.(f x) x` には、外から `f` を渡してやる必要がある。<br>
+つまり、context は外から、λ式の中に入る時に（外の項の評価から中の項へと評価が移るときに）増える。
+
+新しいスコープの中に入り局所変数が増えると考えることもできる
+
+
+
+## Context Γ の導入
+
+通常のラムダ計算では、変数を使うが、
+変数に数字を用いて名前を付け、`Γ` に保存する。この `Γ` を Name Context と呼ぶ。
+例えば、Γ = {  a $\mapsto$ 2, b $ \mapsto $ 1, c $ \mapsto $ 0 } であれば、３つの変数が保存されている。
+この Name Context によって
+たとえば、`(a b) c`  は、`(2 1) 0` と解釈することができる。
+`λc.λd.c d d`のように、「束縛変数」を２個持つ式は、
+Γ に新たに２つの mapping を、
+Γ = {a $\mapsto$ 4, b $ \mapsto $ 3, c $ \mapsto $ 2, c' $ \mapsto $ 1, d $ \mapsto $ 0} と「右から積む」ことで、
+`λ.λ.1 0 0`のように表記することができる。
+
+## SHIFT / SUBSTITUTION
+
+このように、新しい変数を積む際に、自由変数 `{a,b,c}` に関しては、 `+2`だけ `shift` してやる必要がある。そして、一時限りの束縛変数を使用したあとは、逆に`-2` `shift` してやる必要がある。
+
+これが具体的に行われるのは、 Application `(λx.t) s` の次の工程、
+Substitution `[x ↦ s] t` においてである。
+
+これを実装したものが、
+shift / substitution
+である。。
+
+~~~ml
+(* syntax.ml *)
+...
+
+(* -------------------------------------------------- *)
+(* Shifting *)
+
+let rec walk funOnVar c   = let f = funOnVar in function
+    | TmVar(fi,x,n)             -> funOnVar fi c x n
+    | TmAbs(fi,x,tyT,t2)        -> TmAbs(fi,x,tyT,walk f(c+1)t2)
+    | TmApp(fi,t1,t2)           -> TmApp(fi, walk f c t1, walk f c t2)
+    | TmIf(fi,t1,t2,t3)         -> TmIf(fi,walk f c t1, walk f c t2, walk f c t3)
+    | TmSucc(fi,t)              -> TmSucc(fi, walk f c t)
+    | TmPred(fi,t)              -> TmPred(fi, walk f c t)
+    | TmIsZero(fi,t)            -> TmIsZero(fi, walk f c t)
+    | x                         -> x
+
+let termShiftOnVar d        = fun fi c x n ->   if x>=c then TmVar(fi,x+d,n+d) else TmVar(fi,x,n+d)
+let termShiftAbove d        = walk (termShiftOnVar d)
+let termShift d             = if d>=0 then print_endline ("SHIFT: "^(string_of_int d));termShiftAbove d 0
+
+(* -------------------------------------------------- *)
+(* Substitution *)
+let termSubstOnVar j s t    = fun fi c x n ->   if x=j+c then termShift c s else TmVar(fi, x, n)
+let termSubst j s t         = walk (termSubstOnVar j s t) 0 t
+let termSubstTop s t        = print_endline "SUBSTITUTE: "; termShift (-1) (termSubst 0 (termShift 1 s) t)
+~~~
+
+
+# ML implementation of Lamda Calculus
+
+# Typed Arithmetic Expressions
+
+
+## Syntax
+
+Syntax of Term
+~~~
+t ::=
+    true
+    false
+    if t then t else t
+    0
+    succ t
+    pred t
+    iszero t
+
+
+v ::=
+    true
+    false
+    nv
+
+nv ::=
+    0
+    succ nv
+~~~
+
+
+
+## Typing Relation
+
+$ \mathbb{B} $
+
+Syntax of Type
+~~~
+T ::=
+    Bool
+~~~
+
+Typing Rules
+~~~
+  true : T
+
+  false : T
+
+   t1 : Bool   t2 : T   t3 : T
+  ------------------------------
+    if t1 then t2 else t3 : T
+
+~~~
+
+$ \mathbb{B}\ \mathbb{N} $
+
+Syntax of Type
+~~~
+T ::=
+    Nat
+~~~
+
+Typing Rules
+~~~
+   0 : Nat
+
+      t1 : Nat
+   ----------------
+    succ t1 : Nat
+
+      t1 : Nat
+   ----------------
+    pred t1 : Nat
+
+        t1 : Nat
+   ------------------
+    iszero t1 : Bool
+
+~~~
+
+
+
+## Safety = Progress + Preservation
+
+Progress : A well-typed term is not stuck
+~~~
+    t is well typed => t is value | t -> t'
+~~~
+
+Preservation : (subject reduction)
+~~~
+    If a well-typed term takes a step of evaluation,
+    then the resulting term is also well typed.
+
+    t:T & t->t' => t':T
+~~~
+
+### opposite theorem
+~~~
+    t':T & t->t'  => t:T
+~~~
+is not True
+(if false then true else 0)
+
+
+
+### think of `big step`
+
+big step always reach final value.
+so you cannot think recursion
+
+
+### think of `wrong` term
+
+preservation theorem tells:
+well-typed term cannot reach wrong term
+
+
+
+
+
+
+
+# Simple Typed Lambda Calculus
+
+
+
+
+型付きラムダ計算とは、項t に対し、Type Context $ \Gamma $ と、型 $ T $ を追加したものである。実装において、この Type Context $ \Gamma $ と、さきほど出てきた Name Context $ \Gamma $ など、様々な種類の Context をタグ付けすることにより、同じ型の Context として実装している。（ただし実行時、構文解析器が使用する `Name Context` と、型検査機が使用する Type Context は異なるインスタンスである。）この Context $ \Gamma $ は、このように実行時における様々な環境要素を含んでいるため、コンパイラの実行時環境などと呼ぶこともあるが、実行時環境には他にもC(Constraint 22章) や Σ(Store 16章) などがあり、曖昧性をもつ。そのためふつう $ \Gamma $ は、「 (Type) Context 」と呼ぶ。
+
+コンテクストと、項、型の関係は次のような関係 ( 3-placed relation ) で表し、
+
+$ \Gamma \vdash  t : T $
+
+「コンテクスト $ \Gamma $ における項 t の型は、T である」とよむ。
+
+## 構文 Syntax
+
+型付ラムダ計算の最も小さい構文は、
+
+~~~
+    t  ::=                              term
+            x                           variable
+            λx:T.t                      abstraction
+            t t                         application
+
+    v  ::=                              value
+            λx:T. t                     abstraction value
+
+    T  ::=                              type
+            T → T                       arrow type
+
+    Γ  ::=
+            ∅                           empty context
+            Γ,x:T                       term variable binding
+~~~
+
+である。
+
+値 v は、それ以上単独で評価することができない項である。さきほど述べた、評価戦略 call by value の策定に、この v が大きく関わってくる。
+
+
+型 T は、すべての項は関数だという、関数型言語の思想をよく表しており、すべて Arrow Type の形でかける。実際の実装では、これに$ \mathbb{B} $ のような基本型を加えるので、以下の方が想像しやすいのかもしれない。
+
+~~~
+    T  ::=                              type
+            B                           boolean type
+            T → T                       arrow type
+~~~
+
+といった具合である。
+
+Γ は、Type Context である。
+
+$ \Gamma $ :=
+~~~
+    x_n -> n : Tn
+    ...
+    x_1 -> 1 : T1
+    x_0 -> 0 : T0
+~~~
+
+## Function(Arrow) Type
+
+
+~~~
+T ::= ...
+    | T -> T
+~~~
+
+Arrow Types are right associative;  i.e. `T->T->T` means `T->(T->T)`  .
+
+
+
+
+## 評価規則 Evaluation Rules
+
+評価規則は、先ほどのとおりである。
+
+~~~
+                    t1   →  t1'
+          -------------------------------------- [E-APP1]
+                 t1 t2   →  t1' t2
+
+
+                    t2   →  t2'
+          -------------------------------------- [E-APP2]
+                 v1 t2   →  v1 t2'
+
+
+          (λx:T11.t) v2  →  [x ↦ v2] t           [E-APPABS]
+~~~
+
+## 型付け規則 Typing Rules
+
+これに、型規則を導入したが形有りラムダ計算である。
+
+~~~
+                    x : T ∈ Γ
+          -------------------------------------- [T-VAR]
+                    Γ ∣- x : T
+
+
+                   Γ,(x:S) ∣- t : T
+          -------------------------------------- [T-ABS]
+                  Γ ∣- λx:S.t : X → T
+
+
+            Γ |- t1 : T2 -> T ,   Γ ∣- t2 : T2
+          -------------------------------------- [T-APP]
+                    Γ ∣- t1 t2 : T
+~~~
+
+
+
+
+
+
+
+
+# ML implementaion of Simple Types
+
+
+具体的実装における構文や、
+型規則、評価戦略は以下のようになる。
+
+型規則は、`typeof` 関数の実装であり、
+評価戦略は、`eval1` 関数の実装である。
+
+
+
+## 構文
+
+~~~hs
+
+/* Modules both for Interpreter and for Compiler */
+Command     :       /* A top-level command */
+    | Term                          { fun ctx   -> let t = $1 ctx in Eval(tmInfo t,t),ctx }
+    | LCID Binder                   { fun ctx   -> ((Bind($1.i,$1.v,$2 ctx)), addname ctx $1.v) }
+Binder      :
+    | COLON Type                    { fun ctx   -> VarBind($2 ctx) }
+
+Type        :
+    | ArrowType                     { $1 }
+AType       :
+    | LPAREN Type RPAREN            { $2 }
+    | BOOL                          { fun ctx   -> TyBool }
+    | NAT                           { fun ctx   -> TyNat  }
+ArrowType   :
+    | AType ARROW ArrowType         { fun ctx   -> TyArr($1 ctx, $3 ctx) }
+    | AType                         { $1 }
+
+Term        :
+    | AppTerm                       { $1 }
+    | LAMBDA LCID COLON Type DOT Term
+        { pe "PARSER: λx:T.t"; fun ctx -> let ctx1=addname ctx $2.v in TmAbs($1,$2.v,$4 ctx,$6 ctx1)}
+    | IF Term THEN Term ELSE Term   { fun ctx   -> TmIf($1, $2 ctx, $4 ctx, $6 ctx) }
+AppTerm     :
+    | ATerm                         { $1 }
+    | SUCC ATerm                    { fun ctx   -> TmSucc($1, $2 ctx ) }
+    | PRED ATerm                    { fun ctx   -> TmPred($1, $2 ctx ) }
+    | ISZERO ATerm                  { fun ctx   -> TmIsZero($1, $2 ctx) }
+    | AppTerm ATerm                 { fun ctx   -> let e1=$1 ctx in TmApp(tmInfo e1,e1,$2 ctx) }
+ATerm       :         /* Atomic terms are ones that never require extra parentheses */
+    | LPAREN Term RPAREN            { pe "PARSER: ( t )"; $2 }
+    | LCID                          { fun ctx   -> TmVar($1.i, name2index $1.i ctx $1.v, ctxlength ctx) }
+    | TRUE                          { fun ctx   -> TmTrue($1) }
+    | FALSE                         { fun ctx   -> TmFalse($1) }
+    | INTV                          { fun ctx   -> let rec f = function
+              0 -> TmZero($1.i)
+            | n -> pe "succ"; TmSucc($1.i, f (n-1))
+          in f $1.v }
+~~~
+
+
+## 評価器
+
+~~~ml
+open Format
+open Core
+open Support.Pervasive
+open Support.Error
+open Syntax
+open Arg
+open Type
+
+exception NoRuleApplies
+
+let rec isnumericval ctx = function
+    | TmZero(_)         -> true
+    | TmSucc(_,t1)      -> isnumericval ctx t1
+    | _                 -> false
+
+let rec isval ctx = function
+    | TmAbs(_,_,_,_)                -> true
+    | TmTrue(_)                     -> true
+    | TmFalse(_)                    -> true
+    | t when isnumericval ctx t     -> true
+    | _                             -> false
+
+let rec eval1 ctx = function
+    | TmApp(fi,TmAbs(_,x,tyT11,t12),v2) when isval ctx v2
+                                        ->  termSubstTop v2 t12
+    | TmApp(fi,v1,t2) when isval ctx v1 ->  TmApp(fi,v1,eval1 ctx t2)
+    | TmApp(fi,t1,t2)                   ->  TmApp(fi,eval1 ctx t1,t2)
+    | TmIf(_,TmTrue(_),t2,t3)           ->  t2
+    | TmIf(_,TmFalse(_),t2,t3)          ->  t3
+    | TmIf(fi,t1,t2,t3)                 ->  let t1' = eval1 ctx t1 in TmIf(fi, t1', t2, t3)
+    | TmSucc(fi,t1)                     ->  let t1' = eval1 ctx t1 in TmSucc(fi, t1')
+    | TmPred(_,TmZero(_))               ->  TmZero(dummyinfo)
+    | TmPred(_,TmSucc(_,nv1)) when (isnumericval ctx nv1)
+                                        ->  nv1
+    | TmPred(fi,t1)                     ->  TmPred(fi, eval1 ctx t1)
+    | TmIsZero(_,TmZero(_))             ->  TmTrue(dummyinfo)
+    | TmIsZero(_,TmSucc(_,nv1)) when (isnumericval ctx nv1)
+                                        ->  TmFalse(dummyinfo)
+    | TmIsZero(fi,t1)                   ->  let t1' = eval1 ctx t1 in TmIsZero(fi, t1')
+    | _                                 ->  raise NoRuleApplies
+
+let rec eval ctx t =
+    try eval ctx (eval1 ctx t)
+    with NoRuleApplies -> t
+
+
+
+let rec process_command ctx = function
+    | Eval(fi,t)                ->
+            let tyT = typeof ctx t in
+            printtm_ATerm true ctx (eval ctx t);
+            print_break 1 2; pr ": "; printty tyT; force_newline(); ctx
+    | Bind(fi,x,bind)           ->  pr ("Now, "^x^ " is a variable: "); prbindingty ctx bind; force_newline(); addbinding ctx x bind
+
+
+let print_eval ctx cmd      =
+    open_hvbox 0;
+    process_command ctx cmd;
+    print_flush ()
+
+~~~
+
+
+## 型解釈器
+
+~~~ml
+open Format
+open Core
+open Support.Pervasive
+open Support.Error
+open Syntax
+open Arg
+
+exception NoRuleApplies
+
+
+(* ----------- TYPING --------------- *)
+
+let rec typeof ctx   t      = pr "TYPEOF: ";printtm ctx t;print_newline ();  match t with
+    | TmVar(fi,i,_)             -> getTypeFromContext fi ctx i
+    | TmAbs(fi,x,tyT1,t2)       ->
+            let ctx'    = addbinding ctx x (VarBind(tyT1)) in
+            let tyT2    = typeof ctx' t2 in
+            TyArr(tyT1,tyT2)
+    | TmApp(fi,t1,t2)           ->
+            let tyT1 = typeof ctx t1 in
+            let tyT2 = typeof ctx t2 in
+            (match tyT1 with
+                | TyArr(tyT11,tyT12)    -> if (=) tyT2 tyT11 then tyT12 else error fi "type mismatch"
+                | _                     -> error fi "arrow type expected" )
+    | TmTrue(fi)                -> TyBool
+    | TmFalse(fi)               -> TyBool
+    | TmZero(fi)                -> TyNat
+    | TmSucc(fi,t)              -> if (=) (typeof ctx t) TyNat then TyNat else error fi "succ expects 𝐍"
+    | TmPred(fi,t)              -> if (=) (typeof ctx t) TyNat then TyNat else error fi "succ expects 𝐍"
+    | TmIsZero(fi,t)            -> if (=) (typeof ctx t) TyNat then TyBool else error fi "iszero expects 𝐍"
+    | TmIf(fi,t1,t2,t3)         -> if (=) (typeof ctx t1) TyBool then
+                let tyT2 = typeof ctx t2 in
+                if (=) tyT2 (typeof ctx t3) then tyT2 else error fi "resulting type of if statement mismatch"
+                else error fi "if-condition expects a boolean"
+
+
+(* ---- *)
+
+let prbindingty ctx = function
+    | NameBind                  -> ()
+    | VarBind(tyT)              -> pr ": "; printty tyT
+
+
+
+
+~~~
+
+
+## (番外編) 左再帰と右再帰
+
+### 構文解析の知識
+
+構文には、左再帰構文と呼ばれる構文と、右再帰構文と呼ばれる構文がある。
+正規表現 ab* の構文の定義方法として、
+
+~~~
+Left Recursion
+
+t ::=
+     | a
+     | t b
+~~~
+
+
+という定義方法があり、これを左再帰という。
+文 `abbb` を解析すると、
+
+~~~
+  ((((a) b) b) b)
+
+           t
+          / \
+         t   b
+        / \
+       t   b
+      / \
+     t   b
+    /
+   a
+~~~
+
+これに対し、右再帰構文とは、
+
+~~~
+Right Recursion
+
+t  ::=
+     |  a s
+
+s  ::=
+     |  ∅
+     |  b s
+~~~
+
+のような定義であり、
+
+~~~
+
+   (a (b (b (b ∅))))
+
+
+      t
+     / \
+    a   s
+       / \
+      b   s
+         / \
+        b   s
+           / \
+          b   ∅
+~~~
+
+
+というように、右へ、構文木が垂れ下がっていく。
+
+構文解析器、字句解析器ともに、通常文を左から順番に読み込んでいく（走査していく）。
+
+文を左から走査していくとき、
+右再帰構文では、最後の∅ が見えるまで、s も t もその内容物が確定しないのに対して、
+左再帰構文では、毎度毎度、各 t の内容物が確定する。
+
+
+
+
+
+###  コンパイラとインタプリタの違い
+
+インタプリタは止まらなくてもいいので、とりあえず、入力の最初から順番に評価していけばよいが、
+入力の列が途絶えるかどうかはまったく気にしなくてよい。むしろ気にしてはいけない。入力が終了するのを待っていては、対話式インタプリタはかけない。
+
+
+~~~
+/************   REPL   **************************/
+input :   /* Left Recursion */
+    |                                   { fun _     ->  [],[]                                   }
+    | input DOUBLESEMI                  { fun ctx   ->  [],ctx                                  }
+    | input oneREPL                     { let _,ev_ctx  = $1 [] in
+                                          let cmds,_    = $2 ev_ctx in
+                                          let ev_ctx'   = process_commands ev_ctx cmds in
+                                          fun _     ->  [],ev_ctx'                              }
+oneREPL :
+    | Command DOUBLESEMI                { fun ctx   ->  let cmd,ctx'   = $1 ctx in [cmd],ctx'   }
+    | Command SEMI oneREPL              { fun ctx   ->  let cmd,ctx'   = $1 ctx in
+                                                        let cmds,ctx'' = $3 ctx' in cmd::cmds,ctx''  }
+~~~
+
+
+コンパイラは、入力が一区切り付いたかどうかなどはどうでもよく、終了したのか終了していないのかは決定しないければいけない。
+この意味で、コンパイラとREPLとで採用される構文は、「左再帰」と「右再帰」という相反する構文をそれぞれが目的に応じて採用するのが適当である。
+
+
+~~~
+/************  COMPILER  ************************/
+toplevel : /* Right Recursion */
+    | EOF                               { fun ctx   ->  [],ctx                                  }
+    | Command SEMI toplevel             { fun ctx   ->  let cmd,ctx  = $1 ctx in
+                                                        let cmds,ctx = $3 ctx in cmd::cmds,ctx  }
+~~~
+
+
+
+# Simple Extensions
+
+## variants
+
+~~~
+Table = Nat→OptionalNat;
+~~~
+
+represents finite mappings from numbers to numbers: the domain of such a mapping is the set of inputs for which the result is <some=n> for some n. The empty table
+
+~~~
+emptyTable = λn:Nat. <none=unit> as OptionalNat;
+emptyTable : Table
+~~~
+
+is a constant function that returns none for every input. The constructor
+
+~~~
+extendTable =
+    λt:Table. λm:Nat. λv:Nat.
+        λn:Nat.
+        if equal n m
+            then <some=v> as OptionalNat
+            else t n;
+~~~
+
+
+
+
+
+# Normalization
+
+~~~
+          well typed term is "normalizable"
+========================================================== def
+ well typed program is guranteed to "halt in finite steps"
+~~~
+
+
+## Normalization of Simple Type
+
+### term t is normalizable ?
+
+answer. no
+
+* since application
+* $ t _ 1 t _ 2 $ ==> (assumption) ==> $ v _ 1 v _ 2 $ ==> (not normalize) ==> `(\x:T.t)` $ v _ 2 $
+
+<br>
+
+so, we define ;
+
+* $ R _ T $ : a set of closed terms of type T
+* $ R _ T (t) \iff t \in R _ T $
+
+we regard $ R _ T $ as Predicates
+
+<br>
+
+### Definition
+
+<br>
+
+$ \require{AMScd} $
+$ \begin{CD}
+    R _ A (t) \\
+    @=def\\
+    t \text{ halts}
+    \end{CD} $
+
+<br>
+
+$ \begin{CD}
+    R _ { T _ 1 \rightarrow T _ 2 } (t) \\
+    @=def\\
+    t \text { halts} \ \wedge \
+    \begin{CD}
+        R _ {T _ 1} (s)\\
+        @>>>\\
+        R _ {T _ 2} (t s)\\
+    \end{CD}
+\end{CD} $
+
+<br>
+
+### Lemma
+
+$$
+{\displaystyle
+    \frac
+    {R _ T (t)}
+    {t \text{ halts}}
+}
+$$
+
+
+### Lemma
+
+$$
+{\displaystyle
+    \frac
+    {\text{ t : T } \quad \wedge \quad \text{ t } \to \text{ t' }}
+    { R_T (\text{t}) \iff R_T (\text{t'})}
+}
+$$
+
+### Lemma
+
+$$
+{\displaystyle
+    \frac
+    {x _ 1 : T _ 1 , \dots, x _ n : T _ n \vdash t : T \quad \wedge \quad
+    \forall \ i . R _ {T _ i}(v _ i)}
+    {R _ T([x _ 1 \mapsto v _ 1] \dots [x _ n \mapsto v _ n]t)}
+}
+$$
+
+### Theorem
+
+$$
+{\displaystyle
+    \frac
+    {\vdash t : T}
+    {t \text{ is normalizable}}
+}
+$$
+
+<br>
+<br>
+
+# References
+
+## Introduction
+
+<br>
+
+Basics
+:
+~~~
+> f = ref 5 ;
+r : Ref Nat
+
+> !r ;
+5 : Nat
+
+> r := 7;
+unit : Unit
+
+> !r ;
+7 : Nat
+~~~
+
+<br>
+
+Side Effects and Sequencing
+:
+~~~
+> (r := succ(!r) ; !r) ;
+8 : Nat
+
+> (\_:Unit. !r) (r := succ(!r));
+9 : Nat
+
+> (r := succ(!r); r := succ(!r); r := succ(!r); r := succ(!r): !r);
+13 : Nat
+~~~
+
+<br>
+
+References and Aliasing
+:
+~~~
+> s = r;
+s : Ref Nat
+~~~
+
+*************************
+*                       *
+*      r          s     *
+*       \        /      *
+*        v      v       *
+*       +--------+      *
+*       |   13   |      *
+*       +--------+      *
+*                       *
+*************************
+
+~~~
+> s := 82;
+unit : Unit
+
+> !r ;
+82 : Nat
+~~~
+
+<br>
+
+Q. Draw the diagrams of
+~~~
+> a = {ref 0, ref 0}
+> b = (\x:Ref.{x,x}) (ref 0)
+~~~
+
+<br>
+
+Shared State
+:
+~~~
+> c = ref 0;
+c : Ref Nat
+
+> incc = \x:Unit. (c := succ(!c); !c);
+incc : Unit -> Nat
+
+> decc = \x:Unit. (c := pred(!c); !c);
+decc : Unit -> Nat
+
+> incc unit;
+1 : Nat
+
+> decc unit;
+0 : Nat
+
+> o = {i = incc, d = decc};
+o : {i: Unit -> Nat, d: Unit -> Nat}
+~~~
+
+we will develop this on Chapter 18
+
+<br>
+
+References to Compound Types
+:
+~~~
+> type NatArray = Ref (Nat -> Nat)
+
+> newarr = \_:Unit. ref (\n:Nat.0);
+newarr : Unit -> NatArray
+
+> lookup = \a:NatArray. \n:Nat. (!a) n;
+lookup : NatArray -> Nat -> Nat
+
+> update = \a:NatArray. \m:Nat. \v:Nat.
+            let oldf = !a in
+            a := (\n:Nat. if equal m n then v else oldf n);
+update : NatArray -> Nat -> Nat -> Unit
+~~~
+
+<br>
+
+Q. How about this definition ?
+~~~
+> update = \a:NatArray. \m:Nat. \v:Nat.
+            a := (\n:Nat. if equal m n then v else (!a) n);
+~~~
+
+A. No - this function now Diverge.
+
+<br>
+
+Garbage Collection
+:
+
+<br>
+<br>
+
+## Typing
+
+<br>
+$$
+{\displaystyle
+    \frac
+    {\Gamma \vdash t : T}
+    {\Gamma \vdash \text{ref } t : \text{Ref } T}
+    \text{[T-Ref]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\Gamma \vdash t : \text{Ref } T}
+    {\Gamma \vdash !t : T}
+    \text{[T-DeRef]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\Gamma \vdash t _ 1 : \text{Ref } T _ 1 \quad \wedge \quad \Gamma \vdash t _ 2 : T _ 2}
+    {\Gamma \vdash t _ 1 := t _ 2 : Unit}
+    \text{[T-Assign]}
+}
+$$
+
+<br>
+
+## Evaluation
+
+- $ \mathscr{L} $ : uninterpreted set of store locations
+- $ \mu $ : metavariable to range over stores
+
+- before : `t` ==> `t'`
+
+- after  : `t` | $ \mu $ ==> `t'` | $ \mu ' $
+    - where
+    - $ \mu $ : starting state of the store
+    - $ \mu ' $ : ending state of the store
+
+<br>
+$$
+{\displaystyle
+    \frac
+    {l \notin dom( \mu )}
+    {\text{ref v} _ 1 \rightarrow l \text{ | } ( \mu , l \mapsto \text{v} _ 1)}
+    \text{(E-REFV)}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 1 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{ | } \mu '}
+    {\text{ref t} _ 1 \text{ | } \mu \rightarrow \text{ref t'} _ 1 \text{ | } \mu '}
+    \text{(E-REF)}
+}
+$$
+
+<br>
+
+### How to model ` Garbage Collection `
+
+「ここから」
+
+
+## Store Typings
+
+## Safety
+
+## ==> Unit Ref
+
+### Syntax
+~~~
+t ::=
+    x
+    \x:T.t
+    t t
+    unit
+    ref t           [reference creation]
+    !t              [dereference]
+    t:=t            [assignment]
+    l               [store location]
+
+v ::=
+    \x:T.t
+    unit
+    l               [store location]
+
+T ::=
+    T -> T
+    Unit
+    Ref T           [type of reference cells]
+
+Γ ::=
+    ∅               [empty context]
+    Γ, x:T          [term variable binding]
+
+μ ::=
+    ∅               [empty store]
+    μ,l = v         [location binding]
+
+Σ ::=
+    ∅               [empty store typing]
+    Σ,l : T         [location typing]
+~~~
+
+### Evaluation
+
+<br>
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 1 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{ | } \mu '}
+    {\text{t} _ 1 \text{t} _ 2 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{t} _ 2 \text{ | } \mu '}
+    \text{[E-App1]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 2 \text{ | } \mu \rightarrow \text{t'} _ 2 \text{ | } \mu '}
+    {\text{v} _ 1 \text{t} _ 2 \text{ | } \mu \rightarrow \text{v} _ 1 \text{t'} _ 2 \text{ | } \mu '}
+    \text{[E-App2]}
+}
+$$
+
+$$
+( \lambda x : T _ {11} . t _ {12} ) \  v _ 2 \text{ | } \mu \quad \rightarrow \quad
+[ x \mapsto v _ 2 ] \  t _ {12} \text{ | } \mu
+\quad \quad \text{[E-AppAbs]}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {l \notin dom( \mu ) }
+    {\text{ref v} _ 1 \rightarrow l \text{ | } ( \mu , l \mapsto \text{v} _ 1)}
+    \text{[E-RefV]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 1 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{ | } \mu '}
+    {\text{ref t} _ 1 \text{ | } \mu \rightarrow \text{ref t'} _ 1 \text{ | } \mu '}
+    \text{[E-Ref]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\mu (l) = \text{v}}
+    {\text{!} l \text{ | } \mu \to \text{v | } \mu}
+    \text{[E-DerefLoc]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 1 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{ | } \mu '}
+    {\text{! t} _ 1 \text{ | } \mu \rightarrow \text{! t'} _ 1 \text{ | } \mu '}
+    \text{[E-Deref]}
+}
+$$
+
+$$
+l := \text{v} _ 2 \text{ | } \mu \quad \to \quad \text{unit | } [ l \mapsto \text{v} _ 2 ] \mu ' \quad \text{[E-Assign]}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 1 \text{ | } \mu \rightarrow \text{t'} _ 1 \text{ | } \mu '}
+    {\text{t} _ 1 := \text{t} _ 2 \text{ | } \mu \rightarrow \text{t'} _ 1 := \text{t} _ 2 \text{ | } \mu '}
+    \text{[E-Assign1]}
+}
+$$
+
+$$
+{\displaystyle
+    \frac
+    {\text{t} _ 2 \text{ | } \mu \rightarrow \text{t'} _ 2 \text{ | } \mu '}
+    {\text{v} _ 1 := \text{t} _ 2 \text{ | } \mu \rightarrow \text{v} _ 1 := \text{t'} _ 2 \text{ | } \mu '}
+    \text{[E-Assign2]}
+}
+$$
+
+<br>
+
+$$
+{\displaystyle
+    \frac
+    {}
+    {}
+}
+$$
+
+### Typing
+
+
+~~~
+e.x. 13.5.2
+Γ | Σ1 |- μ
+Γ | Σ2 |- μ
+
+Γ
+empty
+Σ1
+l |-> () -> (() -> ())
+Σ2
+l |-> () -> ()
+μ
+l |-> \(). (!l) ()
+
+l |-> \(). (\().(!l)()) () = \(). (!l)() : which type is OK !
+~~~
+
+
+# Exceptions
+
+# Subtyping
+
+# Metatheory of Subtyping
+
+# An ML Implementation of Subtyping
+
+# Case Study : Imperative Objects
+
+# Case Study : Featherweight Java
+
+# Recursive Types
+
+## Examples
+Lists
+:
+
+Hungry Functions
+:
+
+Objects
+:
+
+Recursive Values from Recursive Types
+:
+
+Untyped Lambda-Calculus, Redux
+:
+
+
+## Formalities
+
+## Subtyping
+
+## Notes
+
+# Metatheory of Recursive Types
+
+## Induction and Coinduction
+## Finite and Infinte Types
+## Subtyping
+## A Digression on Transityvity
+## Membership Checking
+## More Efficient Algorithm
+## Regular Trees
+## μ - Types
+## Counting Subexpressions
+## Digression: An Exponential Algorithm
+## Subtyping Iso-Recursive Types
+
+# Type Reconstruction
+
+## Type Variables and Substitutions
+## Two Views of Type Variables
+## Constraint-Based Typing
+## Unification
+## Principal Types
+## Implicit Type Annotations
+## Let-Polymorphism
+
+### Let polymorphism
+
+
+
+### Impredicative Polymorphism
+
+let polymorphism (ML style) v.s. impredicative polymorphism (System F)
+
+* OCaml : let polymorphism can always halt.
+* Haskell : impredicative polymorphism cannot halt always.
+
+
+### Recursive Polymorphism
+
+Recursive Polymorphism allows polymorphisms of type in Recursive Type definitions;
+i.e.
+if we apply polymorphism to
+
+~~~
+Rec X. X -> A
+~~~
+
+, we can get the following types as its instances.
+
+~~~
+Int -> [Int] -> [[Int]] -> A
+Int -> Bool  -> Int     -> Bool -> ... -> A
+~~~
+
+
+Haskell has recursive polymorhism
+
+~~~
+λ>  data Nested a = a :<: (Nested [a]) | E deriving Show
+λ>  length :: Nested a -> Int;
+    length E = 0 ;
+    length (a :<: as) = 1 + length as
+~~~
+
+Then Type;
+
+~~~
+λ>  1 :<: ([1] :<: ([[2]] :<: E  ))
+~~~
+
+
+
+# Universal Types
+
+## Motivation
+## Varieties of Polymorphism
+## System F
+## Examples
+## Basic Properties
+## Erasure, Typability, and Type Reconstruction
+## Erasure and Evaluation Order
+## Fragments of System F
+## Parametricity
+## Impredicativity
+
+# Existential Types
+
+Existential Type is a tuple (∃X,T) where X is type variable and T is a Type.
+We can instantiate, `X` by a concrete Type e.g. `Int` then we get the instance of existential type `(Int, T[X↦Int])`.
+
+This instanciation reminds us of Object Oriented Programming.
+
+
+
+# An ML Implementation of System F
+
+# Bounded Quantification
+
+
+## Section 1
+
+## Kernel F-sub  v.s. Full F-sub
+
+
+Kernel F-sub :
+~~~
+      Γ,X<:U ⊢ S2 <: T2
+ ------------------------------[KERNEL S-ALL ]
+  Γ ⊢ ∀X<:U.S2 <: ∀X<:U.T2
+~~~
+
+This definition can be more generalised since ∀X. T can be thought as
+as Π-Type, generalisation of arrow-type .
+So, it can be rewritten with mimicing `S-ARROW` which is defined Chap 15.
+
+FULL F-sub :
+~~~
+  Γ ⊢ T1 <: S1   Γ,X<:U ⊢ S2 <: T2
+ ----------------------------------[KERNEL S-ALL ]
+    Γ ⊢ ∀X<:S1.S2 <: ∀X<:T1.T2
+~~~
+
+
+
+The Object Oriented Programming Language $ O _ { 1 \<\: } $ can be realised in $ F _ { \<\: μ } $ .
+
+- [Reference] [Abadi, Cardelli, Viswanathan] An Interpretation of Object Types
+
+
+
+# Case Study : Imperative Objects, Redux
+
+# Metatheory of Bounded Quantification
+
+
+
+# Type Operators and Kinding
+
+# Higher-Order Polymorphism
+
+# Higher-Order Subtyping
+
+# Case Study: Purely Functional Objects

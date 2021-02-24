@@ -1,0 +1,147 @@
+---
+layout: newsmag
+title: AGVM
+comments: true
+---
+
+
+
+
+
+IoT 安全設計指針
+======================================================================
+- 安全フィルターがn重であるとする。
+    - n → Infinity で
+    - 確率的に安全性が100パーセントに収束するように設計されている
+
+- 収束速度については、各自詳細に定めるものとする
+
+ - x 建築耐力に関して、動的であることを加味して、現行のもの(3倍)より、増やす必要がある。
+    - x また、分散システムであることを鑑み、暫定的に5倍程度が妥当とするところから検証を重ねることとする。
+
+- 安全設計が3〜5倍というのは、日本で生まれた神話なのかもしれない。イギリスのような世界的標準では、10~1000倍の安全設計もあり得、建築耐力もそれに漏れない可能性も0とは言えない。要調査。現行のオーダーにはまって考えることは危険極まりない。
+
+
+
+On blockchain
+====================================================================
+
+IOT と Blockchain
+
+blockchain の仕組みの理解を前提とします。
+
+~~~
+state -+-----(state transition function) --------> state
+　　　  |
+　　　  +-----(state transition function) --------> state
+~~~
+
+このように、状態遷移関数はだれでもfork 可能です。
+しかし、悪意ある人がfork すると、
+
+~~~
+state -+----(state transition function) --------> state
+　　　  |
+　　　  +----(state transition function) --------> cracked state
+~~~
+
+
+
+とすることができます。
+これを防ぐために、
+それが正しいかどうか、検証作業というものを全ノードが行うわけです。
+検証作業はBitcoinにおいてはProof of Work が正しいか再計算するだけですが、
+たとえば、建築の確認申請作業のようなものも、検証作業とすることができます。
+これには、精密なモデリングが必要となりますが、現在の技術力を考えると容易です。
+
+各ノードが互いに物理的に影響し合う、建築における部材のような場合には、
+物理測定器とブロックチェーン上のデータの組合せによる検証が可能となります。
+
+ethereum は、物理デバイスと融合した時、
+制御可能な自立型自動機械を構築することを可能にするソフトウェアの「親」であり、
+それこそが、目指すべき到達点です。
+
+ethereum を fork して
+avm ( architectural vitual machine )をつくると以下のようになります：
+
+~~~
+external physical censor
+　　　　     ↓
+　physical value (strain) ---+
+　　　　　　　　　　　　         |--->  (verifying) ---> apparent state : calculated with `strain`
+　　　   +--------------------+
+　　　   |
+state --+--(state transition function(mining)) ---> calculated state : calculated with `stress`
+~~~~
+　
+the verifying process is like :
+
+if `apparent state` - `calculated state` <= ε then the calculated state is valid.
+where `ε` is error.
+
+and the same time , this recalculate the Young's module `E` and we put the data on blockchain.
+
+generally , there is a relationship between `strain` and `stress` with `E` , like :
+
+~~~
+　 `stress` = `E` * `strain`
+~~~
+
+but it is much harder to determine `E` with complicated material or something like wood.
+if we update `E` with blockchain , we will get more accurate `E` value which is changing in the material's declinining or growing up.
+
+これを、一言で言うと、「分散型思惑決定機 兼 状態更新マシン」となり、ethereum は distributed consensus making machine だと言われますが、その前に、状態更新マシンである事を鑑みると、あらゆる IOT デバイスの状態の更新を正しい一つの意思のもとにまとまめて行うことができ、かつネットワークセキュリティの観点で強固なものとなります。これは人工知能の暴走を防ぐと思われます。
+
+物理的に影響しあうノードですが、これは自分の位置情報を偽造することにより、システムを破壊することが可能となってくるようにおもえるかもしれませんが、これは、常に、一定速度の波動を用いたクイックリスポンスの要求を常に周囲のノードがランダムに ping し続けることで異常行為を発見できるので回避が容易です。
+
+
+
+# how to abstract
+
+
+
+~~~
+測量-> mark
+掘削
+養生
+ステコン打設
+鉄筋配置
+型枠配置
+( 水道管 )
+生コン
+土台  --->
+柱 ---->
+梁 ---->
+小屋組 ---->
+屋根 ---->
+耐力壁 ---->
+水平耐力の担保 ---->
+造作
+...
+仕上げ
+~~~
+
+
+~~~
+基礎
+骨格 --------> iot
+膜
+~~~
+
+
+
+
+yet the skelton is not determened ....
+
+
+
+
+# more concrete
+
+
+
+部材自身がリアルタイムで
+応力値を返せば
+構造解析が不要になる
+建築の設計業界からの解放とともに
+オープンソース化が実現される。

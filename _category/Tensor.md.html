@@ -1,0 +1,152 @@
+---
+title: Tensor
+layout: journal
+---
+
+
+
+# words
+
+* homo- : same
+* iso- : equal
+
+<br>
+
+
+
+# Tensor
+
+## denotations
+
+- $ R $ : CRing
+- $ M,N $ : Mod(R)
+
+<br>
+
+## Def. $ ( T , \otimes , M \times N ) $ is Tensor
+
+<br>
+
+$ (T , \otimes , M \times N ) \quad ; \quad \otimes : M \times N \rightarrow T \quad $ is Tensor.
+
+========================================def
+
+$ \forall \ (X , \phi) \quad ; \quad \phi : M \times N \rightarrow X $ : Bilinear map . <br>
+$ \exists ! \ f : T \rightarrow X .    $ <br>
+
+$ \hspace{3cm} f \circ \otimes = \phi $
+
+
+<br>
+<br>
+
+## Def. Bilinear map $ \phi $
+
+
+$ \phi : M \times N \rightarrow T $ is bilinear map
+
+$ \iff $ `(def)`
+
+$ \forall m \in M. \forall n \in M $ , $ \phi $ is homomorphism on Additive Module
+
+$ \iff $
+
+$$ \phi(m,n + n') = \phi(m,n) + \phi(m,n') $$
+$$ \phi(m + m',n) = \phi(m,n) + \phi(m',n) $$
+
+
+<br>
+<br>
+
+
+# Ring Homomorphism
+
+Ring Homomorphism $ f $ <br>
+satisfies;
+
+$$ f(n + m) = f(n) + f(m) $$
+$$ f(n \bullet m) = f(n) \bullet f(m) \quad $$
+$$ f(1) = 1 $$
+
+
+# e.g. CRing(1-parametor Mod(R)) Tensor
+
+CRing $R$ itself is one parametor $ Mod(R) $.
+
+- $ R = \{0,1,2\} $ : CRing
+- $ S = \{0,1,2\} $ : CRing
+
+$$
+\begin{array}{c|ccc}
++ & 0 & 1 & 2 \\
+\hline
+0 & 0 & 1 & 2 \\
+1 & 1 & 2 & 0 \\
+2 & 2 & 0 & 1
+\end{array}
+\quad
+\begin{array}{c|ccc}
+* & 0 & 1 & 2 \\
+\hline
+0 & 0 & 0 & 0 \\
+1 & 0 & 1 & 2 \\
+2 & 0 & 2 & 1
+\end{array}
+$$
+
+
+<br>
+
+1. $ \quad (0 \otimes 0) + (0 \otimes 0) = (0 \otimes 0) $
+2. $ \quad (0 \otimes 1) + (1 \otimes 0) = (2 \otimes 1) + (1 \otimes 1) + (1 \otimes 0) = (0 \otimes 1) $
+3. $ \quad (0 \otimes 1) + (1 \otimes 0) = (0 \otimes 1) + (1 \otimes 1) + (1 \otimes 2) = (1 \otimes 0) $
+4. $ \quad (2 \otimes 0) + (2 \otimes 0) = (1 \otimes 0) $
+5. $ \quad (2 \otimes 0) + (2 \otimes 0) = (2 \otimes 0) $
+
+<br>
+
+2,3,4,5 $ \rightarrow  (0 \otimes 1) = (1 \otimes 0) = (0 \otimes 2) = (2 \otimes 0) $
+
+<br>
+
+$ (0 \otimes 0) = (1 \otimes 0) + (2 \otimes 0) = (2 \otimes 0) + (2 \otimes 0) = (1 \otimes 0) $
+
+<br>
+
+So we can define a Quotient Tensor like ;
+
+$$ \bar{0} \quad := \quad (0 \otimes 0) \simeq (0 \otimes 1) \simeq (0 \otimes 2) \simeq (1 \otimes 0) \simeq (2 \otimes 0) $$
+
+with simirarity ,
+
+1. $ \quad (2 \otimes 1) + (2 \otimes 1) = (2 \otimes 2) $
+2. $ \quad (2 \otimes 1) + (2 \otimes 1) = (1 \otimes 1) $
+3. $ \quad (1 \otimes 1) + (1 \otimes 1) = (1 \otimes 2) $
+4. $ \quad (1 \otimes 1) + (1 \otimes 1) = (2 \otimes 1) $
+
+$$ \bar{1} \quad := \quad (1 \otimes 1) \simeq (2 \otimes 2) $$
+$$ \bar{2} \quad := \quad (1 \otimes 2) \simeq (2 \otimes 1) $$
+
+
+Thus,
+
+ Tensor also has Ring's Structure
+
+
+$$
+\begin{array}{c|ccc}
++ & \bar{0} & \bar{1} & \bar{2} \\
+\hline
+\bar{0} & \bar{0} & \bar{1} & \bar{2} \\
+\bar{1} & \bar{1} & \bar{2} & \bar{0} \\
+\bar{2} & \bar{2} & \bar{0} & \bar{1}
+\end{array}
+\quad
+\begin{array}{c|ccc}
+* & \bar{0} & \bar{1} & \bar{2} \\
+\hline
+\bar{0} & \bar{0} & \bar{0} & \bar{0} \\
+\bar{1} & \bar{0} & \bar{1} & \bar{2} \\
+\bar{2} & \bar{0} & \bar{2} & \bar{1}
+\end{array}
+$$

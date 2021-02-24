@@ -1,0 +1,64 @@
+---
+title: Split/Combine a File
+layout: dep
+date: 2015-08-03
+---
+
+
+
+# Edit Giant File
+
+<br>
+
+1. count lines
+
+~~~
+$ ls                // test.txt
+$ wc -l test.txt    // 93960 test.txt  => 93960 lines in test.txt
+~~~
+
+<br>
+
+2.  `split` file
+
+~~~
+$ cat test.txt | split -a3
+~~~
+
+~~~
+$ ls
+test.txt  xaaf  xaal  xaar  xaax  xabd  xabj  xabp  xabv  xacb  xach  xacn  xact  xacz  xadf  xadl
+xaaa    xaag  xaam  xaas  xaay  xabe  xabk  xabq  xabw  xacc  xaci  xaco  xacu  xada  xadg  xadm
+xaab    xaah  xaan  xaat  xaaz  xabf  xabl  xabr  xabx  xacd  xacj  xacp  xacv  xadb  xadh  xadn
+xaac    xaai  xaao  xaau  xaba  xabg  xabm  xabs  xaby  xace  xack  xacq  xacw  xadc  xadi  xado
+xaad    xaaj  xaap  xaav  xabb  xabh  xabn  xabt  xabz  xacf  xacl  xacr  xacx  xadd  xadj  xadp
+xaae    xaak  xaaq  xaaw  xabc  xabi  xabo  xabu  xaca  xacg  xacm  xacs  xacy  xade  xadk
+
+$ wc -l xaaa        // 1000 xaaa => 1000 lines in a file
+~~~
+
+<br>
+3. edit it !
+
+
+4. combine files
+
+~~~
+$ cat xa* > test2.txt
+~~~
+
+5. see diff
+
+~~~
+$ wc -l test2.txt           // 93960 test2.txt
+$ diff test.txt test2.txt   //
+~~~
+
+
+
+# options
+
+~~~
+split -l 1000 filename  // per 1000 lines (default)
+split -b 1024m filename // per 1024 M byte
+~~~

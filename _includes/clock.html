@@ -1,0 +1,22 @@
+<div align="right">
+    <span id="clock"　></span>
+    <script>
+    window.onload     = () => { displayTime() };
+    var displayTime   = () => {
+        var elt = document.getElementById("clock");
+        var now = new Date();
+        elt.innerHTML = "\ \ " + now.toLocaleTimeString() + "\ \ ";
+        setTimeout(displayTime, 999);
+    };
+    </script>
+    <style>
+    #clock {
+        font: bold 14pt sans;
+        color: #FFFFFF;
+        background: #74A5BD;
+        padding: 3px;
+        border: solid black 0px;
+        border-radius: 8px;
+    }
+    </style>
+</div>

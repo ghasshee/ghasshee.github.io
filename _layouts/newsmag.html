@@ -1,0 +1,19 @@
+<meta charset="utf-8" emacsmode="-*- markdown -*-">
+<link rel="shortcut icon" href="/image/favicon.png">
+<link rel="apple-touch-icon" type="image/png" href="/image/favicon.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/image/favicon.png">
+<link rel="stylesheet" href="/dependencies/markdeep/latest/newsmag.css?">
+
+
+{% include clock.html %}
+
+{% include headep.html %}<br><br>
+<center><font size="6">{{page.title}}</font></center><br><br>
+{{ content }}<br><br>
+{% include analytics.html %}
+{% include comment.html %}
+
+
+<style class="fallback">body{visibility:hidden}</style>
+<script>markdeepOptions={tocStyle:'medium'};</script>
+<script src="/dependencies/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>

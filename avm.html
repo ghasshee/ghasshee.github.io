@@ -1,0 +1,42 @@
+---
+layout: default
+title: AVM
+categories: /avm
+permalink: /avm/
+---
+
+<div class="home">
+
+    <img src="../image/ghasshee.png" style="position: relative; width: 800px; overflow: hidden;"></img><br>
+    <h1 class="post-title"> AVM </h1><br>
+
+    Architecture be an instance of AVM which is integrated into Architectural Grobal Virtual Machine.<br><br><br>
+
+    <h2>The concept</h2><br>
+
+    Whoever defined as a person has two legs and two hands and one head?<br>
+    Some person could happen not to have two legs, but three legs. <br>
+    Joan Milo draws a picture of a person with strange legs. <br>
+    It might be a miracle that we usually have two legs.<br>
+
+    Therefore, we must be careful when we construct a house.<br>
+    It should be much more miracle one. <br>
+    This is the starting point of contemporary Architecture.<br>
+    Poles or Walls can happen to move as its dweller wants.<br>
+    This is our starting point of the view.<br><br>
+
+
+    Under Construction.<br><br><br>
+
+    <div class="grid">
+        <ul class="post-list">
+        {% for post in site.avm %}
+        <li>
+            <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+            <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+</div>

@@ -1,0 +1,102 @@
+---
+title: sshuttle
+layout: dep
+date: 2015-09-03
+---
+
+
+
+# [sshuttle](http://github.vom/apenwarr/sshuttle)
+
+<br>
+
+[sshuttle](https://github.com/apenwarr/sshuttle) is a super-easy-use VPN tool, which only require ssh server.<br>
+Written with Python.
+
+Installation
+~~~
+Macos       : brew install sshuttle
+ArchLinux   : yaourt -S sshuttle
+Ubuntu      : sudo apt install sshuttle
+~~~
+
+Definition
+~~~
+sshuttle    := SOCKS proxy of Dynamic Port forwarding (by SSH) + α
+α           := A client can use proxy without any configuration.
+~~~
+
+e.g.
+
+*************************************************************************************
+*                                                                                   *
+*                  firewall                                                         *
+*                     |             sshd:22                                         *
+*  chinese client <-------> hoge@123.456.789.000 <--------> target google(8.8.8.8)  *
+*                     |                                                             *
+*                                                                                   *
+*                                                                                   *
+*************************************************************************************
+
+It is enough if sshd is running.<br>
+Then chinese client just can connect with typing;
+~~~
+# sshuttle  -r hoge@123.456.123.456  0.0.0.0/0 --dns
+Connected.
+~~~
+
+where
+~~~
+0.0.0.0/0   : all traffic (will be forwarded to, and routed via the remote SSH host.)
+--dns       : local DNS requests be forward to the remote host as well.
+~~~
+
+
+
+<br><br><br><hr><hr><br><br><br>
+
+If you want only to access specific subnets routed over the VPN,<Br>
+Specify subnets as;
+~~~
+# sshuttle -r hoge@123.456.123.456 172.194.0.0/16 172.195.0.0/16
+~~~
+
+
+**********************************************************************************
+*                                                                                *
+*                 |                                                              *
+*   sshuttle ----------> sshd:22                                                 *
+*   client <-----------> hoge  <------------------> target(8.8.8.8               *
+*                 |                                                              *
+*                                                                                *
+**********************************************************************************
+
+
+<br><br><br><br><br><br>
+
+to see your traffic, use `iptables` like this;
+~~~
+# iptables -L -n -t nat
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination
+sshuttle-12300  all  --  0.0.0.0/0            0.0.0.0/0
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+sshuttle-12300  all  --  0.0.0.0/0            0.0.0.0/0
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination
+Chain sshuttle-12300 (2 references)
+target     prot opt source               destination
+REDIRECT   tcp  --  0.0.0.0/0            8.8.8.8       TTL match TTL != 42 redir ports 12300
+RETURN     tcp  --  0.0.0.0/0            127.0.0.0/8
+~~~
+
+@port:12300, python(sshuttle) is waiting
+~~~
+# netstat -lnp|grep 12300
+tcp        0      0 127.0.0.1:12300         0.0.0.0:*               LISTEN      5059/python
+~~~
+
+This means that except TTL=42, all packets goes to `192.168.20.153` through the sshuttle connection.

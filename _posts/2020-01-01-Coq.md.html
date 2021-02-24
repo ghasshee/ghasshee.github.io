@@ -1,0 +1,114 @@
+---
+    title: Coq
+    layout: dep
+---
+
+
+# Coq Art
+
+
+
+# SProp
+
+
+~~~
+Tesla Zhang  :  How important it is to make SProp impredicative?
+Andrej Bauer :  Impredicativity is important in math. One has to work hard to avoid it.
+                For instance, classic topology and predicative topology differ quite a bit.
+                Even something as basic as Dedekind reals suffer without impredicativity.
+Egbert Rijke :  Maybe I agree. Toposes are also impredicative.
+                The important kind of impredicativity is that Prop is a small object.
+                There’s also the kind of impredicativity where you get something small if you quantify over all types in the universe of all types.
+                Is that as important?
+Andrej Bauer :  Prop is already a universe that is closed under arbitrary products.
+                Speaking categorically, impredicativity is about internal-completeness of an internal category.
+                (BTW, just say "all types" instead of "all types in the universe of all types", as there is no such universe.)
+
+James Wood   :  How much difference is there between having impredicative SProp and having impredicative HProp?
+Tesla Zhang  :  Actually, I meant SProp by "strictly irrelevant HProp", so :/
+James Wood   :  So you mean something like SProp-squash on HProps is an equivalence? Is that a done thing?
+Tesla Zhang  :  Have you looked at Arend? They have syntactical homotopy truncation, and I guess these are easily probable
+~~~
+
+
+# How to Load Library in Coq
+
+1. compile library with `-Q` option
+~~~
+coqc -Q cpdtlib Cpdt ./cpdtlib/CpdtTactic.v
+~~~
+
+2. run coqtop with `-Q` option
+~~~
+coqtop -Q ./cpdtlib Cpdt
+~~~
+
+
+
+
+
+
+# CPDT
+
+
+## Why Coq ?
+
+There are proof assistants
+
+- ACL2
+- Coq
+- Isabelle/HOL
+- PVS
+- Twelf
+
+
+### susbset types : i.e. topos type : normal type refined by a predicate
+
+PVS << Coq
+
+### Dependent types enable certified programs without writing proof like programs
+
+???
+
+
+### De Bruijn Criterion
+
+
+~~~
+de Bruijn Criterion :
+    Some proof assistants generate proof objects
+    that can be checked independently from the System
+    by a simple program that a skeptical user can write
+~~~
+
+
+- ACL2 : ×
+- Coq : ○
+- Isabelle/HOL : ○
+- PVS : △
+- Twelf : ?
+
+
+### Automation
+
+- Twelf : ×
+- the rest : ○
+
+
+### Certified Decision Procidures
+
+e.g. proof by reflection
+
+## Why not a new DT language ?
+
+- Coq is well developped systems for tactic-based theorem provers
+- e.g. Compiler Correctness proof , the term in `proof : Prop` is not obvious and readable one.
+- in such case, automation is so useful. (Do not write proof directly.)
+
+
+## Design Pattern of proof assistants
+
+This book shouw "Design Pattern" which is accomplished with
+
+- dependently typed functions
+- custom `Ltac` decision procedures

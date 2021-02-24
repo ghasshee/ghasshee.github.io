@@ -1,0 +1,6238 @@
+---
+title: Javascript 1
+layout: journal
+---
+
+Reference
+
+* Javascript 6th Edition (O'Reilly)
+
+<br>
+
+# Introduction
+
+## e.g. Draw circles
+
+~~~js
+const CHANNELS_PER_PIXEL = 4; //rgba
+
+function drawCircle (x0, y0, radius, canvas) {
+	var x = radius;
+	var y = 0;
+	var decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
+	var imageWidth = canvas.width;
+	var imageHeight = canvas.height;
+	var context = canvas.getContext('2d');
+	var imageData = context.getImageData(0, 0, imageWidth, imageHeight);
+	var pixelData = imageData.data;
+	var makePixelIndexer = function (width) {
+		return function (i, j) {
+			var index = CHANNELS_PER_PIXEL * (j * width + i);
+			//index points to the Red channel of pixel
+			//at column i and row j calculated from top left
+			return index;
+		};
+	};
+	var pixelIndexer = makePixelIndexer(imageWidth);
+	var drawPixel = function (x, y) {
+		var idx = pixelIndexer(x,y);
+		pixelData[idx] = 255;	//red
+		pixelData[idx + 1] = 0;	//green
+		pixelData[idx + 2] = 255;//blue
+		pixelData[idx + 3] = 255;//alpha
+	};
+
+	while (x >= y) {
+		drawPixel(x + x0, y + y0);
+		drawPixel(y + x0, x + y0);
+		drawPixel(-x + x0, y + y0);
+		drawPixel(-y + x0, x + y0);
+		drawPixel(-x + x0, -y + y0);
+		drawPixel(-y + x0, -x + y0);
+		drawPixel(x + x0, -y + y0);
+		drawPixel(y + x0, -x + y0);
+		y++;
+		if (decisionOver2 <= 0) {
+			decisionOver2 += 2 * y + 1; // Change in decision criterion for y -> y+1
+		} else {
+			x--;
+			decisionOver2 += 2 * (y - x) + 1; // Change for y -> y+1, x -> x-1
+		}
+	}
+	context.putImageData(imageData, 0, 0);
+}
+~~~
+
+syntax
+:
+    - statement : 状態の変化を記述する
+    - expression : 数値演算のような何か
+    - control structure : statement
+      * e.g. for statement , if statement , while statement
+
+
+## Core Javascript
+
+~~~js
+x = null;              // Null is a special value, meaning "no value".
+ x = undefined;         // Undefined is like null.
+~~~
+
+object
+:   a collection of name/value pairs,
+    or a string to value map
+
+~~~js
+“two” = “three”
+~~~
+
+ `prototype` をかませると、
+ instance method でなく class method を定義する
+
+~~~js
+Point.prototype.r = function() {
+return Math.sqrt(
+this.x * this.x +
+this.y * this.y
+);
+};
+~~~
+
+
+
+### JS in html
+
+
+
+~~~
+<!--
+<html> 
+<head> 
+    <script src="library.js"></script>
+</head> 
+<body>
+     <p>This is a paragraph of HTML</p> 
+    <script>  </script> 
+    <p>Here is more HTML.</p> 
+</body> 
+</html>
+-->
+~~~
+
+
+
+
+~~~js
+function debug(msg) {
+    var log = document.getElementById("debuglog");
+
+    if (!log) {
+        log = document.createElement("div");
+        log.id = "debuglog";
+        log.innerHTML = "<h1>Debug Log</h1>"
+        document.body.appendChild(log);
+    }
+
+    var pre = document.createElement("pre");
+    var text = document.createTextNode(msg);
+    pre.appendChild(text);
+    log.appendChild(pre);
+    // pre.innerHTML = msg; とほぼ同じ
+}
+
+
+
+function hide(e, reflow) {
+    if (reflow) {
+        e.style.display = "none"
+    }
+    else {
+        e.style.visibilty = "hidden" ;
+    }
+}
+
+function highlight(e) {
+    if (!e.className) e.className = "hilite";
+    else e.className += "hilite";
+}
+~~~
+
+~~~
+<!--
+<html>
+<body>
+<img src="http://dimg.azurewebsites.net/320x240" width="200" height="200">
+<img src="http://dimg.azurewebsites.net/240x320" width="200" height="200">
+<img src="http://dimg.azurewebsites.net/200x200" width="200" height="200">
+<img src="http://dimg.azurewebsites.net/300x300" width="200" height="200">
+<script>
+window.onload = function() {
+    var images = document.getElementsByTagName("img");
+
+    for(var i = 0; i < images.length; i++) {
+        var image = images[i];
+        if (image.addEventListener)
+            image.addEventListener("click", hide, false);
+            // 3つ目の引数は、capturing
+        else
+            image.attachEvent("onclick", hide);
+    }
+
+    function hide(event) { event.target.style.visibility = "hidden" ;}
+};
+
+</script>
+</body>
+</html>
+-->
+~~~
+
+Capturing
+:   Root Object（HTMLだとDocumentオブジェクト）から
+    イベントが発生したオブジェクトに向かって子孫要素をたどり、
+    順にイベントハンドラに対し処理をディスパッチしていく。http://javascript.info/tutorial/bubbling-and-capturing
+
+
+~~~
+if(image.addEventListener)  // addEventListenerというメソッドが存在すれば
+~~~
+
+
+
+~~~
+function debug2(msg) {
+    var log = $("#debuglog");
+    if (log.length == 0 ) {
+        log = $("<div id='debuglog'><h1>Debug Log</h1></div>");
+        log.appendTo(document.body);
+    }
+
+    log.append($("<pre/>").text(msg));
+}
+~~~
+
+
+~~~
+<!--
+<script   src="https://code.jquery.com/jquery-2.2.3.min.js"
+    integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="   crossorigin="anonymous">
+</script>
+
+
+
+<script src="debug.js"></script>
+<script src="hide.js"></script>
+Hello
+<button onclick="hide(this,true); debug2('hide button 1');" >Hide1</button>
+<button onclick="hide(this); debug2('hide button 2');" >Hide2</button>
+World
+
+-->
+~~~
+
+
+html5 の新しい要素
+:   flash を丸々実装したようなもの
+
+    - video
+    - audio
+    - canvas
+
+
+## Javascript Loan Calculator
+
+* window.localStorage
+* xml
+  * ajax を使うとページの一部分だけを書き換える
+
+unicodes
+
+* ecma 3 : Unicode 2.1-
+* ecma 5 : Unicode 3-
+
+
+case-sensitive : distinct `small leter` and `CAPITAL LETTER`
+
+* JavaScript : case-sensitive
+* HTML  : not case-sensitive 
+
+
+
+<br>
+
+
+# Lexical Structure
+
+
+
+Whitespace, Line Breaks, and Format Control Characters
+:
+
+~~~
+'\u0009'      // tab
+'\u0020'      // white space
+'\uFEFF'      // asark
+'\u000A'      // Line Finisher  '\n'
+'\u000D'      // carriage return
+'\u2028'      // line separator
+'\u2029'      // paragraph separartor
+~~~
+
+~~~
+\r\n          // CR LF
+~~~
+
+
+
+
+category $ Cf $
+:   control the visual presentation of text
+
+    - RIGHT-TO-LEFT MARK `\u200F`
+    - LEFT-TO-RIGHT MARK `\u200E`
+    - ZERO WIDTH JOINER `\u200D`     : アラビア語の制御
+    - ZERO WIDTH NON JOINER `\u200C` : アラビア語の制御  ; 先頭には用いられない
+
+BOM
+:   deginate {big endian , little endian} in 16bit Encoding
+
+    - BOM is just '0xFEFF'
+    - if (BOM = '0xFFFE') it is wrong.
+
+Ligature
+:   string -> logo
+    http://blog.antenna.co.jp/PDFTool/archives/2006/01/23/
+
+unicode escape sequence
+:   `\uA0E9`
+
+comment
+:    `//` においては unicode は escape されない
+
+~~~
+Unicode Standization —----normalize----—> Javascript
+~~~
+
+
+## literal
+
+literal
+:   a data value that appears directly in a program
+
+~~~
+12  
+"hello world"
+ 'Hi'
+ true
+ /javascript/g       // RegExp
+i 
+null                // Absence of an object
+~~~
+
+
+
+## identifier
+
+~~~
+var $name = 'aaa'
+var _name = 'aaa'
+var na$me = 'aaa'
+
+_
+name
+ v13
+ $str
+var π = 3.14;
+var sí = true;
+~~~
+
+
+## Reserved words
+
+Reserved words
+~~~
+  break case catch continue debugger default
+delete function
+do if else in
+ false instanceof finally new for null
+return typeof switch var
+this void throw while true with try
+~~~
+
+ES5 reserved words  
+~~~
+class const enum export extends import super
+~~~
+
+ @strict reserved words  
+~~~
+implements let private public yield interface package protected static
+arguments eval
+~~~
+
+Java reserved words  : ES3 reserves all of this
+~~~
+abstract boolean byte char class const
+double enum export extends final float
+goto native implements package import private int protected interface public long short
+static super synchronized throws transient volatile
+~~~
+
+predefined global variables : you should not use
+~~~
+arguments
+Array
+Boolean
+Date
+decodeURI
+decodeURIComponent
+encodeURI
+encodeURIComponent
+Error
+eval
+EvalError
+Function
+Infinity
+isFinite
+isNaN
+JSON
+Math
+NaN
+Number
+Object
+parseFloat
+parseInt
+RangeError
+ReferenceError
+RegExp
+String
+SyntaxError
+TypeError
+undefined
+URIError
+~~~
+
+## semicolon
+
+~~~
+statement;
+statement;
+statement  // you can omit ; if statements are in different lines
+statement
+...
+statemnent // you can omit ; the end of line
+~~~
+
+~~~
+var a
+ a = 3
+ console.log(a)
+// JavaScript interprets as
+// var a; a = 3; console.log(a);
+~~~
+
+~~~
+var y = x + f
+ (a+b).toString()
+// Javascript interprets as
+// var y = x + f(a+b).toString();
+~~~
+
+semicolon に関する例外 
+:   `break` , `return` , `continue`
+
+~~~
+return
+ true;
+
+// Javascript interprets the code like
+return; true;
+~~~
+
+
+~~~
+var x = 0
+;[x,x+1,x+2].forEach(function(y){console.log(y)})   // Defensive ; keeps this statement separate
+~~~
+
+
+<br>
+
+# Types, Values, and Variables
+
+
+~~~
+variable -> value
+lval     =  rval
+~~~
+
+
+### types 
+
+primitive type 
+    - numbers
+    - strings
+    - booleans
+    - null , undefined
+
+object
+    - unordered collection
+    - type any value can be the sole member of its own special type
+
+special objects
+    - array : ordered collectino
+    - function
+        - constructor
+        - class : subtype of constructor
+
+class
+    - Array class  
+    - Date class
+    - RegExp class
+    - Error class
+
+javascript has gabage collection (GC)
+
+
+~~~
+type
+  +--primitive
+  +--object
+
+type
+  +--with method type : all but below
+  +--without method type : null, undefined
+
+type
+  +-- mutable   : objects, array
+  +-- immutable : numbers, booleans, string, null, undefined
+~~~
+
+
+### variables
+
+ variables
+:   $ untyped $
+
+    - variable is declared by “var” keyword .
+    - Javascript uses “lexical scoping”
+        - lexical scoping : variable defined outside of function is global
+            - lex : 字句
+
+## Numbers
+
+- no distinction between `Integer` and `Float`
+- the 64-bit floating-point format defined by the IEEE 754 standard
+- covering $ \quad \pm 1.7976931348623157 \times 10^{308} $
+- integers are exact only in `−9007199254740992` ( $ −2^{53} $ ) and `9007199254740992` ( $ 2^{53} $ )
+
+- $ 2^53 $ 以上のInteger においては厳密さに欠ける
+
+e.g.
+~~~
+- 23;
+~~~
+
+- `23` : numeric literal
+- `-` : unary negative operator
+
+
+e.g.
+~~~
+0xff
+255
+0xCAFE911
+212855057
+6.023e23 : モル数
+Math.pow(2,53)     // => 9007199254740992: 2 to the power 53
+ Math.ceil(.6)      // => 1.0: round to the nearest integer
+ Math.floor(.6) // => 0.0: round down to an integer
+Math.round(.6)     // => 1.0: round up to an integer
+ Math.abs(-5)       // 5
+ Math.max(x,y,z)
+ Math.min(x,y,z)
+ Math.random()
+ Math.PI
+Math.E              // e: The base of natural logarithm
+ Math.sqrt(3)
+ Math.pow(3, 1/3)
+ Math.sin(0)
+ Math.log(10)
+ Math.log(100)
+Math.LN10           // log_10
+ Math.log(512)
+Math.LN2            // log_2
+ Math.exp(3) 
+~~~
+
+~~~
+Math.E cubed
+Math.ceil(Math.random()*100)
+Math.log(100)/Math.LN10     // 2
+Math.log(100)/Math.log(10)  // 2
+Math.LN10==Math.log(10)     // true
+~~~
+
+ operators with non-numeric operands that cannot be converted to numbers
+
+~~~
+NaN === NaN             // false
+NaN == NaN              // false
+Infinity === Infinity   // true
+
+var x = NaN             // undefined
+x != x                  // true
+isNaN(NaN)              // true
+
+isFinite(Number.MAX_VALUE) // true
+isFinite("hello")       // false
+isFinite(1/0)           // false
+~~~
+
+~~~
+-0 === 0            // true
+var zero = 0;
+var negz = -0
+zero == negz        // true
+1/zero === 1/negz   // false
+~~~
+
+
+IEEE-754 floating-point representation
+
+
+~~~
+var x = .3 - .2
+var y = .2 - .1;
+x == y              // false
+x == .1             // false
+y == .1             // true
+~~~
+
+浮動小数点で等しいかどうか比べる時には本当に注意が必要
+
+
+### ES6
+
+
+You can see Number Object details with typing;
+~~~
+Number.prototype
+~~~
+
+~~~
+Number.isSafeInteger(n) {
+    return (typeof n === 'number' && Math.round(n) === n && Number.MIN_SAFE_INTEGER <= n && n <= Number.MAX_SAFE_INTEGER);
+}
+
+Number.isSafeInteger(99999999999999999999)  // false
+Number.isSafeInteger(9999999999999)         // true
+~~~
+
+
+~~~
+Math.floor(-3.1)    // -4
+Math.ceil(-3.1)     // -3
+Math.trunc(-3.1)    // return near 0  => -3
+Math.round(-3.1)    // -3
+~~~
+
+~~~
+1.000000234 = 1.000000234(mantissa) × 100.
+~~~
+
+~~~
+log1p(x) := ln(x+1)
+~~~
+
+
+~~~
+Math.clz32(x)  // Counts the leading zero bits in the 32 bit integer x.
+
+Math.clz32(0b01000000000000000000000000000000) // 1
+Math.clz32(0b00100000000000000000000000000000) // 2
+Math.clz32(2)   // 30
+Math.clz32(1)   // 31
+~~~
+
+~~~
+Math.sinh(x)
+Math.cosh(x)
+Math.tanh(x)
+Math.asinh(x) // Computes the inverse hyperbolic sine of x.
+Math.acosh(x)
+Math.atanh(x)
+Math.hypot(...values) // Computes the square root of the sum of the squares of its arguments.
+~~~
+
+
+
+### Date Object
+
+
+~~~
+var then = new Date(2010, 0, 1); 
+var now = new Date(); 
+var elapsed = now - then;
+later.getFullYear()
+ later.getMonth()
+ later.getDate()
+ later.getDay()
+ later.getHours()
+ later.getUTCHours()
+later.toString()
+ later.toUTCString()
+ later.toLocaleDateString()
+ later.toLocaleTimeString()
+ later.toISOString()
+~~~
+
+
+~~~
+new　Date().toLocaleTimeString();
+"23:48:36"
+console.log(date.toLocaleDateString('ar-EG'));
+// → "٢٠/١٢/٢٠١٢"
+~~~
+
+
+API : application programming interface 
+
+
+###  Reference JS funstion
+
+locale関連
+
+https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+
+locale := (Language, Region)
+    - プログラミングでは言語と場所を組み合わせたものをlocaleと呼ぶ
+    - en-US : Engilish + United States
+    - en-GB : English + Great Britain
+
+
+
+
+## Text
+
+- string : immutable ordered sequence of charcters (u16-bit vals)
+- the length of a string : the number of characters (u16-bit vals)
+- javacript は char 型を持たない
+- Javascript uses UTF-16
+
+
+### string Literals
+
+
+
+code map
+:   `codepoint`  $ \mapsto $  `character`
+
+surrogate pair
+:   Unicode characters whose codepoints
+    do not fit in 16 bits
+
+~~~
+> var p = '\u03c0'		// undefined
+> p    					// π
+> p.length				// 1
+
+> var e = '\ud835\udc52'// undefined
+> e						// 𝑒
+~~~
+
+上に挙げたように、二つの codepoint が一つの文字を表す場合もある
+Javascript では charcter を単位とみなすのではなく、 だ
+
+
+#### quotations
+
+~~~
+> 'name="myform"'							// ' ' の中に、" " は入る
+> "Wouldn't you prefer O'Reilly's book?" 	 // " " の中に、' ' は入る
+> 'O\'Reilly\'s'
+"O'Reilly's"								// ' ' の中に、\' \' は入る
+~~~
+
+~~~
+<button onclick="alert('Thank you')">Click Me</button>　
+
+// conventions
+// - html : " "  を使う
+// - javascript : ' ' を使う
+~~~
+
+####  line break
+
+~~~
+> "This string\nhas two lines"
+This string
+has two lines
+> "\u03c0 is the ration of a circle's cicumferece to its diameter"
+π is the ration of a circle's cicumferece to its diameter
+~~~
+
+- ecma3 : string code must be in 1 line
+- ecma5 : string code can be in multiple lines by \
+- ecma6 : で増えたのは テンプレートリテラル : ``で囲ったもの
+- \ はstring literal に含まれまない。
+    - つまり \ はプリコンパイラあるいはマクロのようなものとして、文字列をつなげる変換がなされている、と考えられる。
+
+
+
+### Working with Strings
+
+- https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+- https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+
+
+### Excape Sequences
+
+~~~
+\0 : NUL (\u0000)
+\b : Backspace (\u0008)
+\t : Horizontal tab (\u0009)
+\n : Newline (\u000A)
+\v : Vertical tab (\u000B)
+\f : Form feed (\u000C)
+\r : Carriage return (\u000D)
+\" : "
+\' : '
+\\
+\xXX   : Latin-1 (2-hex)
+\uXXXX : Unicode (4-hex)
+~~~
+
+### RegExp : Regular Expression
+
+~~~
+> RegExp();
+/(:?)/
+~~~
+
+~~~
+var re = /(\w+)\s(\w+)/;                // RegExp /\w/ : word character
+var str = "John Smith";                 // RegExp /\s/ : space
+var newstr = str.replace(re, "$2, $1");
+console.log(newstr);  // Smith, John
+~~~
+
+~~~
+/^HTML/             			// /^HTML/
+/[1-9][0-9]*/       			// /[1-9][0-9]*/
+/\bjavascript\b/i   			// /\bjavascript\b/i
+var text = "testing: 1, 2, 3";
+var pattern = /\d+/g 			// \d : digit number
+pattern.test(text)   			// true
+text.search(pattern) 			// 9
+text.match(pattern)  			// 1,2,3
+text.replace(pattern, "#");  	// testing: #, #, #
+text.split(/\D+/);   			// \D : Non-digit number
+,1,2,3
+text.split(/\d+/);
+testing: ,, ,, ,
+~~~
+
+
+
+
+
+## Boolean Values
+
+any javascript value can be converted to a boolean value
+
+falsy values : converted into false
+~~~
+undefined
+null
+0
+-0
+NaN
+""
+~~~
+
+truthy values
+~~~
+otherwise
+~~~
+
+
+you can write
+~~~
+if (o !== null) ...
+if (o)          // less strict : o is not false / falsy value
+~~~
+
+Boolean values have only useful method `toString()`
+
+
+## null / undefined
+
+### `null`
+
+~~~
+typeof(null)
+"object"
+~~~
+
+
+
+### `undefined` :
+
+- the value of variables that have not been initialized
+- the value you get when you query the value of an object property or array element that does not exist.
+- the value returned by function which does not have return value.
+- the value of function parameters for which no argument is supplied.
+
+~~~
+> function a(aa, bb){
+      console.log("aa is : " + aa);
+  }
+undefined
+> a();
+undefined
+undefined
+~~~
+
+`undefined`
+:   a predefined global variable.
+
+    - ES3 : undefined is a read/write variable
+    - ES5 : undefined is read-only
+
+~~~
+> typeof(undefined)
+"undefined"
+~~~
+
+### `null` and `undefined`
+
+~~~
+undefined==null       //  true
+undefined===null      //  false
+~~~
+
+
+
+## The Global Object
+
+The Global Object
+:   unique in a system
+
+    the properties of Global Object
+    :   globally defined symbols
+
+    when JS interpreter starts ,
+    it creates a new Global Obect;
+
+global properties
+:   `undefined` , `Infinity` , `NaN`
+
+    * global functions : `isNaN()` , `parseInt()` , `eval()`
+    * global constructor : `Date()` , `RegExp()` , String() , `Object()`, `Array()`
+    * global objects : Math , JSON
+
+
+global objects $ \in $ the Global Object
+
+this book has core reference section !!!
+
+
+@clientSide
+~~~
+> var global = this;
+undefined
+> global
+Window {
+    external: Object,
+    chrome: Object,
+    document: document,
+    GoogleAnalyticsObject: "ga", alreadyProcessedMarkdeep: true…
+}
+~~~
+
+
+
+## Wrapper Objects
+
+~~~
+> var s = "test";
+undefined
+> s.len = 4   // creates `new String(s)` and discard it
+4
+var t = s.len ; // creates another `new String(s)` but `s.len` is not defined yet
+undefined
+t
+undefined
+~~~
+
+
+that `new String(s)` is called "Wrapper Object"
+
+
+
+~~~
+> var s = "test"; n = 1, b = true ;
+
+> var S = new String(s);
+> var N = new Number(n);
+> var B = new Boolean(b);
+
+> S == s && B == b && N == n
+true
+~~~
+
+
+## Immutable Primitive Values & Mutable Object References
+
+Primitives are immutable
+:
+~~~
+> var s = "hello";
+undefined
+> s.toUpperCase();
+"HELLO"
+> s
+"hello"
+~~~
+
+Objects are mutable
+:
+~~~
+> var o = {x: 1};
+undefined
+> o.x = 2;
+2
+> o.y = 3;
+3
+> o
+Object {x: 2, y: 3}
+~~~
+
+~~~
+> var o = {x: 1}
+> var p = {x: 1}
+> o == p
+false
+~~~
+
+
+### compare Arrays
+
+~~~
+> var a = ['a', 'b', 'c']
+> var b = [];
+> for (var i = 0; i< a.length; i++) {
+      b[i] = a[i];
+  }
+> a == b
+false
+~~~
+
+~~~
+function equalArrays(a,b){
+    if (a.length != b.length) return false;
+    for (var i=0; i<a.length;i++)
+        if (a[i] !== b[i]) return false;
+    return true;
+}
+~~~
+
+then type ;
+~~~
+> equalArrays(a,b);
+true
+~~~
+
+
+
+#### bug
+
+~~~
+var b = {"0":1, "1":2, "2":3 , length: 3}
+undefined
+~~~
+
+#### bugFix
+
+~~~
+> function equalArrays(a, b) {
+        if (JSON.stringify(a) != JSON.stringify(b)) return false ;
+        return true;
+  }
+undefined
+> equalArrays(a,b);
+false
+~~~
+
+
+## Type conversions
+
+~~~
+> 10 + " Objects"		// "10 Objects"
+> "7" * "4"				// 28
+> var n = 1 - "x"
+> n + " object";		// "NaN object"
+~~~
+
+...
+
+see P46 (Table 3-2 @ 3.8 Type Conversion )
+
+
+
+### conversion with `==`
+
+
+#### true
+
+~~~
+null == undefined   // true
+false == 0          // true
+~~~
+
+
+#### false
+
+~~~
+// if converts null/undefined to false
+if (null)
+
+// but `==` not
+null == false		// false
+undefined == 0		// false
+~~~
+
+### explicit conversions
+
+~~~
+Number("3")     // 3
+String(false)   // "false"
+Boolean([])     // true
+Object(3)       // new Number(3)
+~~~
+
+except `null`/`undefined` has `toString()`
+
+~~~
+false.toSring() // "false"
+~~~
+
+~~~
+x = "hello"
+x + ""          // same as String(x)
++x              // same as Number(x)
+!!x             // same as Boolean(x)
+~~~
+
+~~~
+(200).toString(2);      // "11001000"
+(200).toString(8);      // "310"
+(200).toString(16);     // "c8"
+~~~
+
+
+~~~
+var n = 123456.789
+n.toFixed(0)        // "123457"
+n.toFixed(1)        // "123456.8"
+n.toFixed(2)        // "123456.79"
+n.toFixed(3)        // "123456.789"
+n.toFixed(4)        // "123456.7890"
+
+n.toExponential(1)  // "1.2e+5"
+n.toExponential(2)  // "1.23e+5"
+n.toExponential(3)  // "1.235e+5"
+n.toExponential(10) // "1.2345678900e+5"
+
+n.toPrecision(10)   // "123456.7890"
+n.toPrecision(20)   // "123456.78900000000431"
+n.toPrecision(3)    // "1.23e+5"
+~~~
+
+
+~~~
+parseInt("3 cats and 2 dogs")   // 3
+parseInt("32 cats and 2 dogs")  // 32
+parseInt("32.1 cats and 2 dogs")// 32
+parseInt("32 cats and 2 dogs")  // 32
+parseFloat("it is 3.14 meters long.")   // NaN
+parseFloat("3.14 meters long.")         // 3.14
+parseFloat(" 3.14 meters long.")        // 3.14
+parseInt("0xFF")                // 255
+parseInt("-0xff")               // -255
+parseInt(".1")                  // NaN
+parseFloat(".1")                // 0.1
+parseFloat("0.1")               // 0.1
+parseInt("0.1")                 // 0
+parseFloat("$86.09")            // NaN
+~~~
+
+
+
+### Object to Primitive Conversions
+
+#### Object to Boolean
+
+even `new Boolean(false)` is true
+
+~~~
+> if (new Boolean(false))  console.log("hello");
+hello
+~~~
+
+
+#### Object to String
+
+
+#### Object to Number
+
+
+#### `toString()`
+
+~~~
+{x:1, y:2}).toString()      		// "[object Object]"
+({x:1}).toString()          		// "[object Object]"
+[1,2,3].toString()          		// "1,2,3"
+(function(x) { f(x); }).toString()  // "function (x) { f(x); }"
+/\d+/g.toString()           		// "/\d+/g"
+(new Date()).toString()     		// "Wed Jul 13 2016 23:18:48 GMT+0900 (JST)"
+~~~
+
+
+
+#### `valueOf()`
+
+~~~
+({x:1 , y:2}).valueOf();    // Object {x: 1, y: 2}
+~~~
+
+~~~
+Object.valueOf()            // Object
+~~~
+
+Wrapper class defines `valueOf()` method
+
+
+### type conversion (object -> primitive ) step
+
+obj ==> string
+:
+    1. toString()
+    2. valueOf()
+    3. TypeError
+
+obj ==> number
+:
+    1. valueOf()
+    2. toString()
+    3. TypeError
+
+    - Array Object では valueOf() をそのまま使っても使い物にならない
+
+~~~
+1*[1,2,3]               //  NaN
+1*[1]                   //  1
+1 * parseInt("1,2,3")   //  1
+1 * parseInt([1,2,3])   //  1
+~~~
+
+
+The Date Class
+:   the only predefined with object-string /number conversion
+
+- Date Object 以外　: valueOf first
+- Date Object : toString first
+
+~~~
+var now = new Date();   // undefined
+typeof(now)             // "object"
+typeof(now + 1)         // "string"
+typeof(now - 1)         // "number"
+now == now.toString()   // true
+now > ( now -1 )        // true
+~~~
+
+
+
+
+## variable declaration
+
+~~~
+var hoge = 1;
+
+//equals to
+var hoge;   // undefined
+hoge = 1;   // ""
+~~~
+
+javascript variable can be int and the next string legally .
+
+~~~
+<script>
+    //"use strict";
+    hoge = 1;
+</script>
+~~~
+
+
+
+## Variable Scope
+
+* var でない定義は global 変数      // not strict mode
+
+### Function Scope and Hoisting
+
+block scope `{}`
+:   javascript にはない
+
+    - block scope のある言語では、変数宣言はより小さいスコープでなされる方が良い
+
+~~~
+var scope = "glocal" ;
+function f(){
+    console.log(scope);   // this is hoisting
+    var scope = "local";
+    console.log(scope);
+}
+> f();
+undefined
+local
+~~~
+
+~~~
+var scope = "global" ;
+function f(){
+    console.log(scope);
+}
+~~~
+
+~~~
+var hoge = 1;
+// hoge : (Global Object).hoge
+// hoge : nonconfugurable
+
+foo = 1;
+// foo : configurable
+~~~
+
+ - deleteできる方がよくない？
+
+
+javascript
+: normal mode
+
+- 何もなしかつ変数がまだ定義されていない : global object かつ configurable
+- mandated : placed under the rule of another coutry
+
+
+global object : global variable $ \leftrightarrow $ call object : local variable
+
+
+- lexically scoped language: the scope of a variable can be thought of as the set of source code lines for which the variable is defined.
+- lex : 字句
+- search(x) : variable resolution
+
+
+
+### SCOPE CHAIN
+
+~~~
+* object
+* object
+     * x
+...
+* object
+~~~
+
+- not x in any Object in SCOPE CHAIN -> Reference Error
+
+
+- ES3 : call object
+- ES5 : declarative environment record
+- ES6 : receiver
+
+
+
+
+
+
+
+# expression
+
+~~~
+expression ::=
+      constant value
+    | variable name
+    | expression.identifier / expression[expression]    (property access expression)
+    | {x:value,...} / [v1,v2,...]     (object / array Initializer expression)
+    | function invocation
+    | operator combination
+    | object creation expression    `new Object` / `new Point(1,2)`
+~~~
+
+## Primary Expressions
+
+### reserved words
+
+~~~
+true // constant
+false // constant
+null // constant
+this // not constant
+~~~
+
+### special global variable
+
+`undefined`
+
+
+## Objects and Array Initializer
+
+not primary expression
+
+? object/array initializer の式は毎回更新される
+
+Also, the property names in object literals may be strings rather than identifiers
+
+~~~
+p = {x: 1, y: 2}
+side = 500
+var square = {
+    "uleft" : {x : p.x, y : p.y},
+    'lright' : {x: p.x + side, y : p.y + side}
+};
+~~~
+
+
+### function invocation
+
+~~~
+var square = function(x) { return x * x; }
+~~~
+
+の右辺がfunction literal
+
+
+1. function is evaluated
+2. arguments are evaluated to make a list of arguments
+3. arguments are assigned
+4. function body executed
+
+
+- javascript の配列はいろんな要素を詰め込むことができる
+- c だと、一つの型に絞られる
+- array[中身]  : 中身はまずstring にconvert される
+
+~~~
+var hoge = { "he is Tom" : 1};  //  undefined
+hoge."he is Tom";               //  sytax error
+hoge["he is Tom"]               //  1
+~~~
+
+
+## Object Creation Expression
+
+~~~
+new Object()  // () can be omitted
+~~~
+
+evaluation of `new Object`
+:
+    1. create empty object `{}`  // オブジェクトのための領域が確保される
+    2. special function をinvoke し、`new Object` を `this` の値として、special function に渡す
+    3. special function (constructor) はそれを初期化する
+    4. 2-cases
+        - (case a) : constructor は戻り値を持たず、この `new Object` が expression の値となる // static Object
+        - (case b) : constructor が戻り値を持つ場合、それがexpression の値となり `new Object` は捨てられる。 // instance Object
+
+
+## Operator
+
+operator
+:   演算子には、右結合と左結合があります
+
+~~~
+    9      -        3
+operand operator operand
+
+        9 - 3 - 5 をどう解釈するか
+左結合　  ((9 - 3) - 5 ) = 1
+右結合　  ( 9 - (3 - 5)) = 11  --> bad
+
+    x       =        3
+operand  operator  operand
+
+    x  =  y  =  5
+    は右結合か左結合か？
+
+(x = y ) = 5    // left --> bad
+x = (y = 5 )    // right
+~~~
+
+
+### Number of Operands
+
+- unary operator  : 単項演算子
+- binary operator : 二項演算子
+- ternary operator : 三項演算子 // ? :
+
+
+~~~
+expr ::= ...
+    expr * expr
+
+
+
+     expr
+      |
+      *
+    /   \
+  expr  expr
+    |    |
+    *    *
+   / \   / \
+  e   e  e  e
+...
+
+~~~
+
+
+~~~
+compiler
+( address , value  )
+( left , right )
+( lval , rval )
+
+
+javascript
+ lval = rval
+~~~
+
+
+### operator side effect  演算子の副作用
+
+- assinment
+( increment , decrement)
+- delete
+- (function () { Foo();// if Foo has side effect  }
+
+
+## precedence
+
+- function invocation > operator
+
+## associativity
+
+~~~
+ q = (a?b:(c?d:(e?f:g)));
+
+ expr = expr + expr
+
+ x = (1*2) + (3 *4)
+~~~
+
+quotient : 商
+
+~~~
+9 % 6   //  3
+-9 % 6  //  -3
+-9 % 7  //  -2
+9 % 7   //  2
+-9 % 7  //  -2
+ 9 % 7  //  2
+6.5 % (1/3)     //  0.16666666666666702
+6.5 % (1/3)     // = 6.5 - 6.333333333 = 0.16666666666666702
+~~~
+
+
+
+- If either of its operand values is an object,it converts it to a primitive using the $ object-to-primitive $ algorithm described in §3.8.3: Date objects are converted by their `toString()` method, and all other objects are converted via `valueOf()`, if that method returns a primitive value. Most objects do not have a useful `valueOf()` method, however, so they are converted via `toString()` as well.
+- After $ object-to-primitive $ conversion,if either operand is a string, the other is converted to a string and concatenation is performed.
+- Otherwise, both operands are converted to numbers (or to `NaN`) and addition is performed.
+
+
+
+because + : left associativity
+~~~
+1 + 2 + " blind mice"; // => "3 blind mice"
+1 + (2 + " blind mice"); // => "12 blind mice"
+~~~
+
+
+incr / decrement
+
+++lval / --lval
+
+
+- post-increment
+- pre-increment
+
+~~~
+x = "hello" //  hello
+++x;        //  NaN
+~~~
+
+but
+~~~
+x = "hello" //  hello
+x = x + 1;  //  hello1
+~~~
+
+
+## bitwise operator
+
+
+bitwise operator expect `unsined int 32bit`
+
+### `&` AND
+
+小数点以下は切り捨て
+~~~
+(-1)&(1.1)  // 1
+(-1)&(1.7)  // 1
+~~~
+
+### `^` XOR
+~~~
+ ^ : XOR operator 排他的論理和
+1 ^ 1 -> 0
+0 ^ 0 -> 0
+0 ^ 1 -> 1
+1 ^ 0 -> 1
+~~~
+
+### `~` NOT
+
+~~~
+ ~  : NOT operator
+~~~
+
+### `<<` `>>` `>>>` SHIFT
+
+~~~
+<<  : 0 fill
+>>  : depending on the most left bit : 符号を格納
+>>> : 0 fill
+~~~
+
+
+## Relational Expressions
+
+### `==` `===`
+~~~
+==  : check two "values" are the same       ( equality )
+=== : check two operands are "identical"    ( strict equality )
+
+!=
+!==
+~~~
+
+~~~
+null === null
+undefined === undefined
+true === true
+false === false
+number === number  // except NaN
+string === string // if they contain the same 16bit values and locate in the same position
+object === object // if the same instance
+~~~
+
+
+~~~
+v1:T == v2:T   // if v1 === v2
+
+null == undefined
+1 == "1"
+1 == true
+0 == false
+Object == string // if toString(Object) === string
+Object == number // if valueOf(Object) === number
+~~~
+
+### Comparison Operators
+
+~~~
+"11" < "3" // true ( string )
+"11" < 3   // false ( numeric )
+"one" < 3  // false ( numeric )  NaN < 3
+~~~
+
+String.localeCompare()
+
+
+### `in` operator
+
+
+
+~~~
+var point = {x:1, y:2};
+"x" in point;           // true
+"z" in point;           // false
+"toString" in point;    // true
+
+var data = [7,8,9]
+"0" in data             // true
+1 in data               // true
+2 in data               // true
+7 in data               // false
+~~~
+
+
+
+
+### `instanceof` operator
+
+
+" prototype chain " : described in 6.2.2
+
+~~~
+o instanceof f  // refers `f.prototype` and look for o's "prototype chain"
+~~~
+
+~~~
+var d = new Date();
+d instanceof Date;   // true
+d instanceof Object; // true
+d instanceof Number; // false
+
+var a = [1,2,3];
+a instanceof Array;  // true
+a instanceof Object; // true
+a instanceof RegExp; // false
+~~~
+
+### `&&` `||` `!`
+
+### `=` : assignment
+
+~~~
+(a = b) == 0   // possible
+~~~
+
+
+~~~
+a op= b  // a = a op b
+~~~
+
+
+
+
+## `eval` Expressions
+
+~~~
+eval("3+2")
+5
+~~~
+
+`eval()` is adopted the environment where it is called
+~~~
+var y = 1;
+eval("y = 2;");     // 2
+y;                  // 2
+~~~
+
+
+~~~
+var x = 1;
+var a = eval("(function f() {return x+1;})()");
+a       // 2
+~~~
+
+
+~~~
+var geval = eval;
+var x = "global", y = "global";
+function f() {
+    var x = "local";
+    eval("x += 'changed';");
+    return x;
+}
+function g() {
+    var y = "local";
+    geval("y += 'changed';");
+    return y;
+}
+console.log(f(),x);
+console.log(g(),y);
+~~~
+
+
+~~~
+var x = "global"
+function f(){
+    var x = "local";
+    var leval = eval;
+    var nestedreturn = (function g(){
+        var x = "nested";
+        leval("x += 'changed';");
+        return x;
+    })();
+    return [x,nestedreturn];
+}
+consolo.log(f(),x);
+~~~
+
+- IE では、globaleval() の代わりに execScript() がある
+
+
+
+### `eval` in strict mode
+
+"use strict" では
+eval は　新しいローカル環境を構築して、跡を残さない。
+
+~~~
+"use strict"
+var x = 1;
+eval("var x = 2;");
+console.log(x)  // 1
+~~~
+
+
+## Miscellaneous Operators
+
+### `? :`
+
+
+### `typeof`
+
+~~~
+typeof "globalchanged"  // "string"
+typeof undefined        // "undefined"
+
+typeof null             // "object"
+
+typeof true             // "boolean"
+typeof NaN              // "number"
+~~~
+
+
+compare two object
+
+- instanceof
+- class attribute : 6.8.2
+- constructor property : 6.8.1 / 9.2.2
+
+
+#### function and callable object
+
+-> see Callable Objects section
+
+
+### `delete` operator
+
+~~~
+delete lval
+~~~
+
+~~~
+var o = { x: 1, y: 2};
+delete o.x;
+"x" in o                // false
+
+var a = [1,2,3];
+delete a[2];
+a.length                // 2
+~~~
+
+
+~~~
+var x ;
+delete x ; // false
+
+function foo(){};
+delete foo; // false
+~~~
+
+
+var o = {x:1, y:2};
+delete o.x;
+typeof o.x;
+delete o.x;
+delete o;
+delete 1;
+this.x = 1;
+delete x;
+
+
+### `void`
+
+
+### `,`  : comma operator
+
+~~~
+for(var i=0,j=10; i < j; i++,j--)
+console.log(i+j);
+~~~
+
+
+
+
+# Statements
+
+- expr : evaluated to value
+- stmt : executed to make something happen
+
+statement
+
+- expression statement : assignment / func invocation
+- decleration statement : declare value / define function
+
+javascript programs : sequence of statements
+
+
+these are statements
+
+- conditionals : `if` `switch`
+- loops : `while` , `for`
+- Jumps : `break`, `return` , `throw`
+
+
+## expression statement
+
+stmt ::=
+    expr with side effects
+
+
+~~~
+greeting = "hello" + name;
+counter++;
+delete o.x;
+alert(greeting);
+window.close();
+window.open();
+// Math.cos(x); // not stmt
+cx = Math.cos(x);
+~~~
+
+## compound statement / empty statement
+
+`{}` : statement block : combine multiple stmt into single compound stmt
+
+
+~~~
+{
+    x = Math.PI;
+    cx = Math.cos(x);
+    console.log("cos(π) = " + cx);
+}
+~~~
+
+
+stmt block has no scope !!
+
+e.g. sytax `while`
+
+~~~
+stmt ::=
+    while cond stmt
+~~~
+
+here, the inner stmt has no scope
+the while has scope .
+
+
+empty stmt
+~~~
+;
+~~~
+
+e.g.
+~~~
+for(i=0; i < a.length; a[i++]=0) ;
+~~~
+
+explicit
+~~~
+for( i = 0; i < a.length ; a[i++]=0) /* empty */ ;
+~~~
+
+
+## Declaration Statements
+
+~~~
+stmt ::=
+    var-stmt
+    function-stmt
+~~~
+
+### `var` stmt
+
+~~~
+var name_1 [ = value_1] [ ,..., name_n [= value_n]]
+~~~
+
+~~~
+var i;
+var j = 0;
+var p,q;
+var greeting = "hello" + name;
+var x = 1, y = Math.cos(2), r, theta;
+var x = 2, y = x*x;
+var x = 2,
+    f = function(x){return x*x},
+    y = f(x);
+~~~
+
+
+### `function` stmt
+
+~~~
+function name([arg [,arg [..., arg]]]){
+    stmts
+}
+~~~
+
+
+## Conditionals
+
+### `if`
+
+~~~
+stmt ::=
+    if (expr) stmt
+    if (expr) stmt else stmt
+~~~
+
+### `switch`
+
+~~~
+stmt ::=
+    switch(expr) {
+        stmts
+    }
+~~~
+
+e.g.
+~~~
+switch(n){
+    case 1:
+        // some stmt
+        break;
+    case 2;
+        // some stmt
+        break;
+    default;
+        // some stmt
+        break;
+}
+~~~
+
+
+~~~
+function convert(x) {
+    switch(typeof x) {
+        case 'number':
+            return x.toString(16);
+        case 'string':
+            return '"' + x + '"';
+        default:
+            return String(x);
+    }
+}
+~~~
+
+## Loops
+
+- `while`
+- `do/while`
+- `for`
+- `for/in`
+
+### `while`
+
+#### syntax
+
+~~~
+while (expr) stmt
+~~~
+
+### `do/while`
+
+#### syntax
+
+~~~
+do stmt while (expr)
+~~~
+
+~~~
+function printArray(a) {
+    var len = a.length, i = 0;
+    if (len == 0)
+        console.log("Empty Array");
+    else
+        do
+            console.log(a[i]);
+        while (++i < len);
+}
+~~~
+
+### `for`
+
+syntax
+
+~~~
+for (init; test ; incr) stmt
+~~~
+
+equiv
+
+~~~
+init;
+while(test) {
+    stmt
+    incr;
+}
+~~~
+
+
+
+e.g. object in a list
+~~~
+function tail(o){
+    for (; o.next; o=o.next) ;
+    return o;
+}
+~~~
+
+
+### `for/in`
+
+syntax
+
+~~~
+for (variable in object) stmt
+~~~
+
+
+assign o's index into a
+~~~
+var o = {x:1, y:2, z:3}
+var a = [], i = 0;
+for(a[i++] in o) ;
+~~~
+
+~~~
+for (i in a) console.log(i);
+0
+1
+2
+~~~
+
+- all properties and methods are enumerable / except  `toString()` method
+
+- if loop body defines new object then the object won't be enumerated.
+
+#### enumeration order
+
+follow the order in which they are defined
+
+Enumeration order depends implementaion
+
+if
+
+- enum properties
+- has int array index
+- used `delete`
+- used `Object.defineProperty()` (section 6.7)
+
+
+
+## Jumps
+
+- `break`
+- `continue`
+- `throw`  with `try/catch/finally` stmt
+- `return`
+
+### `break`
+
+
+syntax
+~~~
+break;
+~~~
+
+~~~
+labelname: stmt
+...
+break labelname;
+~~~
+
+### `continue`
+
+
+syntax
+
+~~~
+continue;
+~~~
+
+~~~
+continue labelname;
+~~~
+
+continue in loop
+
+- while : jump to expr
+- do / while : jump to expr
+- for : jump to incr;
+- for / in : jump to next var
+
+~~~
+for (i=0; i < data.length; i++){
+    if (!data[i]) continue;
+    total += data[i];
+}
+~~~
+
+### `return`
+
+~~~
+return expr;
+~~~
+
+### throw
+
+~~~
+throw expr;
+~~~
+
+### `try/catch/finally`
+
+~~~
+try{
+    // you can
+    throw err ;
+    // anywhere in try clause
+} catch (e) {
+
+} finally {
+
+}
+~~~
+
+
+funny try/finally clause
+~~~
+for (init; test; incr) stmt
+
+// equals
+
+init; while(test) try stmt finally incr
+~~~
+
+
+## Miscellaneous Statements
+
+
+
+### `with`
+
+syntax
+~~~
+with (object)
+    stmt
+~~~
+
+
+
+~~~
+documnet.forms[0].name.value = "";
+documnet.forms[0].address.value = "";
+documnet.forms[0].email.value = "";
+~~~
+
+equals
+
+~~~
+with(document.forms[0]){
+    name.value = "";
+    address.value = "";
+    email.value = "";
+}
+~~~
+
+
+another way
+
+~~~
+var f = domuments.forms[0];
+f.name.value = "";
+f. ...
+f. ...
+~~~
+
+#### note
+
+~~~
+with(o) x = 1;
+~~~
+
+- if `o` has `x`  -> `o.x = 1`
+- else            -> `x = 1`
+
+`with` do not create new object !!
+
+
+
+### `debugger`
+
+put `debugger` where you want debug
+~~~
+function f(o) {
+    if (o === undefined) debegger;
+    // ...
+}
+~~~
+
+
+Firefox has Firebug
+
+### `use strict `
+
+`use strict` is a $ directive $ , not $ stmt $
+
+- provides `strict code`
+
+#### diff between $ directive $ and $ statement $
+
+$ directive $ : an expression statement
+
+- consists of a special string literal
+- ecma5 see an expression statement as having some side effect.
+- Future version : use `use` keyword without quotations
+
+`"use script"` : only put in
+
+- start of a script
+- start of a function body
+
+but in function
+~~~
+function() {
+    stmt // regular stmt : no side effect
+    "use strict"
+    stmt // has side effect
+}
+~~~
+
+this is possible
+
+
+
+the code passed to `eval()` is strict
+
+- if called from strict code
+- if the code includes "use strict"
+
+
+#### strict mode
+
+strict code is executed in $ strict mode $
+
+$ strict mode $
+
+- `with` stmt is not allowed
+- variables must be declared (RefError is thrown)
+- no-method function invoked has `this` value of `undefined`
+
+~~~
+var hasStrictMode = (function() {"use strict"; return this===undefined}());         // true
+~~~
+
+- `call()` , `apply()` invocating function has `this` value of the first argument
+- assignments to non-writable properties and throw a `TypeError`
+- creating new property on non-extensible object throw a `TypeError`
+- code passed to `eval()` is also strict
+    - cannot define lvals as caller's scope
+    - it creates new scope and discard at `eval()` returns
+- the `arguments` object in a function holds a static copy.
+- if the `delete` operator is followed by an unqualified indentifier, it throws `SyntaxError`.
+- delete nonconfigurable property throw `TypeError`
+- `SyntaxError` if object define two property by the same name.
+- `SyntaxError`  if function declaration have 2 parameters with the same name.
+- octal integer literals starting with `0` not allowed
+- `eval` and `arguments` are treated as keyword
+- the ability to examine the call stack is restricted
+    - `arguments.caller` / `arguments.callee` throw a `TypeError` in strict mode function
+    - strict mode functions have `caller` / `arguments` throwing `TypeError`.
+
+
+## Summary
+
+| statement | Syntax | Porpose |
+| :--- | :--- | :--- |
+| break | `break [label]` | |
+| case  | `case expr: ` | Label a stmt within `switch` |
+| continue  | `continue [label];` | |
+| debugger  | `debugger;` | |
+| default   | `default:` | Label a stmt within `switch` |
+| do/while  | `do stmt while (expr);` | |
+| empty | `;` | |
+| for   | `for(init; test; incr) stmt` | |
+| for/in | `for (var in obj) stmt` | |
+| function  | `function name([param[, ...]]){ body }` | |
+| if/else   | `if (expr) stmt1 [else stmt2]` | |
+| label     | `label: stmt`    | |
+| return    | `return [expr];` | |
+| switch    | `switch (expr) {stmt}` | Multiway branch to `case`/`default` |
+| throw     | `throw expr`  | |
+| try       | `try {stmt} [catch {handler stmt}] [finally [cleanup stmt]]` | Handle exceptions |
+| use strict| `"use strict"` | |
+| var       | `var name [ = expr ] [, ...]; ` | |
+| while     | `while (expr) stmt` | |
+| with      | `with (obj) {stmt}` | |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Objects
+
+
+object
+:   an un-ordered collection of properties
+
+    objects map strings into values
+
+~~~
+object =
+{
+    str1 : value1,
+    str2 : value2,
+    str3 : value3,
+    ...
+}
+~~~
+
+
+
+
+prototype
+:   the super object
+
+
+property attribute
+:
+    - `writable` attribute : whether the value can be set
+    - `enumerable` attribite : whether it can be called by `for/in loop iterations`
+    - `confiurable` attribute : whether it can be deleted, and whether its attributes can be changed
+
+
+object attributes
+:
+    - prototype : reference to another object
+    - class : a string storing object type
+    - extensible : whether new properties can be added
+
+
+
+
+3 object types
+:
+    - a native object :
+        - originally defined in ECMA
+            - `Array` , `function` , `Date` , `RegExp`
+    - a host object :
+        - defined by the host environments
+            - HTMLElements objects
+    - a user-defined object :
+
+
+2 property types
+:
+    - an own property : defined in this
+    - an inherited property : defined in prototype
+
+
+
+
+
+## Creating Object
+
+
+| object creation           | prototype |
+| :---:                     | :---: |
+| object literal            | `Object.prototype` |
+| `new Constructor()`       | `Constructor.prototype` |
+| `Object.create(proto)`    | `proto` |
+
+
+Object.prototype
+:   do not have prototype
+
+prototype chain
+:   (継承?)の鎖
+
+
+
+### Object Literals
+
+just write $ object literal $
+
+- property name : `identifier` or `string literal`
+- property value : expr (any)
+
+- reserved words can be used without quoting (ES5)
+- ".." : trailing comma ; > ES3 ==> ignored (IE error)
+
+
+
+
+### `new`
+
+~~~
+var o = new Object()
+var a = new Array()
+var d = new Date();
+var r = new RegExp();
+~~~
+
+
+
+
+
+### `Object.create()`
+
+
+~~~
+Object.create(prototype[, ..])
+~~~
+
+~~~
+var o1 = Object.create({x:1, y:2})
+
+var o2 = Object.create(null)
+// no inheritance ; even toString not inherited
+
+var o3 = Object.create(Object.prototype)
+// o3 is like {}
+~~~
+
+
+~~~
+function inherit(p) {
+    if (p == null) throw TypeError();
+    if (Object.create)
+        return Object.create(p);
+    var t = typeof p;
+    if (t !== "object" && t !== "function") throw TypeError();
+    function f() {};
+    f.prototype = p;
+    return new f();
+}
+~~~
+
+
+// this cannot handle null prototype
+// no 2nd arguments
+
+
+
+~~~
+var o = {x : "don't change this value"};
+
+using_library_function(inherit(o))
+~~~
+
+
+
+
+## Query / Set Properties
+
+
+### query
+
+~~~
+var title = book["main title"] // get the "main title" property of the book
+~~~
+
+
+~~~
+o["for"]   // if you access to reserved word propertyName
+~~~
+
+[expr*]
+where
+ -  expr* : evaluated to or converted to a string
+
+
+
+#### Objects As Associative Arrays
+
+these are the same
+~~~
+object.property
+object["property"]          // associative array
+~~~
+
+
+e.g.
+~~~
+var addr = "";
+for (i=0; i < 4; i++) {
+    addr += customer["address" + i ]
+}
+~~~
+
+~~~
+function addstock(portfolio, stockname, shares) {
+    portfolio[stockname] = shares;
+}
+~~~
+
+~~~
+function getvalue(portfolio) {
+    val total = 0.0;
+    for (stock in portfolio) {
+        var shares = portfolio[stock];
+        var price = getquote(stock);        // a function which look up share price
+        total += shares * price;
+    }
+    return total;
+}
+~~~
+
+
+
+### set
+
+#### Inheritance
+
+
+~~~
+var o = {}
+o.x = 1;
+var p = inherit(o);
+p.y = 2;
+var q = inherit(p);
+q.z = 3;
+var s = q.toString();
+q.x + q.y
+~~~
+
+
+~~~
+Object {z: 3}
+    z: 3
+    __proto__: Object
+        y: 2
+        __proto__: Object
+            x: 1
+            __proto__: Object
+                __defineGetter__: function __defineGetter__()
+                __defineSetter__: function __defineSetter__()
+                __lookupGetter__: function __lookupGetter__()
+                __lookupSetter__: function __lookupSetter__()
+                constructor: function Object()
+                hasOwnProperty: function hasOwnProperty()
+                isPrototypeOf: function isPrototypeOf()
+                propertyIsEnumerable: function propertyIsEnumerable()
+                toLocaleString: function toLocaleString()
+                toString: function toString()
+                valueOf: function valueOf()
+                get __proto__: function __proto__()
+                set __proto__: function __proto__()
+~~~
+
+
+
+#### override
+
+~~~
+var unitcircle = {r:1};
+var c = inherit(unitcircle);
+c.x = 1;
+c.y = 1;
+c.r = 2;                // override
+unitcircle.r;
+~~~
+
+
+if `r` is an accessor property with a setter ,
+setter method is called
+
+==> see Getters / Setters section
+
+
+
+
+#### Property Access Errors
+
+
+~~~
+var o = {};
+o.x             // undefined
+o.y.a           // TypeError Exception : undefined dont have property
+~~~
+
+let's avoid Exception with ;
+
+~~~
+if (o)
+    if (o.y) v = o.y.a
+~~~
+
+or
+
+~~~
+var v = o && o.y && o.y.a
+~~~
+
+
+because
+~~~
+true && 123         // 123
+true && "hey"       // "hey"
+true && {s:1}       // Object {s:1}
+~~~
+
+
+
+- `Object.prototype` is unchanged
+
+~~~
+Object.prototype = 0;   // unchanged (fails)
+~~~
+
+
+property assignments fails
+
+- read-only property
+    - except `defineProperty()` method configuring read-only property
+- inherited read-only property
+- not own property : not extensible property
+
+
+
+
+
+
+## `delete` Properties
+
+delete property
+
+~~~
+delete o.p;
+delete o["p"];
+~~~
+
+
+delete inherited property ==> delete @ prototype object
+
+e.g.
+
+- true
+~~~
+o = {x:1};
+delete o.x;
+delete o.x;         // do Nothing
+delete o.toString;  // do Nothing
+delete 1;           // Nonsense
+~~~
+
+
+- false
+~~~
+delete Object.prototype;    // (non-configurable property)
+
+var x = 1;
+delete this.x;              // cannot delete this property
+function f() {};
+delete this.f;
+~~~
+
+
+
+### configurable global property
+
+~~~
+this.x = 1;
+delete x;       // true
+
+//@strict mode
+delete x;       // SyntaxError
+delete this.x;  // true
+~~~
+
+
+
+
+## test Properties
+
+check with
+
+###  `in` operator
+
+~~~
+var o = {x:1}
+"x" in o ;      // true
+"y" in o ;      // false
+"toString" in o;  // true
+~~~
+
+### `hasOwnProperty()` method of an object
+
+- return `false` of inherited property
+
+~~~
+var o = { x: 1}
+o.hasOwnProperty("x");
+o.hasOwnProperty("y");
+o.hasOwnProperty("toString");      // false
+~~~
+
+### `propertyIsEnumerable()`
+
+~~~
+var o = inherit({y:2});
+o.x = 1;
+o.propertyIsEnumerable("x");    // true
+o.propertyIsEnumerable("y");    // false: inherited object
+~~~
+
+
+### `in` alternatives
+
+~~~
+var o = {x:1};
+o.x !== undefined;  // true
+o.y !== undefined;  // false
+o.toString !== undefined // true
+~~~
+
+note!
+
+~~~
+var o = {x:undefined }
+o.x !== undefined;  // false
+~~~
+
+
+
+## Enumerating Properties
+
+~~~
+var o = {x:1, y:2, z:3};
+for (p in o)
+    console.log(p);     // prints: x y z
+~~~
+
+"toString" is not printed basically because it it not enumerate
+
+
+### explicitly guard
+
+~~~
+for (p in o) {
+    if (!o.hasOwnProperty(p)) continue; // skip inherited properties
+    console.log(p);
+}
+~~~
+
+### skipping methods
+~~~
+for (p in o) {
+    if (typeof o[p] === "function") continue; // skip methods
+    console.log(p);
+}
+~~~
+
+### `merge()`
+
+~~~
+function merge(o,p) {
+    for (prop in p) {
+        if (o.hasOwnProperty[prop]) continue;
+        o[prop] = p[prop];
+    }
+    return o;
+}
+~~~
+
+### `restrict()`
+
+~~~
+/* remove properties from o which p does not have */
+
+function restrict(o,p) {
+    for (prop in o) {
+        if (!(prop in p)) delete o[prop];
+    }
+    return o;
+}
+~~~
+
+### `subtract()`
+
+~~~
+function subtract(o,p) {
+    for (prop in o) {
+        if (prop in p) delete o[prop];
+    }
+    return o;
+}
+~~~
+
+### `union()`
+
+
+~~~
+// if o & p has the same name property , o preceeds.
+function union(o,p) {return extebd(extend({},o),p)};
+~~~
+
+
+### `keys()`
+
+~~~
+/*
+ * return an array that holds the name list of enumerable own properties
+ */
+function keys(o) {
+    if (typeof o !== "object") throw TypeError();
+    var result = [];
+    for (var prop in o) {
+        if (o.hasOwnProperty(prop)) result.push(prop);
+    }
+    return result
+}
+~~~
+
+
+or use
+
+- `Object.keys()` : list of all own enumerable properties
+- `Object.getOwnPropertyNames()`   : list of all own properties
+
+
+
+
+## Getters / Setters
+
+property
+:
+    - data property : simple value
+    - accessor property : defined by `setter/getter`
+
+
+### syntax
+
+~~~
+var o = {
+    data_prop: value,
+
+    get access_prop(){},
+    set access_prop(value){}
+};
+~~~
+
+### e.g.
+
+~~~
+var p = {
+    x: 1.0,
+    y: 1.0,
+
+    // r is read & writable
+    get r() { return Math.sqrt(this.x*this.x + this.y*this.y)},
+    set r(newvalue) {
+        var oldvalue = Math.sqrt(this.x*this.x + this.y*this.y);
+        var ratio = newvalue/oldvalue;
+        this.x *= ratio;
+        this.y *= ratio;
+    },
+
+    // theta is read-only
+    get theta() {return Math.atan2(this.y, this.x);}
+}
+~~~
+
+### e.g. `random`
+
+~~~
+var random = {
+    get octet() {return Math.floor(Math.random()*256);},
+    get uint16() {return Math.floor(Math.random()*65536);},
+    get int16() {return Math.floor(Math.random()*65536)-32768;}
+}
+~~~
+
+
+
+## Property Attributes
+
+
+
+- ES3 : all properties are writable
+- ES5 : has API : property descriptor
+     - enumerable property
+     - configurable property
+
+
+- query : `Object.getOwnPropertyDescriptor(obj,prop)`
+- set : `Object.defineProperty(obj,prop, propDesc)`
+
+
+4 attributes of data property
+:   `propertyDescriptor`'s property
+
+    - `value`
+    - `writable`
+    - `enumerable`
+    - `configurable`
+
+4 attributes of accessor property
+:
+    - `get`
+    - `set`
+    - `enumerable`
+    - `configurable`
+
+### query
+
+property descriptor object
+:
+
+~~~
+> Object.getOwnPropertyDescriptor({x:1},"x" )
+
+Object {
+    value: 1,
+    writable: true,
+    enumerable: true,
+    configurable: true
+}
+~~~
+
+~~~
+> Object.getOwnPropertyDescriptor(this, "Window")
+
+Object {
+    value: function Window()
+    writable: true,
+    enumerable: false,
+    configurable: true
+}
+~~~
+
+~~~
+> Object.getOwnPropertyDescriptor(random,"octet");
+Object {
+    set: undefined,
+    enumerable: true,
+    configurable: true
+}
+
+// undefined in inherited property
+Object.getOwnPropertyDescriptor({},toString);
+undefined
+~~~
+
+
+#### query the attributes of inherited properties
+
+`Object.getPrototypeOf()`
+:
+
+~~~
+Object.getOwnPropertyDescriptor(Object.getPrototypeOf({}),"toString")
+Object {
+    writable: true,
+    enumerable: false,
+    configurable: true
+}
+~~~
+
+
+
+### set
+
+`Object.defineProperty(obj,prop,propDesc)`
+:
+
+~~~
+var o = {};
+Object.defineProperty(o, "x",
+    {
+        value: 1,
+        writable: true,
+        enumerable: false,
+        configurable: true
+    }
+    )
+
+> Object.keys(o)
+[]                  // "x" is not enumerable
+
+Object.defineProperty(o, "x", {writable: false});
+o.x = 2;            // fails silently
+
+Object.defineProperty(o, "x", {value: 3});
+o.x                 // 3
+
+Object.defineProperty(o, "x", {get: function() {return 0;}})
+o.x                 // 0
+~~~
+
+
+
+
+`Object.defineProperties(obj,{prop1: dscrptr1 [,...]})`
+:
+
+~~~
+var p = Object.defineProperties({}, {
+    x: {value:1, writable: true, enumerable: true, configurable: true},
+    y: {value:2, writable: true, enumerable: true, configurable: true},
+    r: {
+        get: function() {return Math.sqrt(this.x*this.x + this.y * this.y)},
+        enumerable: true,
+        configurable: true
+    }
+});
+~~~
+
+
+`Object.create(obj, {prop1: dscr1 [,...] })`
+:
+
+~~~
+Object.create({}, {
+    o: {value: 0, writable: false},
+    x: {value: 1, writable: true},
+    y: {value: 1, writable: true},
+    r: {get: function(){return Math.sqrt(this.x*this.x + this.y * this.y)} }
+})
+~~~
+
+
+
+if these attempts failed ,
+then throw `TypeError`
+
+
+
+- `nonwritable && configurable` ==> can change value
+- `nonconfigurable` ==> can change `writable` to `nonwritable`
+
+
+rule of throwing `TypeError`
+
+- an `object` is not `extensible` ==> you cannot add new property
+- a `property` is not `configurable` ==> cannot change `configurable` and `enumerable`
+- an `accessor property` is not `configurable` ==> cannot change `getter/setter` and cannot change it to data property
+- a `data property` is not `configurable` ==> cannot change it to an `accessor property`
+- a `data property` is not `configurable` ==> cannot change `nonwritable` to `writable`
+- a `data property` is not `configurable` and not `writable` ==> cannot change its `value`
+
+
+
+#### e.g. `extend()`
+
+~~~
+Object.defineProperty(Object.prototype, "extend", {
+    writable: true,
+    configurable: true,
+    enumerable: false,
+    value: function(o) {
+        var names = Object.getOwnPropertyNames(o);
+        for (var i=0; i < names.length; i++) {
+            if (names[i] in this) continue;
+            var desc = Object.getOwnPropertyDescriptor(o,names[i]);
+            Object.defineProperty(this, names[i], desc);
+        }
+    }
+});
+~~~
+
+
+
+### Legacy API for Getters and Setters
+
+before ES5 there are
+
+- `__lookupGetter__()`
+- `__lookupSetter__()`
+- `__defineGetter__()`
+- `__defineSetter__()`
+
+
+
+
+
+## Object Attributes
+
+object has 3 attributes
+
+- prototype
+- extensible
+- class
+
+
+### The `prototype` attribute
+
+`Object.getPrototypeOf()` : get that
+
+
+~~~
+var p = {x:1};
+var o = Object.create(p);
+p.isProtitypeOf(o)
+Object.prototype.isPrototypeOf(o)
+~~~
+
+every object has __proto__ and it is the prototype object
+~~~
+obj.__proto__    // prototype object of obj
+~~~
+
+e.g.
+~~~
+Object.create(({}).__proto__);  // create {}'s brother object
+~~~
+
+
+
+### The `class` Attribute
+
+class attribute
+:   a string that provides information about the type of the object. like;
+
+    `[object class]`  : `toString()` method returns the class
+~~~
+> this.toString();
+"[object Window]"
+~~~
+
+~~~
+function classof(o) {
+    if (o === null) return "Null";
+    if (o === undefined) return "Undefined";
+    return Object.prototype.toString.call(o).slice(8,-1);
+}
+~~~
+
+
+~~~
+classof(null)       // "Null"
+classof(1)          // "Number"
+classof("")         // "String"
+classof(false)      // "Boolean"
+classof({})         // "Object"
+classof([])         // "Array"
+classof(/./)        // "RegExp"
+classof(new Date()) // "Date"
+classof(window)     // "Window"
+
+function f() {};
+classof(new f())    // "Object"
+~~~
+
+
+
+
+### The `extensible` Attributes
+
+
+
+`Object.preventExtensions(obj)`
+:
+    - prevent Extensions
+
+    - `Object.isExtensible(obj)`
+
+
+`Object.seal(obj)`
+:
+    - prevent Extensions
+    - make no-configurrable
+    - There is no way to unseal
+
+    - `Object.isSealed()`
+
+
+`Object.freeze()`
+:
+    - prevent Extensions
+    - make no-configurrable
+    - make all of its own data read-only
+
+    - `Object.isFrozen()`
+
+
+
+~~~
+var o = Object.seal(Object.create(Object.freeze({x:1}),{y: {value:2, writable: true}}))
+~~~
+
+
+## Serializing Objects
+
+~~~
+o = {x:1, y: {z:[false,null,""]}}
+s = JSON.stringify(o);
+p = JSON.parse(s);
+~~~
+
+`JSON.stringify(obj)`
+:
+    - serialize
+    - object ==> string
+
+`JSON.parse(str)`
+:
+    - restore
+    - string ==> object
+
+
+can be serialized
+
+- objects
+- arrays
+- strings
+- finite numbers
+- `true` / `false`
+- `null`
+
+
+serialized to `null`
+
+- `NaN`
+- `Infunity` / `-Infinity`
+
+
+Date objects ==> ISO-formatted date
+
+- `(new Date()).toJSON()`
+- cannot be restored
+- `JSON.parse((new Date().toJSON()))` ==> SyntaxError
+
+
+cannot be serialized
+
+- Date object
+- Function
+- RegExp
+- Error objects
+- `undefined`
+
+
+
+
+
+
+## Object Methods
+
+Object Methos
+:   methods defined on `Object.prototype`
+
+
+### `toString()`
+
+~~~
+> var s = {x:1}.toString()
+> s
+[object Object]
+~~~
+
+Object class do nothing
+
+toString() method is active on; e.g.;
+
+- Array
+- Date
+- Function
+
+
+
+
+
+
+
+### `toLocaleString()`
+
+purpose
+:   return a localized string representation
+
+    - default: do nothing
+    - `Date` / `Number` classes are defined
+
+
+### `toJSON()`
+
+`Object.prototype` does not actually define a `toJSON()` method,
+if `toJSON()` method is defined,
+`JSON.stringify()` method returns the `toJSON` method.
+
+e.g.
+~~~
+var o = {x:1}
+JSON.stringify(o)                   // "{"x":1}"
+o.toJSON = function (){ return "hello"};
+JSON.stringify(o)                   // ""hello""
+~~~
+
+
+
+### `valueOf()`
+
+like `toString`
+but not string case
+
+e.g.
+~~~
+(new Date()).valuOf()       // 1474540023924
+~~~
+
+
+
+
+<br>
+<br>
+
+
+# Arrays
+
+Array
+:
+    - an ordered collection of values
+    - each value is called $ element $
+    - each element has $ index $ : numeric position
+    - 32-bit index ( $ 0 $ ~ $ 4294967294 $ ( $ 2^{32} - 2 $ ) )
+    - dynamic (needless to declare the size)
+    - `length` property
+    - sparse array is possible
+
+
+sparse array
+~~~
+x = [];
+x[1] = 1;
+x[100] = 100;
+x.length        // 101
+~~~
+
+
+    - specialized form of class `Object`
+    - inherit from `Array.prototype`
+
+
+
+## Creating Arrays
+
+- array literal : `a = []`
+- array constructor : `new Array()`
+
+
+~~~
+var empty = [];
+var primes = [2,3,5,7,11];
+var misc = [ 1.1, true, "a"]    // various type possible
+var base = 100
+var table = [base, base+1, base+2, base+3];
+var count = [1,,,,,6]           // [1, undefined × 4, 6]
+var a = new Array(10)           // [undefined × 10]
+var b = new Array(5,4,3,2,1, "testing")
+// [5, 4, 3, 2, 1, "testing, testing"]
+~~~
+
+
+
+## Reading and Writing Array Elements
+
+
+javascript interprets
+:
+    - numeric index ==> string index
+    - $ \quad $  `1`  $ \quad \quad \mapsto \quad \quad $ `"1"`
+
+
+Array is Object so
+
+!?
+~~~
+hogehoge = [];                  // []
+hogehoge["hoge"] = "fuga"       // "hoge" is not index but property
+hogehoge.length                 // so the length is 0
+~~~
+
+    Array | Object
+    ------|---------
+    index | property
+
+
+index is the range of "0" ~ " $ 2 ^ {32} $ "
+
+Oh my god ! there is no python syntax !!
+~~~
+a = [];
+a[-1] = -1;
+a.length;       // 0
+~~~
+
+
+## Sparce Array
+
+~~~
+var a1 = [,,,]
+var a2 = new Array(3)
+0 in a1
+0 in a2
+~~~
+
+ES5 ==> true / false
+ES6 ==> false / false ?
+
+## Array Length
+
+dangerous array length
+it's writable !!!
+~~~
+var a = [1,2,3,4,5]
+a.length = 3;       // a is now [1,2,3]
+a.length = 0;       // delete all ==> a is []
+a.length = 5;       // no longer there exists elements
+~~~
+
+
+so
+~~~
+a = [1,2,3];
+Object.defineProperty(a, "length", {writable: false});
+a.length = 0;       // a is [1,2,3]
+~~~
+
+
+## Adding and Deleting Array Elements
+
+just assign
+~~~
+a = [];
+a[0] = "zero"
+a[1] = "one"
+~~~
+
+### `push()`
+
+~~~
+a = [];
+a.push("zero");             // 1
+a.push("one","two");        // 3
+a;                          // ["zero", "one", "two"]
+~~~
+
+### `pop()`
+
+~~~
+a.pop()     // "two"
+~~~
+
+### `shift()`
+
+~~~
+a;          // ["zero", "one"]
+a.shift()   // "zero"
+a;          // ["one"]
+~~~
+
+
+### `unshift()`
+
+~~~
+a.unshift("zero");      // 2
+a;                      // ["zero", "one"]
+~~~
+
+
+### `splice()`
+
+~~~
+a               // ["zero", "one", "two", "three", "four"]
+a.splice(2,3);  // ["two", "three", "four"]
+a               // ["zero", "one"]
+~~~
+
+### `slice()`
+
+~~~
+var a = [1,2,3,4,5]
+a.slice(3,4)        // [4]
+a.slice(2)          // [3,4,5]
+a.slice(-3, -1)     // [3,4]
+~~~
+
+
+
+
+## Iterating Arrays
+
+`Object.keys(obj)` : return array of object's property name list
+
+~~~
+var keys = Object.keys(o)
+~~~
+
+
+`keys[]` / `values[]`
+
+~~~
+var keys = Object.keys(o);
+var values = []
+for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    values[i] = o[key]
+}
+~~~
+
+~~~
+for  (var i = 0, len = keys.length; i < len ; i++)
+~~~
+
+~~~
+if (!a[i])              continue;   // exclude null / undefined
+if (a[i]===undefined)   continue;   // exclude undefined
+if (!(i in a))          continue;   // this do not exclude undefined ?? ES6 ??
+if (!a.hasOwnProperty(i)) continue; // skip inherited properties
+if (String(Math.floor(Math.abs(Number(i)))) !== i) continue;        // skip if not non-negative integer
+~~~
+
+
+
+
+   -   | lval | rval
+ ------|------|------
+ Object| key  | value
+ Array | num  | value
+
+
+
+~~~
+var data = [1,2,3,4,5];
+var sumOfSquares = 0;
+data.forEach(function(x) {
+    sumOfSquares += x*x;
+})
+
+sumOfSquares
+55
+~~~
+
+
+
+
+## Multidimensional Arrays
+
+
+
+Create a multidimensional array
+~~~
+var table = new Array(10);
+for (var i = 0; i < table.length; i++)
+{
+    table[i] = new Array(10);
+}
+
+// Initialize
+for (var row = 0; row < table.length; row++) {
+    for (var col = 0; col < table[row].length; col++){
+        table[row][col] = row * col
+    }
+}
+
+
+// Use the multidimensional array
+var product = table[5][7]   // 35
+~~~
+
+
+
+
+## Array Methods
+
+if you want to see all methods
+~~~
+> Object.create(Object.getPrototypeOf(new Array))
+Array {}
+__proto__: Array[0]
+    concat: concat()
+    constructor: Array()
+    copyWithin: copyWithin()
+    entries: entries()
+    every: every()
+    fill: fill()
+    filter: filter()
+    find: find()
+    findIndex: findIndex()
+    forEach: forEach()
+    includes: includes()
+    indexOf: indexOf()
+    join: join()
+    keys: keys()
+    lastIndexOf: lastIndexOf()
+    length: 0
+    map: map()
+    pop: pop()
+    push: push()
+    reduce: reduce()
+    reduceRight: reduceRight()
+    reverse: reverse()
+    shift: shift()
+    slice: slice()
+    some: some()
+    sort: sort()
+    splice: splice()
+    toLocaleString: toLocaleString()
+    toString: toString()
+    unshift: unshift()
+    Symbol(Symbol.iterator): values()
+    Symbol(Symbol.unscopables): Object
+    __proto__: Object
+~~~
+
+
+### `join()`
+
+~~~
+var a = [1,2,3]
+a.join          // "1,2,3"
+a.join("")      // "123"
+a.join(" ")     // "1 2 3"
+
+var b = new Array(10);
+b.join("-")     // "----------" 9 hyphens
+~~~
+
+
+### `reverse()`
+
+
+### `sort()`
+
+~~~
+var a = [33,4,111,2222,55555]
+a.sort()                // Alphabetical order
+a.sort(function(a,b){return a-b})
+~~~
+
+~~~
+var a = [33,4,111,2222,55555]
+a.sort()                // Alphabetical order
+a.sort(function(a,b){ if (a == 2222 || b == 2222) return 1; return -1 })
+[2222, 111, 33, 4, 55555]
+~~~
+
+~~~
+var items = [
+  { name: 'Edward', value: 21 },
+  { name: 'Sharpe', value: 37 },
+  { name: 'And', value: 45 },
+  { name: 'The', value: -12 },
+  { name: 'Magnetic' },
+  { name: 'Zeros', value: 37 }
+];
+// sort by value
+items.sort(function (a, b) {
+  if (a.value > b.value) {
+    return 1;
+  }
+  if (a.value < b.value) {
+    return -1;
+  }
+  // a must be equal to b
+  return 0;
+});
+// sort by name
+
+items.sort(function(a, b) {
+  var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+  var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+  if (nameA < nameB) {
+    return -1;
+  }
+  if (nameA > nameB) {
+    return 1;
+  }
+
+  // names must be equal
+  return 0;
+});
+~~~
+
+### `concat()`
+
+
+~~~
+var a = [1,2,3];
+a.concat(4,5);          // [1, 2, 3, 4, 5]
+a.concat([4,5])         // [1, 2, 3, 4, 5]
+a.concat([4,5],[6,7])   // [1, 2, 3, 4, 5, 6, 7]
+a.concat(4,[5,[6,7]])   // [1, 2, 3, 4, 5, [6, 7]]
+~~~
+
+
+
+### `toString()` / `toLocalString()`
+
+
+## ES5 array method
+
+### `forEach()`
+
+### `map()`
+
+### `filter()`
+
+### `every()` / `some()`
+
+this is $ \forall $ / $ \exists $
+
+~~~
+[1,2,3].every(function(x){return x < 10;})  // true
+[1,2,3].every(function(x){return x%2 === 0})// false
+[1,2,3].some(function(x){return x < 10;})  // true
+[1,2,3].some(function(x){return x%2 === 0})// true
+~~~
+
+### `reduce()` / `reduceRight()`
+
+these are `foldl` and `foldr`
+
+~~~
+var a = [1,2,3,4,5]
+var sum = a.reduce(function(x,y){return x+y});
+~~~
+
+e.g. see 6.2 (`union`)
+~~~
+var objects = [{x:1}, {y:2}, {z:3}];
+var merged = objects.reduce(union);
+~~~
+
+
+### `indexOf()`  / `lastIndexOf()`
+
+~~~
+a = [0,1,2,3,2,1,0]
+a.indexOf(2);       // 2
+a.lastIndexOf(2);   // 4
+a.indexOf(4);       // -1 (means false)
+~~~
+
+
+
+
+
+## Array Type
+
+
+ES5
+~~~
+Array.isArray([])   // true
+Array.isArray({})   // false
+~~~
+
+no good e.g.
+~~~
+[] instanceof Array // not better for Array
+~~~
+
+
+In ES3;
+~~~
+var isArray = Function.isArray || function(o) {
+    return typeof o === "object" &&
+    Object.prototype.toString.call(o) === "[object Array]"
+}
+~~~
+
+
+## Array-Like Objects
+
+Diffs from Object
+
+- auto-updating length property
+- Setting length to a smaller value truncates the array.
+- inherit methods from Array.prototype
+- has a class attrubute of "Array"
+
+~~~
+a = [1,2,3]
+JSON.stringify(a);
+"[1,2,3]"
+a = {}
+JSON.stringify(a);
+"{}"
+~~~
+
+make array-like object
+~~~
+var a = {};
+for (var i = 0; i < 10; i++){
+    a[i] = i*i;
+}
+a.length = i;
+~~~
+
+~~~
+Array.prototype.join.call(a,"+");   // "0+1+4+9+16+25+36+49+64+81"
+Array.prototype.slice.call(a, 0)    // [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+Array.prototype.map.call(a, function(x) { return Math.sqrt(x); })   // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+~~~
+
+
+
+
+
+## Strings As Arrays
+
+
+
+### `str.charAt(n)` equals `str[n]`
+
+~~~
+var s = "test";
+s.charAt(0);    // "t"
+s[1]            // "e"
+~~~
+
+
+### filtering string
+
+~~~
+s = "Javascript";
+Array.prototype.join.call(s, " ")
+~~~
+
+~~~
+Array.prototype.filter.call(s,
+    function(x){
+        return x.match(/[^aeiou]/);
+    }).join("")
+~~~
+
+
+
+
+
+
+<br><br><br>
+
+
+
+# function
+
+- method : if a function is the property of an object
+- constructor : a special method
+- invocation context : `this` value : the object through which a function is called
+- closure : closed in scopes
+
+
+## Defining Functions
+
+- function definition expression
+    - `var f = function(){}`
+    - `var f = function g() {}`
+- function declaration statement
+    - `function f (){}`
+    - hoisted the top of the scope : enables function call before declaration
+    - not true statement :
+        - allowed only in top-level statement
+        - not allowed in `loops` / `try/catch` / `with stmt`
+
+
+
+
+e.g.
+~~~
+function printprops(o) {
+    for (var p in o)
+        console.log(p + ": " + o[p] + "\n");
+}
+// return undefined
+
+var f = function fact(x) { if (x <= 1) return 1; else return x * fact(x-1); };
+// function name is useful for recursion
+
+function hypotenuse(a,b) {
+    function square(x) {return x*x;}
+    return Math.sqrt(square(a) + square(b));
+}
+// nested
+~~~
+
+
+
+## Invoking Functions
+
+4 ways of invoking function
+
+- as function
+- as method
+- as constructor
+- indirectly (`call()` / `apply()`)
+
+
+- jQuery's `$()` is function name
+
+### Function invocation
+
+function invocation context ( not method )
+
+- not strict mode : `global object`
+- strict mode : `undefined`
+
+
+~~~
+// are you in strict mode ?
+var strict = (function() {return !this;}()) ;
+~~~
+
+
+### Method Invocation
+
+~~~
+o["m"]()    // where m is function
+f().m()     // apply m() to the return value of f()
+~~~
+
+
+Method Chaining
+
+~~~
+// Find all headers, map to their ids, convert to an array and sort them
+$(":header").map(function() { return this.id }).get().sort();
+
+
+// another example
+shape.setX(100).setY(100).setSize(50).setOUtline("red").setFill("blue").draw()
+~~~
+
+don't confuse
+
+- method chaining
+- constructor chaining
+
+
+`this` : keyword , not variable
+    - cannot assign a value to it
+
+
+### Constructor Invocation
+
+~~~
+var o = new Object();
+var o = new Object;
+~~~
+
+
+### Indirect Invocation
+
+both methods allow you to explicitly specify the `this` value for the invocation,
+
+you can invoke any function as a method of any method with
+
+- `call()`
+- `apply()`
+
+see 8.7.3
+
+
+## Function Arguments and Parameters
+
+- no check # of args
+
+
+### Optional Parameters
+
+invoked with less args
+
+~~~
+function getPropertyNames(o, /* optional */ a) {
+    if (a===undefined) a = [];
+    for (var prop in o) a.push(prop);
+    return a;
+}
+
+var a = getPropertyNames(o);
+getPropertyNames(p,a)
+~~~
+
+
+~~~
+a = a || [];                   // if (a===undefined) a = [];
+~~~
+
+### Variable-Lenth Argument Lists : `The Arguments Object`
+
+The Arguments Object : array-like object
+
+
+~~~
+function f() {
+    for (var i = 0; i< arguments.length;i++)
+            console.log(arguments[i]);
+}
+~~~
+
+~~~
+> f(1,"hello",3,2);
+1
+hello
+3
+~~~
+
+~~~
+function max() {
+    var max = Number.NEGATIVE_INFINITY;
+    for (var i = 0; i < arguments.length; i++)
+        if (arguments[i] > max) max = arguments[i];
+    return max;
+}
+~~~
+
+~~~
+> max(1,2,5,4,3)
+5
+~~~
+
+3 names of function whose arguments length can change
+
+- variadic functions
+- variable arity functions
+- varargs functions
+
+
+~~~
+function f(x) {
+    console.log(x);
+    arguments[0] = null;
+    console.log(x);
+}
+~~~
+
+~~~
+> f(9);
+9
+null
+undefined   // return value
+~~~
+
+
+#### `callee` / `caller` properties
+
+@ no Strict mode
+
+- `arguments.callee()` : the function
+- `argumetns.caller()` : the caller function
+
+~~~
+var factorial = function(x) {
+    if (x <= 1) return 1;
+    return x * arguments.callee(x-1)
+}
+~~~
+
+
+### Using Object Properties As Arguments
+
+a function with many arguments
+~~~
+function arraycopy(from, from_start, to, to_start, length){
+    // body
+}
+~~~
+
+wrap it with one arg
+~~~
+function easycopy(args){
+    arraycopy(
+        args.from,
+        args.from_start,
+        args.to,
+        args.to_start,
+        args.length)
+}
+~~~
+
+then use it
+~~~
+> var a = [1,2,3,4], b = [];
+> easycopy({from: a, to: b , length 4});
+~~~
+
+### Argument Types
+
+this section is ridiculous.
+no need to read.
+
+## Function As Values
+
+~~~
+> var o = {f: function(x){return x*x}, x: 3}
+> o.f(o.x);       // 9
+~~~
+
+~~~
+> var a = [function(x) {return x+x*x}, 20];
+> a[0](a[1]);       // 420
+~~~
+
+
+
+~~~
+var operators = {
+    add: function(x,y) {return x+y},
+    sub: function(x,y) {return x-y},
+    mul: function(x,y) {return x*y},
+    div: function(x,y) {return x/y},
+    pow: Math.pow
+}
+
+function operate2(op, operand1, operand2){
+    if (typeof operators[op] === "function"){
+        return operators[op](operand1, operand2);
+    }
+    else throw "unknown err";
+}
+~~~
+
+~~~
+var j = operate2("add", 2, 3);      // 5
+~~~
+
+### function property
+
+~~~
+f.counter = 0;
+function f() {
+    console.log("this function is called " + ++f.counter + " times.");
+}
+~~~
+
+
+~~~
+function factorial(n) {
+    if (isFinite(n) && n > 0 && n==Math.round(n)){
+        if (!(n in factorial))
+            factorial[n] = n * factorial(n-1);
+        return factorial[n]
+    }
+    else return NaN;
+}
+factorial[1] = 1;       // initialization
+~~~
+
+
+## Function As Namespaces
+
+it is sometimes useful to define a function
+simply to act as a temporary namespace in which you can define variables without polluting global variables
+
+
+~~~
+function mymodule() {
+    // Module code goes here.
+    // Any variables used by the module are local to this function
+}
+mymodule();
+
+(function(){
+    // module code goes here
+})();
+~~~
+
+
+
+e.g.
+~~~
+var extend = (function(){
+    for (var p in {toString:null}) {
+        return function extend(o) {
+            for (var i = 1; i < arguments.length; i++) {
+                var source = arguments[i];
+                for (var prop in source) o[prop] = source[prop];
+            }
+            return o;
+        };
+    }
+    return function patched_extend(o) {
+        for (var i = 1; i < arguments.length; i++) {
+            var source = arguments[i];
+            for (var prop in source) o[prop] = source[prop];
+
+            for (var j=0; j < protoprops.length; j++) {
+                prop = protoprops[j];
+                if (source.hasOwnProperty(prop)) o[prop] = source[prop];
+            }
+        }
+        return o
+    };
+
+    var protoprops = ["toString","valueOf", "constructor", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable", "toLocaleString"];
+})
+
+
+
+
+o = {x:1}                   // Object {x: 1}
+p = extend()(o,{y:2,z:3});  // Object {x: 1, y: 2, z: 3}
+~~~
+
+
+
+
+
+
+
+## Closures
+
+Javascript uses lexical scope
+
+Lexical Scope
+:
+    - the variable scope that is in effect when they are defined
+    - not variable scope that is in effect when they are invoked
+
+~~~
+var scope = "global variable";
+function checkscope() {
+    var scope = "local scope";
+    function f(){ return scope; }
+    return f();
+}
+
+checkscope();       // "local scope"
+~~~
+
+
+~~~
+var scope = "global scope";
+function checkscope() {
+    var scope = "local scope";
+    function f() { return scope;}
+    return f;
+}
+
+checkscope()();     // what happens ?
+~~~
+
+The nested function `f()` was defined under a scope chain in which the variable scope was bound to the value "local scope".
+
+so, `checkscope()()` returns `"local scope"`
+
+this is the surprising and powerful nature of closures:
+they capture the local variable bindings of the outer function within which the are defined.
+
+
+<br>
+
+~~~
+var uniqueInteger = (function() {
+    var counter = 0;
+    return function() {return counter++;};
+})();
+
+
+uniqueInteger();    // 0
+uniqueInteger();    // 1
+uniqueInteger();    // 2
+~~~
+
+Once the outer anonymous function returns, no other code can see the counter variable. the inner function has exclusive access to it .
+
+
+<br>
+
+~~~
+function counter() {
+    var n = 0;
+    return {
+        count: function() { return n++; },
+        reset: function() { n = 0; }
+    };
+}
+
+
+
+c = counter(); d = counter();
+c.count()   // 0
+c.count()   // 1
+d.count()   // 0
+d.count()   // 1
+c.reset()   // undefined
+c.count()   // 0
+d.count()   // 2
+~~~
+
+<br>
+
+property getter / setter
+
+~~~
+function counter(n) {
+    return {
+        get count()  { return n++; },   // property getter method
+        set count(m) {                  // property setter method
+            if (m >= n) n = m;
+            else throw Error("count can only be set to a larger value")
+        }
+    }
+}
+
+a = counter(1000);      // Object {}
+a.count                 // 1000
+a.count                 // 1001
+a.count                 // 1002
+a.count = 2000;         // 2000
+a.count                 // 2000
+a.count = 2000;         // Error: count can only be set to a larger value(…)
+~~~
+
+<br>
+
+e.g. make Private property
+~~~
+ function addPrivateProperty(o, name, predicate){
+     var value;
+     o[ "get" + name ] = function(){ return value; };
+     o[ "set" + name ] = function(v){
+         if (predicate && !predicate(v))
+            throw Error("set" + name + ": invalid value " + v);
+         else value = v;
+     };
+ }
+
+var o = {};
+addPrivateProperty(o,"Name",function(x){ return typeof x == "string"; });
+o.setName("Frank");
+o.getName();        // "Frank"
+~~~
+
+
+<br>
+
+~~~
+function constfunc(v) { return function(){return v;};}
+
+c = constfunc("c");
+c()                 // "c"
+c()                 // "c"
+
+var funcs = [];
+for (var i = 0; i < 10; i++) funcs[i] = constfunc(i);
+funcs[1]()    // 1
+funcs[2]()    // 2
+~~~
+
+
+<br>
+
+~~~
+function constfuncs() {
+    var funcs = [];
+    for (var i = 0; i < 10; i++) funcs[i] = function(){ return i;};
+    return funcs ;
+}
+
+var funcs = constfuncs();
+funcs[5]()                  // what does this return ?
+~~~
+
+Answer = 10 . because;
+~~~
+...
+funcs[4];        // function() {return i;}
+funcs[5];        // function() {return i;}
+funcs[6];        // function() {return i;}
+...
+~~~
+
+and `i` refers now `10`.
+
+
+
+
+#### this in closure
+
+later will see ;
+
+~~~
+var self = this, boundArgs = arguments;
+~~~
+
+e.g.
+
+~~~
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function(o /*, args */) {
+        var self = this, boundArgs = arguments;
+        var args = [], i;
+        for(i = 1; i < boundArgs.length; i++) args.push(boundArgs[i]); for(i = 0; i < arguments.length; i++) args.push(arguments[i]);
+        return self.apply(o, args); };
+}; }
+~~~
+
+
+
+
+
+
+## Function Properties, Methods, and Constructor
+
+### The length Property
+
+~~~
+function (){
+    arguments.length        // the # of args
+    arguments.callee.length // the # of args that the function expects
+}
+~~~
+
+
+
+3.g.
+~~~
+function check(args) {
+    var actual = args.length;
+    var expected = args.callee.length;
+    if (actual !== expected)
+        throw Error("Expected " + expected + "args; got " + actual);
+}
+
+function f(x,y,z) {
+    check(arguments);
+    return x + y + z;
+}
+~~~
+
+
+### The prototype Property
+
+$ \forall $ function has prototype
+
+
+### `call()` /  `apply()`
+
+`f.apply(o,args)`
+
+~~~
+f.call(o)   // invoke f() as a method of o
+f.apply(o)  // invoke f() as a method of o
+~~~
+
+behaves like;
+~~~
+o.m = f;
+o.m();
+delete o.m;
+~~~
+
+`apply` can take `array[]` as arguments
+~~~
+o = {}
+f.call(o, 1,2,3)
+f.apply(o,[1,2,3])  // takes array
+~~~
+
+~~~
+array = [12,23,3,4,5]
+Math.max(array);             // Error
+Math.max.apply(Math, array); // 23
+~~~
+
+
+
+e.g. overwrite method as verbose one
+~~~
+function trace(o,m) {
+    var original = o[m];
+    o[m] = function() {
+        console.log(new Date(), "Entering:", m);
+        var result = original.apply(this, arguments);
+        console.log(new Date(), "Exiting:", m);
+        return result;
+    };
+}
+
+> trace(Math,"max");      // undefined
+> Math.max(1,2,3);
+Wed Nov 23 2016 20:56:47 GMT+0900 (JST) "Entering:" "max"
+Wed Nov 23 2016 20:56:47 GMT+0900 (JST) "Entering:" "max"
+Wed Nov 23 2016 20:56:47 GMT+0900 (JST) "Exiting:" "max"
+Wed Nov 23 2016 20:56:47 GMT+0900 (JST) "Exiting:" "max"
+~~~
+
+
+### `bind()`
+
+1. bind a function to an object
+2. execute function
+3. delete it
+
+~~~
+function f(y) { return this.x + y}
+var o = {x:10}
+var g = f.bind(o);
+g(2);               // 3
+~~~
+
+
+
+
+#### e.g. curry - like function
+
+~~~
+var sum = function(x,y) {return x+y}
+var succ = sum.bind(null, 1);
+~~~
+
+~~~
+function f(y,z) { return this.x + y + z }
+var g = f.bind({x:1},2);
+g(3)
+~~~
+
+
+
+#### ES3 add `Function.prototype.bind`
+
+
+~~~
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (o /*,args */) {
+        var self = this, boundArgs = arguments;
+        return function() {
+            var args = [], i;
+            for(i = 1; i < boundArgs.length; i++) args.push(boundArgs[i]);
+            for(i = 0; i < boundArgs.length; i++) args.push(arguments[i]);
+            return self.apply(o, args);
+        };
+    };
+}
+~~~
+
+
+### `toString()`
+
+built-in typically returns "[native code]"
+
+### Constructor
+
+
+~~~
+var f = new Function("x", "y", "return x*y");
+~~~
+
+- `Function()` constructor allows Javascript functions to be dynamically created and compiled at runtime
+
+- `Function()` constructor parses the function body and creates a new function object each time it is called.
+
+- so do not use in loops
+
+- `Function()` do not create "lexical-scope" functions
+
+
+
+
+### Callable Objects
+
+- all functions are callable Object.
+
+- all callable Objects are not funcions.
+
+e.g.
+
+- `Window.alert()`
+- `getElementById()`
+- `RegExp Objects`
+    - typeof is sometimes bad for RegExp
+
+so, define
+~~~
+function isFunction(x) {
+    return Object.prototype.toString.call(x) === "[object Function]";
+}
+~~~
+
+
+
+## Functional Programming
+
+### `[].map()` / `[].reduce()`
+
+~~~
+var sum = function(x,y) {return x+y};
+var square = function(x) {return x*x};
+
+var data = [1,1,3,5,5,6,7,7];
+var mean = data.reduce(sum)/data.length;
+var deviations = data.map(function(x){return x-mean;});
+var stddev = Math.sqrt(deviations.map(square).reduce(sum)/(data.length-1));
+~~~
+
+
+
+#### ES3 `map()` / `reduce()`
+
+~~~
+var map = Array.prototype.map
+    ? function(a,f) {return a.map(f);}
+    : function(a,f) {
+        var results = [];
+        for (var i = 0, len = a.length; i < len; i++){
+            if (i in a) results[i] = f.call(null,a[i],i,)
+        }
+    }
+~~~
+
+~~~
+var reduce = Array.prototype.reduce
+    ? function(a,f,initial) {
+        if (arguments.length > 2) return a.reduce(f,initial);
+        else return a.reduce(f)
+    }
+    : function(a,f,initial){
+        var i = 0, len = a.length, accumulator;
+        if (arguments.length > 2) accumulator =initial;
+        else {
+            if (len == 0) throw TypeError();
+            while (i < len) {
+                if (i in a) {
+                    accumulator = a[i++];
+                    break;
+                }
+                else i++;
+            }
+            if (i == len) throw TypeError();
+        }
+        while(i < len) {
+            if (i in a)
+                accumulator = f.call(undefined, accumulator, a[i],i,a);
+            i++;
+        }
+        return accumulator;
+    }
+~~~
+
+
+### Higher-Order Functions
+
+#### `not(f)`
+
+~~~
+function not(f) {
+    return function() {
+        var result = f.apply(this, arguments);
+        return !result;
+    }
+}
+~~~
+
+~~~
+var even = function(x) {
+    return x%2 == 0;
+};
+not(even)(22);       // false
+~~~
+
+#### function `every()`
+
+~~~
+function every(f) {
+    return reduce(function(x,y){return f(x) && y})
+};
+var odd = not(even);
+[1,3,5].every(odd);  // true
+~~~
+
+
+#### `mapper`
+
+
+~~~
+function mapper(f) {
+    return function(a) { return a.map(f);};
+}
+
+mapper(Math.sin)([1,2,3]);
+[0.8414709848078965, 0.9092974268256817,
+~~~
+
+
+#### composition
+
+~~~
+function compose(f,g){
+    return function() {
+        return f.call(this,g.apply(this,arguments));
+    }
+}
+
+compose(square,sum)(2,3);
+~~~
+
+### Partial Application of Function
+
+
+~~~
+function array(a,n) { return Array.prototype.slice.call(a,n || o); }
+
+function partialLeft(f){
+    var args = arguments;
+    return function() {
+        var a = array(args,1);
+        a = a.concat(array(arguments));
+        return f.apply(this, a);
+    };
+}
+
+function partialRight(f){
+    var args = arguments;
+    return function() {
+        var a = array(arguments);
+        a = a.concat(array(args,1));
+        return f.apply(this,a);
+    };
+}
+
+function partial(f) {
+    var args = arguments;
+    return function() {
+        var a = array(args,1);
+        var i=0,j=0;
+        for (;i < a.length; i++)
+            if (a[i] === undefined) a[i] = arguments[j++];
+        a = a.concat(array(arguments,j));
+        return f.apply(this, a);
+    };
+}
+~~~
+
+~~~
+function f(x,y,z){return x*y-z;}
+partialRight(f,2)(3,4);             // 3*4-2 = 10
+partialLeft(f,2)(3,4);              // 2*3-4 = 2
+partial(f,undefined,2)(3,4);        // 3*2-4 = 2
+~~~
+
+
+
+
+### Memorization
+
+~~~
+function memorize(f) {
+    var cache = ();
+    return function() {
+        var key = arguments.length + Array.prototype.join.call(argumnentes,",");
+        if (key in cache) return cache[key];
+        else return cache[key] = f.apply(this, arguments)
+    }
+}
+~~~
+
+
+
+e.g.
+~~~
+var gcdmemo = memorize(gcd);
+gcdmemo(85,187);
+~~~
+
+
+
+
+# Classes and Modules
+
+
+javascript class
+
+- dynamically extendable  (sec. 9.4)
+- duck typing (9.5)
+
+
+## Classes and Prototypes
+
+
+class
+:   a set of objects that inherits properties from the same prototype
+
+
+`o1 = inherit(p)` : this function defines a class
+
+that is
+~~~
+o1 = inherit(p)
+o2 = inherit(p)
+o3 = inherit(p)
+...
+~~~
+
+~~~
+class p = {o1, o2, o3, ...}
+~~~
+
+
+range.js
+~~~
+function range(from, to){
+    var r = inherit(range.methods);
+    r.from =from;
+    r.to = to;
+    return r;
+}
+
+range.methods = {
+    includes: function(x) {return this.from <= x && x <= this.to; },
+    foreach: function(f) {
+        for(var x = Math.ceil(this.from); x<= this.to; x++) f(x); },
+    toString: function(){ return "(" + this.from + "..." + this.to + ")"; }
+}
+~~~
+
+e.g.
+~~~
+var r = range(5,9);
+r.includes(6);                      // true
+r.foreach(x => console.log(x));     // 5 6 7 8 9
+r.foreach((x => console.log(Math.sin(x))));
+
+ -0.9589242746631385
+ -0.27941549819892586
+  0.6569865987187891
+  0.9893582466233818
+  0.4121184852417566
+~~~
+
+
+
+
+
+
+## Classes and Constructors
+
+range2.js
+~~~
+function Range(from, to) {
+    this.from = from;
+    this.to = to;
+}
+
+Range.prototype = {
+    includes: function(x) {return this.from <= x && x <= this.to; },
+    foreach: function(f) {
+        for (var x = Math.ceil(this.from); x<= this.to; x++) f(x);
+    },
+    toString: function() {return "(" + this.from + "..." + this.to + ")";}
+}
+~~~
+
+
+e.g.
+~~~
+var r = new Range(1,3);
+r.includes(2);
+r.foreach((x => console.log(x)));  // 1 2 3
+~~~
+
+change Object definition via `__proto__`
+
+~~~
+r.__proto__.foo = "Foo!";
+var r' = new Range(5,10);   // now, Range.prototype has the property "foo"
+r'.foo                      // "Foo!"
+~~~
+
+### Constructors and Class Identity
+
+
+~~~
+r instanceof Range;     // true
+~~~
+
+
+### The constructor Property
+
+
+#### function object
+
+
+a function is an object with constructor
+
+~~~
+var F = function(){};   // a function object
+var p = F.prototype;    // the prototype of F
+var c = p.constructor;  // p's constructor
+c === F                 // true
+~~~
+
+
+## Java-Style Classes in Javascript
+
+
+Java Class
+
+- Instance fileds
+- Instance methods
+- Class fields
+- Class methods
+
+
+Javascript Class
+
+- Constructor Object : properties written in constructor are fields of the object
+- Prototype Object : the properties of this object are inherited to instance
+- Instance Object : with properties defined on the particular instance
+
+
+3 steps to define Class
+
+1. write a constructor ( define instance fields )
+2. write a prototype   ( define instance methods )
+3. define class properties on the Constructor itself
+
+ `extend()` ( see Function As Namespaces section )
+
+~~~
+function defineClass(constructor, methods , statics){
+    if (methods) extend(constructor.prototype, methods);
+    if (statics) extend(constructor, statics);
+    return constructor;
+}
+~~~
+
+e.g.
+~~~
+var SimpleRange =
+    defineClass(
+        function(f,t) {this.f = f; this.t = t;},
+        {
+            includes: function(x) {return this.f <=x && x<= this.t;},
+            toString: function() {return this.f + "..." + this.t;}
+        },
+        {
+            upto: function(t) { return new SimpleRange(o,t);}
+        }
+    )
+~~~
+
+
+### class `Complex()`
+
+~~~
+function Complex(real, imaginary) {
+    if (isNaN(real) || isNaN(imaginary)) throw TypeError();
+    this.r = real;
+    this.i = imaginary;
+};
+
+// addition
+Complex.prototype.add = function(that) {
+    return new Complex(this.r + that.r, this.i + that.i);
+};
+
+// multiply
+Complex.prototype.mul = function(that) {
+    return new Complex(this.r*that.r - this.i*that.i , this.r*that.i + that.r*this.i)
+};
+
+// magnitude
+Complex.prototype.map = function() {
+    return Math.sqrt(this.r*this.r + this.i*this.i);
+};
+
+// negative
+Complex.prototype.neg = function() { return new Complex(-this.r, -this.i)}
+
+// dual
+Complex.prototype.dual = function() { return new Complex(this.r, -this.i)}
+
+// euqality
+Complex.prototype.equals = function(that) {
+    return that != null &&
+        that.constructor === Complex &&
+        this.r === that.r && this.i === that.i;
+};
+
+
+
+Complex.prototype.ZERO = new Complex(0,0);
+Complex.ONE = new Complex(1,0);
+Complex.I = new Complex(0,1);
+
+
+
+
+Complex.prototype.toString = function() {
+    return "{" + this.r + "," + this.i + "}"; };
+
+
+Complex.parse = function(s) {
+    try {
+        var m = Complex._format.exec(s);
+        return new Complex(parseFloat(m[1]), parseFloat(m[2]));
+    } catch (x) {
+        throw new TypeError("Can't parse '" + s + "' as a complex number.");
+    }
+};
+
+Complex._format = /^\{([^,]+),([^}]+)\}$/;
+
+~~~
+
+
+~~~
+> C = Complex;
+> (new C(1,0)).add(new C(2,3))   // Complex {r: 3, i: 3}
+> (new C(1,0)).mul(new C(2,3))   // Complex {r: 2, i: 3}
+
+> (new C(1,Math.PI)).mul(new C(2,3))
+Complex {r: -7.424777960769379, i: 9.283185307179586}
+~~~
+
+
+Java :
+
+- instace field
+- instance methods
+
+are used as if they are local value
+
+Javascript :
+
+only local fields can get return value
+~~~
+Complex.prototype.toString = function() {
+    with(this) {
+        return "{" + r + "," + i + "}";
+    }
+};
+~~~
+
+Java :
+- final keyword : cannot change constant
+
+Javascript:
+- (9.6.6 / 9.8.2)
+
+
+## Augmenting Classes
+
+
+Classes are dynamical
+:   we can add methods to `String`, `Number`, ...
+
+
+Return the complex conjugate
+~~~
+Complex.prototype.conj = function() { return new Complex(this.r -this.i); };
+~~~
+
+
+It is possible to add methods to `Object.prototype`,
+making them available on all objects.
+
+
+
+
+~~~
+String.prototype.trim = String.prototype.trim || function() {
+    if (!this) return this;
+    return this.replace(/^\s+|\s+$/g, "");   // \s : space
+}
+
+
+("     Hello world   ").trim()
+"Hello world"
+~~~
+
+
+~~~
+Function.prototype.getName = function() {
+    return this.name || this.toString().match(/function\s*([^(]*)\(/ )[1];
+}
+~~~
+
+
+## Classes and Types
+
+see  classof section
+
+Class acts like Type
+
+
+### `instanceof` operator
+
+- see `instanceof` operator section
+- is `isPrototypeOf()` method
+
+
+### The constructor property
+
+~~~
+("hello").constructor  == String    // true
+("hello").constructor;              // function String() { [native code] }
+~~~
+
+
+### The Constructor Name
+
+
+
+### Duck-Typing
+
+
+
+
+## Object Oriented Techniques in Javascript
+
+### Set
+
+
+~~~
+function Set() {
+    this.values = {};
+    this.n = 0;
+    this.add.apply(this, arguments);
+}
+
+
+
+Set._v2s = function(val) {
+    switch(val) {
+        case undefined:     return 'u';
+        case null:          return 'n';
+        case true:          return 't';
+        case false:         return 'f';
+        default: switch(typeof val) {
+            case 'number': return '#' + val;
+            case 'string': return '"' + val;
+            default: return '@' + objectId(val);
+        }
+    }
+    function objectId(o) {
+        var prop = "|**objectid**|";
+        if (!o.hasOwnProperty(prop))
+            o[prop] = Set._v2s.next++;
+        return o[prop];
+    }
+};
+Set._v2s.next = 100;
+
+
+
+
+
+
+// Add each of the arguments to the set.
+Set.prototype.add = function() {
+    for (var i = 0; i < arguments.length; i++) {
+        var val = arguments[i];
+        var str = Set._v2s(val);
+        if (!this.values.hasOwnProperty(str)) {
+            this.values[str] = val;
+            this.n++;
+        }
+    }
+    return this;
+}
+
+// Remove
+Set.prototype.remove = function() {
+    for (var i = 0 ; i < arguments.length; i++) {
+        var str = Set._v2s(arguments[i]);
+        if (this.values.hasOwnProperty(str)) {
+            delete this.values[str];
+            this.n--;
+        }
+    }
+    return this;
+}
+
+// Contain
+Set.prototype.contains = function(value) {
+    return this.values.hasOwnProperty(Set._v2s(value));
+}
+
+// Size
+Set.prototype.size = function() {return this.n; };
+
+// Map
+Set.prototype.foreach = function(f, context) {
+    for (var s in this.values)
+        if (this.values.hasOwnProperty(s))
+            f.call(context, this.values[s]);
+}
+~~~
+
+
+### Borrowing Methods
+
+methods are invoked
+
+- "through"
+- "on"
+
+an object
+
+
+e.g. Set object
+
+- toArray : give definition
+- toJSON := toArray
+
+
+
+Range class borrows `equals()` from generic
+
+~~~
+Range.prototype.equals = generic.equals;
+~~~
+
+
+~~~
+var generic = {
+    toString: function() {
+        var s = '[';
+        if (this.constructor && this.constructor.name)
+            s += this.constructor.name + ": ";
+
+        var n = 0
+        for (var name in this) {
+            if (!this.hasOwnProperty(name)) continue;
+            var value = this[name];
+            if (typeof value === "function") continue;
+            if (n++) s += ", ";
+            s += name + '=' + value;
+        }
+        return s + ']';
+    },
+
+    equals: function(that) {
+        if (that == null) return false;
+        if (this.constructor !== that.constructor) return false;
+        for (var name in this) {
+            if ( name === "|**objectid**|") continue;
+            if (!this.hasOwnProperty(name)) continue;
+            if (this[name] !== that[name]) return false;   // <== what happen if that[name] does not exist ?
+        }
+        return true;
+    }
+};
+~~~
+
+
+### Private State
+
+Java(c++)'s private state in Javascript
+
+
+- private state : accesible only from internal method
+
+~ES5 (not work in ES6)
+
+~~~
+function Range(from, to) {
+    this.from = function() {return from;}
+    this.to = function() {return to;}
+}
+
+Range.prototype = {
+    constructor: Range,
+    includes: function(x) {return this.from() <= x && x <= this.to(); },
+    foreach: function(f) {
+        for(var x = Math.ceil(this.from()), max=this.to(); x <= max; x++) f(x);
+    },
+    toString: function() {return "(" + this.from() + "..." + this.to() + ")";}
+};
+~~~
+
+
+ES6
+
+~~~
+var property = Symbol();
+class Something {
+    constructor(){
+        this[property] = "test";
+    }
+}
+
+var instance = new Something();
+
+console.log(instance.property); //=> undefined, can only access with access to the Symbol
+~~~
+
+
+
+### Constructor Overloading
+
+Complex e.g.
+~~~
+Complex.polar = function(r,theta) {
+    return new Complex(r*Math.cos(theta), r*Math.sin(theta));
+};
+~~~
+
+
+e.g. overloading Set with Array-like object arguments
+~~~
+function Set() {
+    this.values = {};
+    this.n = 0;
+
+    if(arguments.length == 1 && isArrayLike(arguments[0]))
+        this.add.apply(this, arguments[0]);
+    else if (arguments.length > 0)
+        this.add.apply(this,arguments);
+}
+~~~
+
+
+## Subclass
+
+### Defining a Subclass
+
+~~~
+B.prototype = inherite(A.prototype); // Sybclass inherits from Superclass
+B.prototype.constructor = B;         // Override the ingerited constructor prop
+~~~
+
+
+a function defining subclass
+~~~
+function defineSubclass(superclass, constructor, methods, statics){
+    constructor.prototype = inherit(superclass.prototype);
+    constructor.protorype.constructor = constructor;
+    if (methods) extend(constructor.prototype, methods);
+    if (statics) extend(constructor, statics);
+    return constructor;
+}
+
+
+
+Function.prototype.extend = function(constructor, methods, statics){
+    return defineSubclass(this, constructor, methods, statics);
+}
+~~~
+
+
+
+e.g. Singleton Set
+~~~
+function SingletonSet(member) {
+    this.member = member;
+}
+
+
+SingletonSet.prototype = inherit(Set.prototype);
+
+extend(SingletonSet.prototype, {
+    constructor: SingletonSet,
+    add: function() {throw "read-only set";},
+    remove: function() {throw "read-only set";},
+    size: function() {return 1;},
+    foreach: function(f, context) {f.call(context, this.member); },
+    contains: function(x) {return x === this.member;}
+})
+
+
+
+SingletonSet.prototype.equals = function(that) {
+    return that instanceof Set && that.size()==1 && that.contains(this.member);
+}
+
+~~~
+
+
+
+### Constructor and Method Chaining
+
+
+subclass modifying little
+
+~~~
+function NonNullSet() {
+    Set.apply(this, arguments);
+}
+
+NonNullSet.prototype = inherit(Set.prototype);
+NonNullSet.prototype.constructor = NonNullTSet;
+
+NonNullSet.prototype.add = function() {
+    for (var i = 0; i < arguments.length; i++)
+        if (arguments[i] == null)
+            throw new Error ("No null!");
+    return Set.prototype.add.apply(this, arguments);
+};
+~~~
+
+
+~~~
+var StringSet = filteredSetSubclass(Set,
+    function(x) {return typeof x==="string";});
+
+var MySet = filteredSetSubclass(NonNullSet,
+    function(x) {return typeof x !== "function";})
+~~~
+
+~~~
+function filteredSetSubclass(superclass, filter) {
+    var constructor = function() {
+        superclass.apply(this, arguments); // Chains to the superclass
+    };
+    var proto = constructor.prototype = inherit(superclass.prototype); proto.constructor = constructor;
+    proto.add = function() {
+        for(var i = 0; i < arguments.length; i++) {
+            var v = arguments[i];
+            if (!filter(v)) throw("value " + v + " rejected by filter");
+        }
+        superclass.prototype.add.apply(this, arguments);
+    };
+    return constructor;
+}
+~~~
+
+
+~~~
+var NonNullSet = (function() { // Define and invoke function
+var superclass = Set; // Only specify the superclass once. return superclass.extend(
+function() { superclass.apply(this, arguments); }, // the constructor
+{
+// the methods
+add: function() {
+// Check for null or undefined arguments for(var i = 0; i < arguments.length; i++)
+if (arguments[i] == null)
+throw new Error("Can't add null or undefined");
+// Chain to the superclass to perform the actual insertion return superclass.prototype.add.apply(this, arguments);
+}
+}); }());
+~~~
+
+
+### Composition Versus Subclassing
+
+## Class in ES5
+
+skip
+
+
+## Modules
+
+skip　: 中身が空の抽象 method を持たせるだけ
+
+
+
+<br>
+
+
+# Pattern Matching with Regular Expression
+
+~~~
+var pattern = /s$/;
+var pattern = new RegExp("s$");
+~~~
+
+
+@ES5
+
+- eval : RegExp -> NewObject
+
+### Literal Characters
+
+~~~
+\0      The null charactor  \u0000
+\t      tab                 \u0009
+\n      Newline             \u000A
+\v      Vertical tab        \u000B
+\f      Form feed           \u000C
+\r      Carriage return     \u000D
+\xnn    Hexadecimal number
+\uxxxx  Unicode Charactor
+\cX     The control caractor e.g. \c] is \n
+~~~
+
+
+special characters
+~~~
+^   start
+$   end
+.   arbitrary char
+*   one or more times
++   zero or more times
+?
+=
+!
+:
+\
+/
+(
+)
+[
+]
+{
+}
+~~~
+
+`@` is not special character
+
+backslash
+~~~
+/\\/
+~~~
+
+
+### Character Classes
+
+~~~
+/[abc]/     a, b , or c
+/[^abc]/    not (a,b, or c)
+~~~
+
+~~~
+/[a-z]/
+/[a-zA-Z0-9]/
+~~~
+
+~~~
+\s      unicode whitespace
+\S      not unicode whitespace
+~~~
+
+~~~
+\w      [a-zA-Z0-9_]
+\W      [^a-zA-Z0-9_]
+~~~
+
+~~~
+[...]   any one char between the brackets
+[^...]  any one char not between the brackets
+.       any one char except \n or line terminator
+\d      [0-9]
+\D      [^0-9]
+~~~
+
+~~~
+[\b]    A literal backspace
+\b      <== ?
+~~~
+
+
+### Repetition
+
+
+how to represent 4 digits ?
+
+~~~
+/\d\d\d\d/      // silly answer !
+~~~
+
+answer
+
+~~~
+{n,m}           // repeating n~m times
+{n,}            // repeating n~ times
+{n}             // repeating n times
+?               // {0,1}
++               // {1,}
+*               // {0,}
+~~~
+
+e.g.
+~~~
+/\d{2,4}/       // 2 ~ 4 digits
+/\w{3}\d?/      // 3 char 0 or 1 digit
+/\s+java\s+/    // java with space bothsides
+/[^(]*/         // zero or more characters that are not open parenthesis `(`
+~~~
+
+
+
+~~~
+??
++?
+*?
+~~~
+
+e.g.
+~~~
+"aaa".match(/a+/);      // ["aaa"]
+"aaa".match(/a+?/);     // ["a"]
+
+"aaab".match(/a+b/)     // ["aaab"]
+"aaab".match(/a+?b/)    // ["aaab"]
+~~~
+
+
+### Alternation, Grouping, Iteration
+
+`|` :  alteration
+
+e.g.
+~~~
+/ab|cd|ef/              // ab OR cd OR ef
+/\d{3}|[a-z]{4}/        // 3_digits OR 4_numbers
+~~~
+
+~~~
+"java".match(        /java(script)?/  )     // ["java", undefined]
+"javascript".match(  /java(script)?/  )     // ["javascript", "script"]
+~~~
+
+
+~~~
+/['"][^'"]*['"]/                            // "hoge" "hoge' 'hoge" 'hoge'
+~~~
+
+
+`\1` referes 1st `()`
+~~~
+/(['"])[^'"]*\1/                            // "hoge" 'hoge'
+~~~
+
+
+`\2` refers `(fun\w*)` not `(?:[Ss]cript)`
+~~~
+r = /([Jj]ava(?:[Ss]cript)?)\sis\s(fun\w*)/
+"Java is fun".match(r)
+~~~
+
+- `()`    numbered grouping
+- `(?: )`  simply for grouping (not numbered)
+
+
+### Specifying Match Position
+
+#### `/^ $/`
+
+~~~
+/Javascript/        // find the word
+/^Javascript$/      // find the line only with single "Javascript"
+~~~
+
+
+#### `(?= )`
+
+: do only filter
+
+return "javascript" only followed by ":"
+~~~
+re = /[Jj]ava[Ss]cript(?=\:)/
+"javascript".match(re)          // null
+"javascript:".match(re)         // ["javascript"]
+~~~
+
+~~~
+^  		: the beginning of a line
+$  		: the end of a line
+\b 		: word boundary
+\B 		: not word boundary
+(?=p)	: positive lookahead assertion
+(?!p) 	: negative lookahead assertion
+~~~
+
+
+### Flags
+
+~~~
+i : case-insensitive matching
+g : global match
+m : multiline mode : ^[$] matches the beginning[end] of line or string
+~~~
+
+## String Methods for Pattern Matching
+
+String has 4 methods for pattern matching
+
+- `search()`
+- `replace()`
+- `match()`
+- `split()`
+
+~~~
+"Javascript".search(/script/i);
+~~~
+
+~~~
+text.replace(/javascript/gi, "JavaScript");
+~~~
+
+~~~
+var quote = /"([^"]*)"/g
+text.replace(quote, '"$1"');
+~~~
+
+~~~
+var url = /(\w+):\/\/([\w.]\/(\S*)/;
+var text = "Visit my blog at http://www.example.com/~david";
+var result = text.match(url);
+if (result != null) {
+	var fullurl = result[0]; 	// "http://www.example.com/~david"
+	var protocol = result[1];	// "http"
+	var host = result[2];		// "www.example.com"
+	var path = result[3];		// "~david"
+}
+~~~
+
+~~~
+"123,456,789".split(",")			// ["123","456","789"]
+"1, 2, 3, 4, 5".split(/\s*,\s*/)	// ["1","2","3","4","5"]
+~~~
+
+## The RegExp Object
+
+put `\\` if you want to pass `\` into RecExp Constructor
+
+~~~
+var zipcode = new RegExp("\\d{5}"), "g");
+~~~
+
+
+### RegExp Methods
+
+- `exec()`   -> returns String
+- `test()`   -> returns Bool
+
+~~~
+var pattern = /Java/g;
+var text = "JavaScript is more fun than Java!";
+var result;
+while((result = pattern.exec(text)) != null ) {
+	alert("Matched '" + result[0] + "'" +
+		  " at position " + result.index +
+		  "; next serach begins at " + pattern.lastIndex);
+}
+~~~
+
+~~~
+var pattern = /java/i;
+pattern.test("JavaScript"); 	// true
+~~~
+
+RegExp Object has lastIndexproperty.
+
+
+# JavaScript Subsets and Extensions
+
+
+
+## Javascript Subsets
+
+### The Good Parts
+
+Javascript subset for security
+by Douglax Crockford
+
+### Subsets for Security
+
+- `eval()` / `Function()` not allowed  <== enable arbitrary string code
+- `this` forbidden <== accessing global object from outside world
+- `with` often forbidden <== make code verification difficult
+- certain global variablesa are not allowed
+	- code is not allowd to refer `Window` object
+	- similary , `Document` object , controlling page content
+	- so, use DOM API
+- certain properties
+	- `caller` `callee` properties of the `Arguments` Object are forbidden
+	- `__proto__` is forbidden
+- property access operator `[]` often forbidden , use `.`
+
+
+other subsets
+
+- [ADsafe](http://adsafe.org)
+- [dojox.secure](http://www.sitepen.com/blog/2008/08/01/secure-mashups-with-dojoxsevure/)
+- [Caja](http://code.google.com/p/google-caja)
+- [FBJS](http://facebook.com)
+- [Microsoft Web Sandbox](http://websandbox.livelabs.com/)
+
+
+## Constants ..
+
+## Destructuring Assignment
+
+~~~
+let [x,y] 	= [1]			// x = 1 , y = undefined
+let [x,y] 	= [1,2,3]		// x = 1 , y = 2
+let [,x,,y] = [1,2,3,4] 	// x = 2 , y = 4
+let [x,[y,z]] = [1,[2,3],4] // x = 1 , y = 2 , z = 3
+~~~
+
+~~~
+let transparent = {r:0,g:0,b:0,a:1}
+let {r:red, g:green, b:blue} = transparent	// red = 0, green = 0, blue = 0
+~~~
+
+## Iteration
+
+## Shorthand Functions
+
+## Multiple Catch Clauses
+
+~~~
+try {
+	// multiple exception types can be thrown here
+	throw 1;
+} catch(e if e instanceof ReferenceError) {
+	// Handle reference errors here
+} catch(e if e === "quit") {
+		// Handle the thrown string "quit"
+} catch(e if typeof e === "string") {
+	// Handle any other thrown strings here
+} catch(e) {
+	// Handle anything else here
+} finally {
+	// The finally clause works as normal }
+~~~
+
+
+## E4X: ECMAScript for XML
+
+e4x : xml for
+
+- Rhino
+- Spidermonkey
+
+
+xml :
+
+- differs from DOM
+-
+
+~~~
+// Create an XML object
+var pt =
+	<periodictable>
+		<element id="1"><name>Hydrogen</name></element>
+		<element id="2"><name>Helium</name></element>
+		<element id="3"><name>Lithium</name></element>
+	</periodictable>
+
+pt.element += <element id="4"><name>Beryllium</name></element>;
+~~~
+
+or
+~~~
+pt = <periodictable></periodictable>;
+var elements = ["Hydrogen", "Helium", "Lithium"];
+for (var n = 0; n < elements.length; n++) {
+	pt.element += <element id={n+1}><name>{elements[n]}</name></elements>;
+}
+
+pt.element += new XML('<element id="5"><name>Boron</name></element>')
+pt.element += new XMLList('<element id="6"><name>Carbon</name></element>' +
+'<element id="7"><name>Nitrogen</name></element>');
+~~~
+
+
+
+
+# Server-Side JavaScript
+
+- Rhino : Java-based js interpreter
+- Node  : V8 js interpreter with low-level bindings for POSIX API
+
+
+
+## Node (Asynchronous I/O)
+
+- Node APIs are asynchronous, so
+- Node relies on event handlers
+
+
+### hello world
+
+~~~
+$ node hello.js
+~~~
+
+hello.js
+~~~
+setTimeout(()=>{console.log("Hello, Node")}, 3000);
+~~~
+
+
+load file
+~~~
+$ node
+> var fs = require('fs')
+> fs.readFile('hello.js', (e,d)=>(if (e) throw e; data = d.toString();))
+> data
+'setTimeout(()=>{console.log("hello Node")}, 3000);\n\nprocess.on("exit", ()=>{ console.log("Goodbye"); });\nprocess.on("uncaughtException", (e)=> { console.log(Exception,e); })\nprocess.on("SIGINT", ()=>{ console.log("Ignored Ctrl-C") })\n'
+> eval(data);
+hello Node
+~~~
+
+
+### process
+
+
+process object is an emitter
+
+~~~
+$ node
+> process
+...
+~~~
+
+~~~
+process.version
+process.argv
+process.env
+process.pid
+process.getuid()
+process.cwd()			// current working directory
+process.chdir()			// Change directory
+process.exit()			// Quit
+~~~
+
+
+Node's event infrastructure
+
+
+~~~
+emitter.on(eventType, handlerFunction)
+~~~
+
+~~~
+emitter.on(name, f)
+emitter.addListener(name, f)		// same as on()
+emitter.once(name, f)				// this event is called once and removed
+emitter.listeners(name)				// list of handler functions
+emitter.removeListener(name,f)
+emitter.removeAllListeners(name)
+~~~
+
+
+
+process is an emitter , so
+
+~~~
+// The "exit" event is sent before Node exits.
+process.on("exit", ()=>{ console.log("Goodbye"); });
+process.on("uncaughtException", (e)=>{ console.log(Exception,e); })
+// posix signals
+process.on("SIGINT", ()=>{ console.log("Ignored Ctrl-C") })
+process.on("SICHUP", ()=>{ })
+process.on("SIGTERM",()=>{ })
+~~~
+
+
+
+how to get stream objects for
+
+- files
+- sockets
+
+
+Input stream s
+
+~~~
+s.on("data", f);
+s.on("end", f);
+s.on("error", f);
+s.readable
+s.pause();
+s.resume();
+
+// Specify an dncoding if you want strings passed to "data" event handler
+s.setEncoding(enc);
+
+// Output stream s
+s.write(buffer)
+s.write(string, encoding)
+s.end()						// close
+s.end(buffer)				// Write final chunk of binary data and close
+s.end(string, encoding)
+s.writable;					// true if the stream is still open and writable
+s.on("drain", f) 			// Call f() when internal buffer becomes empty
+~~~
+
+"drain" event : トイレを流し終わった時に発生するイベント -> final
+
+
+### fs module
+~~~
+var fs = require("fs");
+
+// synchronously
+var text = fs.readFileSync("config.json", "utf8")
+
+// asynchronously
+fs.readFile("imagefile", (e,buf) => {
+	if (e) throw e;
+	process(buf);		// File contents are in buf
+});
+
+
+~~~
+
+
+
+
+### Buffer Object
+~~~
+var bytes = new Buffer(256);
+for (var i = 0; i < bytes.length; i++)
+	bytes[i] = i;
+
+// slice
+var end = bytes.slice(240,256);
+end[0]
+end[0] = 0;
+bytes[240]
+
+// copy subarray
+var more = new Buffer(8);
+end.copy(more, 0, 8, 16);
+more[0]
+
+//
+var buf = new Buffer("2πr", "utf8"); 	// [50,207,128,114]
+buf.length								// 3
+buf.toString()							// "2πr"
+
+buf = new Buffer(10);
+var len = buf.write("πr2",4 )
+buf.toString("utf8",4, 4+len)
+buf
+[0, 0, 0, 0, 207, 128, 114, 50, 0, 0]
+~~~
+
+
+### net module
+~~~
+#!/usr/local/bin/node
+
+var net = require('net');
+var server = net.createServer();
+server.listen(2000, ()=>{ console.log("Listening on port 2000") });
+server.on("connection",
+    (s)=>{
+	    console.log("Accepting connection from", s.remoteAddress);
+	    s.on("data",(d)=>{ s.write(d) });
+	    s.on("end", (d)=>{ console.log("Connection closed") });
+});
+~~~
+
+
+## e.g.
+
+httpserver
+~~~
+#!/usr/local/bin/node
+
+var http = require('http');
+var fs = require('fs');
+
+var server = new http.Server();
+server.listen(80);
+
+server.on("request", (request, response) => {
+    var url = require('url').parse(request.url);
+
+    if (url.pathname === "/test/delay" ){
+            var delay = parseInt(url.query) || 2000 ;    // 2000 milliseconds
+            response.writeHead(200, {"Content-Type": "text/plain; charset=UTF-8"});
+            response.write("Sleeping for " + delay + " milliseconds...");
+            setTimeout( ()=>{ response.write("done."); response.end(); }, delay );
+
+    } else if (url.pathname === "/test/mirror"){
+            response.writeHead(200, {"Content-Type": "text/plain; charset=UTF-8"});
+            response.write(request.method + " " + request.url + " HTTP/" + request.httpVersion + "\r\n");
+            for (var h in request.headers) response.write(h + ": " + request.headers[h] + "\r\n" );
+            response.write("\r\n");
+            request.on("data", (chunk)=>{ response.write(chunk) });
+            request.on("end",  (chunk)=>{ response.end(); });
+
+    } else {
+            var fname = url.pathname.substring(1);
+            var type;
+            switch(fname.substring(fname.lastIndexOf(".")+1)){
+                case "html":
+                case "htm":         type = "text/html; charset=UTF-8"; break;
+                case "js":          type = "application/javascript; charset=UTF-8"; break;
+                case "css":         type = "text/css; charset=UTF-8"; break;
+                case "txt":         type = "text/plain; charset=UTF-8"; break;
+                case "manifest":    type = "text/cache-manifest; charset=UTF-8"; break;
+                default:            type = "application/octet-stream"; break;
+            }
+            fs.readFile(fname, (e,content)=>{
+                if (e) {
+                    response.writeHead(404, {"Content-Type": "text/plain; charset=UTF-8"});
+                    response.write(e.message);
+                    response.end();
+                } else {
+                    response.writeHead(200, {"Content-Type": type});
+                    response.write(content);
+                    response.end();
+                }
+            })
+    }
+})
+~~~
+
+copy
+~~~
+function fileCopy(filename1, filename2, done) {
+	var input = fs.createReadStream(filename1);
+	var output = fs.createWriteStream(filename2);
+
+	input.on("data", (d) => { output.write(d); });
+	input.on("error",(e) => { throw e; });
+	input.on("end",  ( ) => { output.end(); if(done) done();})
+}
+~~~
+
+list
+~~~
+#!/usr/local/bin/node
+
+var fs = require("fs"), path = require("path");
+var dir = process.cwd();
+if (process.argv.length > 2) dir = process.argv[2];
+var files = fs.readdirSync(dir);
+var len = files.length - 1;
+var maxtab = 1;
+
+var rec = (n) => {
+    var fname = files.shift();
+    if (fname == undefined ) return;
+    var fullname = path.join(dir,fname);
+    var stats = fs.statSync(fullname);
+    if (stats.isDirectory()) fname += "/";
+    var strlen = fname.length
+    var quotient = Math.floor(strlen/8)
+    var remainder = strlen%8
+    maxtab = maxtab < quotient ? quotient : maxtab
+    var tab   = (n) => { return n==0 ? "\t" : tab(n-1)+"\t" }
+    var space = (n) => { return n==0 ? " " : space(n-1)+" " }
+    rec(n+1);
+    n == len ? process.stdout.write( "Name" + tab(maxtab) + "Size\tDate\n" ) : ( () => {} )();
+    process.stdout.write( fname + tab(maxtab - quotient) + stats.size + "\t" + stats.mtime + "\n" );
+};
+rec(0);
+~~~

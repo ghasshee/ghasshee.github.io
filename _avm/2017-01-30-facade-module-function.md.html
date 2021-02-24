@@ -1,0 +1,104 @@
+---
+title: Facade Functions
+layout: newsmag
+---
+
+
+# Mathematical Equations
+
+## Chair on Cliff
+
+we can define "the surface of a particular chair" $ S $ formally;
+
+$$ S := \{ (x,y,z) ; z = (x^2 + y^2 - 1)(x+y) \land x,y,z \in [-2,2] \} $$
+
+![](/image/gnuplot/chair_surface.png width=600)
+
+
+~~~
+$ gnuplot
+
+> set terminal qt
+> set contour
+> set xrange[-2:2]
+> set yrange[-2:2]
+> set zrange[-2:2]
+> set samples 50
+> set isosamples 51
+> splot (x**2+y**2-1)*(x+y)
+~~~
+
+on $ y = x $, we get;
+
+$$ z  = 4x(x-0.707)(x+0.707) $$
+$$ z' = 12x(x-0.408)(x+0.408) $$
+
+![](/image/gnuplot/chair_section.png width=600)
+
+~~~
+> plot 4*x**3 - 2*x
+~~~
+
+<br>
+
+## Schwartz's P Surface
+
+Schwartz's P surface is a 2-manifold whose homology is isomorphic to $ \mathbb{Z} ^ \infty $ .
+
+Schwartz's P surface equation is simple .
+
+$$ \cos(x) + \cos(y) + \cos(z) = 0 $$
+
+This is actually a function with $ \infty $ floors
+
+with 3 floors
+
+![](/image/gnuplot/3_membranes.png width=600)
+![](/image/gnuplot/3_membranes_side_2.png width=600)
+![](/image/gnuplot/3_membranes_top.png width=600)
+
+~~~
+$ gnuplot
+> set terminal qt
+> set xrange [0:8]
+> set yrange [0:8]
+> set zrange [-pi:2*pi]
+> set contour               // show zeropoints and so on
+> set samples 200
+> set isosamples 201
+> splot acos(cos(x)+cos(y))-pi,acos(-cos(x)-cos(y)),acos(cos(x)+cos(y))+pi
+~~~
+
+
+with 2 floors
+
+![](/image/gnuplot/2_membranes_side.png width=600)
+![](/image/gnuplot/2_membranes_top.png width=600)
+
+with 1 floor
+
+![](/image/gnuplot/P_schwartz.png width=600)
+
+~~~
+$ gnuplot
+> set terminal qt
+> set xrange [0:10]
+> set yrange [0:10]
+> set samples 100
+> set isosamples 100
+> set pm3d ; set palette rgb 23,28,3
+> set contour                   // projection to xy-plane for some z ( z=0 , ..)
+> splot (acos(-cos(x)-cos(y))
+~~~
+
+other examples
+
+![](/image/gnuplot/membrane.png width=600)
+![](/image/gnuplot/sanaa-like-membrane.png width=600)
+
+
+
+
+## Haskell Implementation is underconstruction
+
+with GLUT

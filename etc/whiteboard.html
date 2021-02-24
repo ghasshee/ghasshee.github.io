@@ -1,0 +1,41 @@
+<head>
+  <script>
+    function draw() {
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+
+      var x;
+      var y;
+
+      canvas.onmousedown = function(e) {
+        x = e.clientX;
+        y = e.clientY;
+        ctx.moveTo(x, y);
+      }
+
+      canvas.onmouseup = function(e) {
+        x = null;
+        y = null;
+      }
+
+      canvas.onmousemove = function(e) {
+        if (x == null || y == null) {
+          return;
+        }
+        x = e.clientX;
+        y = e.clientY;
+        x -= canvas.offsetLeft;
+        y -= canvas.offsetTop;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.moveTo(x, y);
+      }
+    };
+  </script>
+</head>
+<body onload="draw();">
+  <canvas id="canvas" width="10000" height="10000"
+  style="border: 1px solid black;"></canvas>
+</body>

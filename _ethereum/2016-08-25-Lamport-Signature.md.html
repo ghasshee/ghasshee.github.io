@@ -1,0 +1,96 @@
+---
+title: Post-Quantum Crypto
+layout: journal
+date: 2016-08-25
+---
+
+partial translation of [bitcoin magazine](https://bitcoinmagazine.com/articles/bitcoin-is-not-quantum-safe-and-how-we-can-fix-1375242150)
+
+# Introduction
+
+ここ数年、Bitcoin 技術集団において、「部分的量子安全」である、ということが周知のものとなってきています。
+その主張とは、「使用済みの」bitcoin address は、ブロックチェーン上にその公開鍵が晒されており、量子コンピュータで Bitcoin の楕円曲線暗号を破ることができますが、一方で、未使用の Bitcoin address 、つまり bitcoin を受け取りはしたものの使用していないならば、公開鍵は晒されておらず、SHA256 と RIPEMD-160 という強い暗号理論による保証を享受することができます。
+
+ある Bitcoin address があって、そこからの最初のトランザクションで、そこに保管されているすべての財産を空にして、新しいアドレスに移動するようにすれば、同様の保証を享受でき、Bitcoin は以前と変わらない、セキュリティを担保するかもしれません。
+
+事実、大部分のウォレットではすでに、プライバシー確保の為アドレスを再利用しないようにしており、大多数のユーザーのなすべきことは、対量子コンピュータの強固なセキュリティを満たすために必要であるマイナーリリースを、適用するだけであり、よって、量子コンピュータへの応用は凍結されると考えることができるかもしれません。
+
+しかし、この議論には重大な欠陥があります。
+
+
+# Hashes and Curves
+
+
+First, the technical background. In a Bitcoin user’s wallet, each of that user’s own Bitcoin addresses is represented by three distinct numbers: a private key, a public key and the address itself. The public key is derived from the private key by elliptic curve multiplication, and, given only classical computers like those that exist today, recovering the private key from a public key is essentially impossible.
+
+The address is derived from the public key by a series of three steps:
+- applying the SHA256 hash function to the public key,
+- applying the RIPEMD-160 hash function to that and finally
+- adding a value called a checksum for error correction purposes
+(so that if you accidentally mistype a single character when sending to a Bitcoin address your money does not disappear into a black hole).
+
+The point of hash functions is that, just like elliptic curve multiplication, they are computationally infeasible to reverse; given an address, there is no way, aside from the brute force approach of trying all possible public keys, to find the public key that the address is derived from.
+
+Quantum computers have two major tools that make them superior to classical computers
+in breaking cryptography: Shor’s algorithm and Grover’s algorithm.
+
+Shor’s algorithm is mainly useful for factoring numbers – for example, given the number 1728499, figuring out that the number is composed of the factors 1129 * 1531. With seven-digit numbers, the problem can even be solved on paper with enough patience, but if the numbers are hundreds of digits long quantum computers are required. In fact, the difficulty of factoring very long numbers is the basis of RSA, the oldest public key encryption algorithm and one still in use today. Grover’s algorithm is far more generic – given a list of numbers and a mathematical property, it can figure out which one of those numbers satisfies the property. A modified version of Shor’s algorithm can crack elliptic curve cryptography as well, and Grover’s algorithm attacks basically anything, including SHA256 and RIPEMD-160.
+
+However, the two algorithms differ drastically in just how efficient they are.
+Shor’s algorithm reduces the runtime of cracking elliptic curve cryptography from O(2k/2) to O(k3) – that is to say, since Bitcoin private keys are 256 bits long, the number of computational steps needed to crack them goes down from 340 trillion trillion trillion to a few hundred million at most. Grover’s algorithm, on the other hand, does not offer anything close to so drastic a speedup. Rather, it simply provides a modest reduction from O(2k) to O(2k/2). In the case of RIPEMD-160, the weaker of the two hashes used to create a Bitcoin address, this means that the number of steps needed to recover a public key from an address goes down from 1.4 trillion trillion trillion trillion to … 1.2 trillion trillion. Somewhat easier, but still thankfully impractical. As described above, “used” Bitcoin addresses from have an exposed public key, so it is the easy challenge of cracking elliptic curve cryptography with Shor’s algorithm that is the bottleneck. “Unused” Bitcoin addresses, on the other hand, expose only the address itself, so it is the RIPEMD-160 Grover problem that poses the weakened, but still insurmountable, challenge.
+
+
+
+
+
+# So What’s the Problem?
+
+Here is where the above logic goes wrong. Everything about quantum computers in the above two paragraphs is, given public knowledge, is essentially correct, and if a Bitcoin address is truly unused, then indeed, even given quantum computers, any bitcoins lying inside are fine. However, the challenge is, how do you actually spend the funds? In order to release the bitcoins sent to that address, it is necessary to create a Bitcoin transaction, and that transaction must include a signature and a public key to verify that it was the owner of the private key that signed it. However, here lies the problem. By making that transaction, you have just released all of the information that anyone with a quantum computer needs to fully impersonate you, right on the spot. Without quantum computing, this is impossible, as Bitcoin’s elliptic curve signatures only have enough information to recover the public key, not the private key. With quantum computing, elliptic curve signatures are as flimsy as a digital sheet of paper.
+
+If you send a transaction spending all 100 BTC in address 13ign, with 10 BTC going to 1v1tal to pay for goods and 90 BTC change going back to your new address at 1mcqmmnx, the first node that you send the transaction to can replace the change address with whatever they want, recover the private key from your public key, and forge your signature. The only way to get around the problem is essentially to send the transaction directly to a mining pool, like BTCGuild or Slush, and hope that the mining pool will be honest and place the transaction directly into the blockchain. Even then, however, you are vulnerable to a Finney attack – a dishonest miner can forge your signature, create a valid block containing his forged transaction continuing the blockchain from one before the most recent block (the one containing your transaction), and, since the lengths of the old and new blockchains would then be equal, the attacker would have a 50% chance of his block taking precedence. Thus, safe transactions are essentially impossible.
+
+
+
+
+
+
+# Lamport Signatures: A Solution
+
+
+基本的な考え方として、今、ハッシュ関数の目的は、「施錠」という行為の数学的な同値を提供することとしてください。
+ある値の「ハッシュ」を晒すことは、金庫の「錠」を人目に晒すようなものであり、
+元の値を開示することは、錠を開けることです。
+しかしながら、一度錠が開かれると、二度と閉じることはできません。
+
+問題は、錠そのものが、セキュアなデジタル署名の技術を提供していないということです。
+楕円曲線暗号が提供するもので、SHA256やRIPEMD-160 が提供していない特徴は、
+あなたが秘密の値を数学的な錠の後ろに持っているということを証明する方法であり、
+この証拠をとあるメッセージに取り付けるますが、元の値を明かしたり、他のメッセージが有効である証拠になるようなことはありません。
+Bitcoin においては、ここで取り上げたメッセージとは、ある一つのトランザクションにあたります。
+Bitcoin client がネットワークに対してトランザクションを送信する時、何が起こっているのかというと、次に示す数学的証拠を送信しているのです。
+このトランザクション、つまり「私がこれこれの量のお金をこのアドレスに送信する」という記述のあるトランザクションは、送信元のBitcoin addressの背後にある秘密鍵を持つ誰かによって、作られた、ということです。これは トランザクションサイドにおける Bitcoin セキュリティの基礎です。
+
+
+しかし、RSA、楕円曲線などの楕円曲線暗号のシステムを用いずとも、この問題の解決を可能にするシステムがあります。それが、Lamport Signature です。Lamport signature は一度きりの署名であり、次のようにして、問題を解決します。
+
+「錠がたくさんあり、メッセージの内容物が、どの錠を開けるのかを決定する」のです。
+もし、誰かがあなたのメッセージを偽装しようとすれば、そのLamport 署名の技術は次のことがらを必要とします。彼らは、あなたがまだ開けてない少なくとも一つの錠を開ける必要があり、これは錠を持っていない人には不可能です。
+
+（ one way hash function に対する一般的な量子コンピュータのアルゴリズムが見つからないという前提の元では、錠の集合が晒されていないのならば、そもそも開けようがありません。逆に錠が公開された瞬間を狙ったとしても、錠もまた one way hash function で実装されており、まだ未開封の錠をメッセージの内容物の書き換えたいビット数だけ揃えなければなりません。）
+
+
+
+
+
+# How Lamport Signatures Work, In Detail
+
+Lamport signatures may seem technically complex, but because they only have one ingredient – the hash function (in this case, we’ll use RIPEMD-160) they are actually one of the most accessible cryptographic protocols for the average person to understand. The algorithm works as follows:
+
+Generate 160 pairs of 160-bit random numbers (you can make them all from a single seed with RIPEMD-160: RIPEMD-160(seed+”1″), RIPEMD-160(seed+”2″), etc). These values, or in some implementation the seed used to generate them, are your private key.
+Hash all of the random numbers (eg. with RIPEMD-160), and publish all 160 pairs of hashes. These are your public key, and will be needed by the network to later verify your signature.
+To sign a message, calculate the RIPEMD-160 hash of the message, and then depending on each bit of the hash release the secret number behind the first or second hash in each pair. If the bit is zero, open the first hash, and if the bit is one open the second hash.
+Under this scheme, a Bitcoin address will still be the SHA256+RIPEMD-160 hash of the public key; the only difference is that the public key will consist of 320 hashes rather than an elliptic curve point. A transaction will include the public key and the signature, just like today, and, once again just like today, verifiers will check that the public key matches the address and the signature matches the message and the public key. The signatures are unforgeable; even with Grover’s algorithm, it will take 280steps for an adversary to construct a fraudulent transaction that requires them to reveal the exact same 160 secret numbers that you already revealed, or an adversary can take 280* 80 steps to simply crack all the hashes. Both numbers are in the trillions of trillions of computations.
+
+The only change in behavior that will be needed is for people to start using addresses only once; after two uses, the security of the Lamport scheme drops to 240, a value which might still be safe against quantum computers at first, but only barely, and after three uses it’s as weak as elliptic curve cryptography. Theoretically, however, even this can be partially overcome; the Merkle signature scheme builds off of Lamport’s idea to create signatures which can be used tens or hundreds, or potentially even thousands, of times before the private key needs to be retired. The only limit to the maximum number of transactions per address is basically a question of limiting blockchain bloat.
+
+Given what is currently public knowledge, quantum computers are still far away; the most powerful quantum computer to date managed to use Shor’s algorithm to factor the number 21. However, sudden advances are always possible, and we always need to have a plan of what we can do if Edward Snowden decides to leak out that the NSA has fully functional quantum computers hiding in a secret data center. We probably cannot handle such a sudden event, but we certainly can handle cases where we get even a month of advance warning. The solution is this: as soon as a quantum pre-emergency is declared, everyone should move their wealth into a 1-of-2 multisignature transaction between an unused, old-style, Bitcoin address, and an address generated with the new Lamport scheme. Then, developers should quickly create the Lamport patch for as many Bitcoin clients as possible and push for everyone to upgrade. If the whole process is done within weeks, then by the time quantum computers become a threat the bulk of people’s bitcoins will be in new-style Lamport addresses and will be safe. For those who still have their wealth in old-style addresses by then (unused old-style addresses that is; by that point coins in used old-style addresses could trivially be stolen), a few established organizations will agree to serve as trusted nodes, using the Merkle signature scheme to add an additional signature to transactions sending from old-style addresses to new-style addresses. To prevent network fraud and Finney attacks, the new Bitcoin rules would require all transactions from old to new after a certain point to be signed by these authorities. The authority system will introduce centralization, but it will only be a temporary emergency measure, and after a few years the system can be retired entirely. From there, we lick our wounds, pick up our losses and move on to enjoy some of the more wonderful things that quantum computing has to offer.
